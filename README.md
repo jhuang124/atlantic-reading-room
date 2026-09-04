@@ -1,40 +1,45 @@
-# The Atlantic — The Reading Room
+# The Print Edition — V2
 
-An interactive Three.js cover library, September 2021–September 2026. All 55 covers are served locally; each issue links to its official Atlantic archive page.
+An Atlantic magazine archive and reader: 55 covers from September 2021 through September 2026, with full print editions for September 2026, August 2026, and December 2025.
+
+[Open the demo](https://jhuang124.github.io/atlantic-reading-room/)
 
 ## Experience
 
-- Six curved walnut display bays with modeled magazines, paper blocks, spines, and animated selection.
-- Parquet floor, reading table, leather chairs, banker lamp, and warm architectural lighting.
-- Afternoon/evening light, drag navigation, scroll zoom, fullscreen, and a slow guided tour.
-- Searchable cover index, issue details, arrow-key navigation, and mobile detail layouts.
-- Reduced-motion support and a cover-index fallback if WebGL cannot initialize.
+- A simple cover index with dates, search, year/sort controls, and an **Available to read** filter. Read/Continue opens an available issue directly; other covers open editorial details with a link to the official issue.
+- Full-screen issue splashes with an animated cover transition and a Contents entry. Returning preserves archive filters and scroll.
+- One reader for Print and selected Article views, with previous/next story navigation and a single Contents panel for Stories, Pages, Search, and Saved.
+- Sharp, noncommittal page previews; search results jump to the matching print page. Multiple detours retain the original return destination.
+- Responsive fitted spreads and single pages, page-width and column reading, pointer-anchored pinch zoom, panning, and a classic page curl with the correct reverse face.
+- Focus fills the viewport without cropping a fitted page. Controls overlay the reading surface without changing its geometry.
+- Saved page, zoom, print offsets, article scroll, and text preferences. Reduced motion and Instant mode skip the curl.
 
-## Run
+Article view is available for three prepared pieces: **The Blue Book Is Back**, **Look Closer: September 2026**, and **Look Closer: August 2026**. Other stories remain available in their original print layouts. The 3D room has been removed; Three.js is used only for the reader's page curl.
 
-```sh
-npm install
-npm run dev
-```
+Keyboard: arrows turn pages; C opens Contents; / opens Search; B saves; F toggles Focus; +/- zoom; Home/End jump; Escape closes the active overlay first.
 
-## Validation
+## Design and sources
 
-Production build and TypeScript checks pass. All 55 unique issue records have local image files and official Atlantic source URLs. The local route returned HTTP 200.
+The visual system adapts the Atlantic WWW kit's wordmark, Atlantic Condensed headings, Adobe Garamond, Graphik, warm white, thin black rules, and restrained red. The local kit derives from `theatlantic/frontend` at `6bff7379`; this independent prototype is not a claim of current production parity. Fonts load from official Atlantic URLs. See [COVER-SOURCES.md](COVER-SOURCES.md) for cover provenance.
 
-Browser visual and interaction testing was not run. The optional WebMCP tool is feature-detected; no supported WebMCP validation context was available, so its runtime contract is unverified.
+The three full PDFs were obtained from the Atlantic subscriber library, at `cdn.theatlantic.com/media/magazine/pdfs/{202609,202608,202512}.pdf`. Their thumbnails, indexes, selected article text, and PDF.js support assets are included for the user-authorized public demo.
 
-See COVER-SOURCES.md for provenance. This is an independent interactive concept, not an official Atlantic product.
-
-## GitHub Pages
-
-Live site: https://jhuang124.github.io/atlantic-reading-room/
+## Run and verify
 
 ```sh
+npm ci
 npm run dev:pages
+npx tsc --noEmit
+node --test scripts/reader-*.test.mjs
 npm run build:pages
-npm run preview:pages
 ```
 
-The static build uses the same reading-room components as the Sites version. Its output is `dist-pages/`, with relative asset paths that support GitHub project URLs. No server, database, or API keys are needed.
+The 18 targeted tests cover physical-page sequence, printed folios, curl reverse faces and geometry, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
-Pushing to `main` runs `.github/workflows/pages.yml`, builds the static site, and deploys it to GitHub Pages. The existing Sites build remains available through `npm run build`.
+The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
+
+## Publishing
+
+Pushing `main` triggers `.github/workflows/pages.yml`, which builds the static Vite application to `dist-pages/` and publishes with GitHub Pages. All paths are relative so the reader works under `/atlantic-reading-room/`. No server or account is needed; reading state is saved in that browser's local storage.
+
+`python3 scripts/prepare-reader-assets.py` rebuilds thumbnails, word positions, and PDF.js assets (requires Poppler). `python3 scripts/prepare-articles.py` rebuilds selected article text. `node scripts/check-pdf-rendering.mjs` checks sample PDF rendering.

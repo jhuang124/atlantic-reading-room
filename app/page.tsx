@@ -1,581 +1,527 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   BookOpen,
-  Grid2X2,
   Maximize2,
   Minimize2,
-  Moon,
-  Pause,
-  Play,
   Search,
-  Sun,
   X,
 } from 'lucide-react';
+import { flushSync } from 'react-dom';
 import data from './issues.json';
-import type { Issue, RoomAPI } from './room';
+import { readerIssues } from './reader/catalog';
+import { loadPlace, type ReadingPlace } from './reader/place';
+import { pageLabel } from './reader/model';
+const loadReader = () => import('./reader/Reader');
+const Reader = lazy(loadReader);
+function transition(update: () => void) {
+  if (
+    document.startViewTransition &&
+    !matchMedia('(prefers-reduced-motion:reduce)').matches
+  ) {
+    const t = document.startViewTransition(() => flushSync(update));
+    void t.finished.catch(() => {});
+  } else update();
+}
+type Issue = (typeof data)[number];
 const issues: Issue[] = data;
-const years = [2021, 2022, 2023, 2024, 2025, 2026];
-const title = (i: Issue) =>
-  i.coverStories[0]?.title || i.issueTheme || `The ${i.issue} issue`;
+const years = [2026, 2025, 2024, 2023, 2022, 2021];
+const title = (issue: Issue) =>
+  (
+    issue.coverStories[0]?.title ||
+    issue.issueTheme ||
+    `The ${issue.issue} issue`
+  ).replace(/<[^>]*>/g, '');
 export default function Home() {
-  const host = useRef<HTMLDivElement>(null),
-    api = useRef<RoomAPI | null>(null),
-    app = useRef<HTMLElement>(null),
-    closeButton = useRef<HTMLButtonElement>(null),
-    previousFocus = useRef<HTMLElement | null>(null);
-  const [mode, setMode] = useState<'room' | 'index'>('room'),
-    [year, setYear] = useState<number | null>(2025),
-    [selected, setSelected] = useState<string | null>(null),
-    [hovered, setHovered] = useState<string | null>(null),
-    [night, setNight] = useState(false),
-    [tour, setTour] = useState(false),
-    [ready, setReady] = useState(false),
-    [failed, setFailed] = useState(false),
-    [query, setQuery] = useState(''),
-    [about, setAbout] = useState(false),
-    [full, setFull] = useState(false);
-  const issue = issues.find((i) => i.id === selected),
-    hover = issues.find((i) => i.id === hovered);
-  const openIssue = useCallback((id: string) => {
+  const [year, setYear] = useState('all');
+  const [query, setQuery] = useState('');
+  const [readableOnly, setReadableOnly] = useState(false);
+  const [sort, setSort] = useState('newest');
+  const [selected, setSelected] = useState<string | null>(null);
+  const [transitionCover, setTransitionCover] = useState<string | null>(null);
+  const [readingId, setReadingId] = useState<string | null>(null);
+  const [available, setAvailable] = useState<string[]>([]);
+  const [places, setPlaces] = useState<Record<string, ReadingPlace>>({});
+  const [readerEntry, setReaderEntry] = useState<{
+    contents: boolean;
+    page?: number;
+  }>({ contents: false });
+  const [opening, setOpening] = useState(false);
+  const [full, setFull] = useState(false);
+  const library = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+  const modalClose = useRef<HTMLButtonElement>(null);
+  const issue = issues.find((i) => i.id === selected);
+  const readingIssue = readerIssues.find((i) => i.id === readingId);
+  // One owner controls background interactivity for both details and the reader.
+  useLayoutEffect(() => {
+    if (library.current) library.current.inert = !!(selected || readingId);
+  }, [selected, readingId]);
+  useEffect(() => {
+    const abort = new AbortController();
+    fetch('reader-assets/available.json', { signal: abort.signal })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((ids) =>
+        setAvailable(
+          Array.isArray(ids)
+            ? ids.filter((id) => readerIssues.some((i) => i.id === id))
+            : [],
+        ),
+      )
+      .catch(() => {});
+    return () => abort.abort();
+  }, []);
+  useEffect(() => {
+    const next: Record<string, ReadingPlace> = {};
+    readerIssues.forEach((i) => {
+      const p = loadPlace(i.id, i.pageCount);
+      if (p) next[i.id] = p;
+    });
+    setPlaces(next);
+  }, [readingId]);
+  const openIssue = (id: string) => {
     previousFocus.current = document.activeElement as HTMLElement;
-    setSelected(id);
-    setTour(false);
-  }, []);
-  const closeIssue = useCallback(() => {
-    setSelected(null);
-    requestAnimationFrame(() => previousFocus.current?.focus());
-  }, []);
-  const chooseYear = useCallback((value: number | null) => {
-    setYear(value);
-    setSelected(null);
-    setQuery('');
-    setTour(false);
-  }, []);
-  const step = useCallback((direction: number) => {
-    setSelected((id) => {
-      const p = issues.findIndex((i) => i.id === id);
-      return issues[(p + direction + issues.length) % issues.length].id;
+    flushSync(() => setTransitionCover(id));
+    transition(() => setSelected(id));
+    void loadReader();
+  };
+  const startReading = (id: string, contents = false) => {
+    if (!available.includes(id) || opening) return;
+    if (!selected)
+      previousFocus.current = document.activeElement as HTMLElement;
+    setReaderEntry({ contents });
+    setOpening(!!selected);
+    setReadingId(id);
+  };
+  const readerReady = useCallback(() => {
+    transition(() => {
+      setSelected(null);
+      setOpening(false);
     });
   }, []);
-  useEffect(() => {
-    let cancelled = false;
-    let room: RoomAPI | undefined;
-    import('./room')
-      .then(({ createRoom }) => {
-        if (cancelled || !host.current) return;
-        try {
-          room = createRoom(host.current, issues, openIssue, setHovered, () =>
-            setReady(true),
-          );
-          api.current = room;
-        } catch (error) {
-          console.error('The room could not open', error);
-          setFailed(true);
-          setMode('index');
-        }
-      })
-      .catch(() => {
-        setFailed(true);
-        setMode('index');
-      });
-    return () => {
-      cancelled = true;
-      room?.dispose();
-      api.current = null;
-    };
-  }, [openIssue]);
-  useEffect(() => {
-    api.current?.focusYear(year);
-  }, [year, ready]);
-  useEffect(() => {
-    api.current?.select(selected);
-    if (selected) setTimeout(() => closeButton.current?.focus(), 100);
-  }, [selected, ready]);
-  useEffect(() => api.current?.setLight(night), [night, ready]);
-  useEffect(() => api.current?.setTour(tour), [tour, ready]);
-  useEffect(() => {
-    if (!tour) return;
-    const t = setInterval(
-      () =>
-        setYear((y) => years[(years.indexOf(y || 2021) + 1) % years.length]),
-      7000,
+  const closeOverlay = useCallback(() => {
+    if (selected) flushSync(() => setTransitionCover(selected));
+    transition(() => {
+      setSelected(null);
+      setOpening(false);
+      setReadingId(null);
+    });
+    requestAnimationFrame(() =>
+      previousFocus.current?.focus({ preventScroll: true }),
     );
-    return () => clearInterval(t);
-  }, [tour, ready]);
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).tagName === 'INPUT') return;
-      if (e.key === 'Escape') {
-        closeIssue();
-        setAbout(false);
-        setTour(false);
-      }
-      if (issue) {
-        if (e.key === 'ArrowRight') step(1);
-        if (e.key === 'ArrowLeft') step(-1);
-      }
-      if (issue || about) {
-        if (e.key === 'Tab') {
-          const panel = document.querySelector(
-            about ? '.about-card' : '.issue-dialog',
-          );
-          const controls = Array.from(
-            panel?.querySelectorAll<HTMLElement>('button,a[href]') || [],
-          ).filter((el) => el.offsetParent !== null);
-          if (controls.length) {
-            const first = controls[0],
-              last = controls[controls.length - 1];
-            if (e.shiftKey && document.activeElement === first) {
-              e.preventDefault();
-              last.focus();
-            } else if (!e.shiftKey && document.activeElement === last) {
-              e.preventDefault();
-              first.focus();
-            }
-          }
-        }
-      }
-    };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [issue, about, step, closeIssue]);
-  useEffect(() => {
-    const fn = () => setFull(Boolean(document.fullscreenElement));
-    document.addEventListener('fullscreenchange', fn);
-    return () => document.removeEventListener('fullscreenchange', fn);
+  }, [selected]);
+  const returnToLibrary = useCallback(() => {
+    transition(() => {
+      setReadingId(null);
+      setSelected(null);
+      setOpening(false);
+    });
+    requestAnimationFrame(() =>
+      previousFocus.current?.focus({ preventScroll: true }),
+    );
   }, []);
   useEffect(() => {
-    const context = (
-      document as Document & {
-        modelContext?: {
-          registerTool: (t: unknown, o: unknown) => Promise<void>;
-        };
+    if (issue) modalClose.current?.focus({ preventScroll: true });
+    const handler = (event: KeyboardEvent) => {
+      if (!issue) return;
+      if (opening) {
+        if (event.key === 'Escape') closeOverlay();
+        return;
       }
-    ).modelContext;
-    if (!context) return;
-    const lifecycle = new AbortController();
-    try {
-      Promise.resolve(
-        context.registerTool(
-          {
-            name: 'explore_atlantic_library',
-            title: 'Explore the Atlantic library',
-            description:
-              'Show a year or open an issue in the visible Atlantic cover collection.',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                year: { type: 'integer', enum: years },
-                issueId: { type: 'string', enum: issues.map((i) => i.id) },
-              },
-              additionalProperties: false,
-            },
-            annotations: { readOnlyHint: false, untrustedContentHint: false },
-            execute: async (input: unknown) => {
-              if (!input || typeof input !== 'object')
-                throw Error('Expected year or issueId.');
-              const v = input as { year?: number; issueId?: string };
-              if (v.year !== undefined && !years.includes(v.year))
-                throw Error('Year is outside the collection.');
-              if (
-                v.issueId !== undefined &&
-                !issues.some((i) => i.id === v.issueId)
-              )
-                throw Error('Unknown issue.');
-              if (v.year === undefined && v.issueId === undefined)
-                throw Error('Provide year or issueId.');
-              if (v.year !== undefined) chooseYear(v.year);
-              if (v.issueId) openIssue(v.issueId);
-              await new Promise<void>((resolve) =>
-                requestAnimationFrame(() => resolve()),
-              );
-              return { year: v.year ?? null, issueId: v.issueId ?? null };
-            },
-          },
-          { signal: lifecycle.signal },
-        ),
-      ).catch(() => {});
-    } catch {}
-    return () => lifecycle.abort();
-  }, [chooseYear, openIssue]);
-  const filtered = issues.filter(
-    (i) =>
-      (!year || i.year === year) &&
-      `${i.issue} ${title(i)} ${i.coverStories.flatMap((s) => s.authors).join(' ')}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-  );
-  const switchMode = (next: 'room' | 'index') => {
-    setMode(next);
-    setTour(false);
-    setSelected(null);
-    if (next === 'room') setTimeout(() => api.current?.resize(), 50);
-  };
-  const toggleFull = async () => {
+      if (event.key === 'Escape') closeOverlay();
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        const index = issues.findIndex((item) => item.id === issue.id);
+        const next = issues[index + (event.key === 'ArrowRight' ? 1 : -1)];
+        if (next) transition(() => setSelected(next.id));
+      }
+      if (event.key === 'Tab') {
+        const nodes = Array.from(
+          document.querySelectorAll<HTMLElement>(
+            '.library-modal button:not(:disabled), .library-modal a[href]',
+          ),
+        );
+        const first = nodes[0],
+          last = nodes.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [issue, opening, closeOverlay]);
+  useEffect(() => {
+    if (!selected && !readingId) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [selected, readingId]);
+  useEffect(() => {
+    const update = () => setFull(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', update);
+    return () => document.removeEventListener('fullscreenchange', update);
+  }, []);
+  const toggleFullscreen = async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
-      else await app.current?.requestFullscreen();
+      else await document.documentElement.requestFullscreen();
     } catch {}
   };
+  const filtered = useMemo(
+    () =>
+      issues
+        .filter(
+          (i) =>
+            (year === 'all' || i.year === Number(year)) &&
+            (!readableOnly || available.includes(i.id)) &&
+            `${i.issue} ${title(i)} ${i.coverStories.flatMap((s) => s.authors).join(' ')}`
+              .toLowerCase()
+              .includes(query.trim().toLowerCase()),
+        )
+        .sort((a, b) =>
+          sort === 'oldest'
+            ? a.id.localeCompare(b.id)
+            : b.id.localeCompare(a.id),
+        ),
+    [year, readableOnly, available, query, sort],
+  );
+  const reset = () => {
+    setQuery('');
+    setYear('all');
+    setReadableOnly(false);
+  };
+  const placeText = (id: string) => {
+    const entry = readerIssues.find((i) => i.id === id),
+      place = places[id];
+    if (!entry || !place) return '';
+    const label = pageLabel(place.page, entry.pageCount);
+    return /^\d+$/.test(label) ? `Page ${label}` : label;
+  };
   return (
-    <main
-      ref={app}
-      className={`app ${mode} ${issue ? 'reading' : ''} ${night ? 'night' : ''}`}
-    >
-      <header className="masthead" inert={Boolean(issue || about)}>
-        <a
-          className="wordmark"
-          href="https://www.theatlantic.com/"
-          target="_blank"
-          rel="noreferrer"
-          aria-label="The Atlantic website"
-        >
-          The Atlantic
-        </a>
-        <div className="identity">
-          <span className="edition">THE READING ROOM</span>
-          <span className="identity-line" />
-          <span className="since">EST. 1857</span>
-        </div>
-        <button className="about-button" onClick={() => setAbout(true)}>
-          About the collection <ArrowUpRight size={14} />
-        </button>
-      </header>
-      <div className="room-stage" ref={host} aria-hidden={mode !== 'room'} />
-      <div className="room-vignette" aria-hidden="true" />
-      <div className="top-controls" inert={Boolean(issue || about)}>
-        <div className="room-heading">
-          <p className="eyebrow">AN ATLANTIC COVER LIBRARY</p>
-          <h1>
-            The world, <em>in print.</em>
-          </h1>
-          <p className="date-range">September 2021 — September 2026</p>
-        </div>
-        <div className="view-controls">
-          <div className="view-toggle" aria-label="Collection view">
+    <main className="archive-app">
+      <div className="library-shell" ref={library}>
+        <header className="archive-masthead">
+          <a
+            className="atlantic-wordmark"
+            href="https://www.theatlantic.com/"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="The Atlantic"
+          >
+            <img
+              src="brand/atlantic-logo.svg"
+              alt="The Atlantic"
+              width="214"
+              height="33"
+            />
+          </a>
+          <div className="archive-masthead-tools">
             <button
-              disabled={failed}
-              className={mode === 'room' ? 'active' : ''}
-              onClick={() => switchMode('room')}
-              aria-pressed={mode === 'room'}
+              className="archive-icon"
+              onClick={toggleFullscreen}
+              aria-label={full ? 'Exit fullscreen' : 'Enter fullscreen'}
             >
-              <BookOpen size={16} /> Reading room
-            </button>
-            <button
-              className={mode === 'index' ? 'active' : ''}
-              onClick={() => switchMode('index')}
-              aria-pressed={mode === 'index'}
-            >
-              <Grid2X2 size={15} /> Cover index
+              {full ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
           </div>
-          {mode === 'room' && (
-            <div className="utility-controls">
-              <button
-                className="icon-button"
-                title={night ? 'Afternoon light' : 'Evening light'}
-                aria-label={
-                  night
-                    ? 'Switch to afternoon light'
-                    : 'Switch to evening light'
-                }
-                onClick={() => setNight((v) => !v)}
-              >
-                {night ? <Moon size={18} /> : <Sun size={19} />}
-              </button>
-              <button
-                className="icon-button fullscreen-button"
-                title={full ? 'Exit fullscreen' : 'Enter fullscreen'}
-                aria-label={full ? 'Exit fullscreen' : 'Enter fullscreen'}
-                onClick={toggleFull}
-              >
-                {full ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
-              </button>
+        </header>
+        <div className="archive-content">
+          <h1 className="archive-visually-hidden">Magazine archive</h1>
+          <section
+            className="archive-browser"
+            aria-label="Atlantic cover index"
+          >
+            <div className="archive-filter-bar">
+              <label className="archive-search">
+                <Search size={17} />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search covers and authors"
+                  aria-label="Search covers, issues, and authors"
+                />
+                {query && (
+                  <button
+                    aria-label="Clear search"
+                    onClick={() => setQuery('')}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </label>
+              <div className="archive-compact-filters">
+                <select
+                  aria-label="Filter by year"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                >
+                  <option value="all">All years</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Sort issues"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                </select>
+                {available.length > 0 && (
+                  <label className="archive-available-filter">
+                    <input
+                      type="checkbox"
+                      checked={readableOnly}
+                      onChange={(e) => setReadableOnly(e.target.checked)}
+                    />
+                    Available to read
+                  </label>
+                )}
+              </div>
+              <output className="archive-visually-hidden" aria-live="polite">
+                {filtered.length} issues
+              </output>
             </div>
-          )}
-        </div>
-      </div>
-      {mode === 'room' && (
-        <>
-          <div className="room-caption">
-            <span className="caption-rule" />
-            <p>{year ? `THE ${year} COLLECTION` : 'THE COMPLETE COLLECTION'}</p>
-            <span>
-              {year
-                ? issues.filter((i) => i.year === year).length
-                : issues.length}{' '}
-              issues. A moment in time.
-            </span>
-          </div>
-          <div className="room-actions">
-            <button
-              className={`tour-button ${tour ? 'running' : ''}`}
-              onClick={() => {
-                setTour((v) => !v);
-                if (!tour) {
-                  setYear(2021);
-                  setSelected(null);
-                }
-              }}
-            >
-              {tour ? <Pause size={14} /> : <Play size={14} />}{' '}
-              {tour ? 'Pause the tour' : 'Take a slow tour'}
-            </button>
-            <span className="interaction-hint">
-              Drag to look · Scroll to approach · Select a cover
-            </span>
-          </div>
-          {!ready && (
-            <div className="loading-notice" role="status">
-              <span /> Bringing the covers into the room…
+            <div className="archive-grid">
+              {filtered.map((i, index) => {
+                const canRead = available.includes(i.id),
+                  saved = places[i.id],
+                  entry = readerIssues.find((r) => r.id === i.id);
+                return (
+                  <article className="archive-card" key={i.id}>
+                    <button
+                      className="archive-cover-button"
+                      aria-label={`View ${i.issue}`}
+                      onClick={() => openIssue(i.id)}
+                    >
+                      <img
+                        style={{
+                          viewTransitionName:
+                            selected !== i.id && transitionCover === i.id
+                              ? `cover-${i.id}`
+                              : 'none',
+                        }}
+                        className="archive-cover-image"
+                        src={i.cover}
+                        alt={`The Atlantic, ${i.issue}`}
+                        loading={index < 4 ? 'eager' : 'lazy'}
+                        width="300"
+                        height="400"
+                      />
+                      {saved && entry && canRead && (
+                        <span
+                          className="archive-reading-progress"
+                          aria-hidden="true"
+                        >
+                          <span
+                            style={{
+                              width: `${(saved.page / entry.pageCount) * 100}%`,
+                            }}
+                          />
+                        </span>
+                      )}
+                    </button>
+                    <div className="archive-card-meta">
+                      <h2>
+                        <button onClick={() => openIssue(i.id)}>
+                          {i.issue}
+                        </button>
+                      </h2>
+                    </div>
+                    {canRead ? (
+                      <button
+                        className="archive-read-link"
+                        onClick={() => startReading(i.id)}
+                      >
+                        {saved ? `Continue · ${placeText(i.id)}` : 'Read issue'}
+                        <ArrowRight size={14} />
+                      </button>
+                    ) : (
+                      <span className="archive-cover-only">
+                        Cover & details
+                      </span>
+                    )}
+                  </article>
+                );
+              })}
             </div>
-          )}
-          {hover && !issue && (
-            <div className="hover-card">
-              <span>{hover.issue}</span>
-              <strong>{title(hover)}</strong>
-              <small>
-                Open issue <ArrowUpRight size={12} />
-              </small>
-            </div>
-          )}
-        </>
-      )}
-      {mode === 'index' && (
-        <section className="index-content" aria-label="Atlantic cover index">
-          {failed && (
-            <p className="fallback-notice">
-              Your browser couldn’t open the 3D room. Every cover is available
-              here.
-            </p>
-          )}
-          <div className="index-toolbar">
-            <span>
-              {filtered.length} {filtered.length === 1 ? 'issue' : 'issues'}
-              {year ? ` from ${year}` : ' in the collection'}
-            </span>
-            <label className="search">
-              <Search size={16} />
-              <input
-                aria-label="Search issues, stories, and authors"
-                value={query}
-                placeholder="Find an issue, idea, or author"
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  if (e.target.value) setYear(null);
-                }}
-              />
-              {query && (
-                <button onClick={() => setQuery('')} aria-label="Clear search">
-                  <X size={14} />
+            {!filtered.length && (
+              <div className="archive-empty">
+                <h2>No issues found.</h2>
+                <p>Try another word or widen the year filter.</p>
+                <button className="archive-primary" onClick={reset}>
+                  See all issues <ArrowRight size={16} />
                 </button>
-              )}
-            </label>
-          </div>
-          <div className="cover-grid">
-            {filtered.map((i) => (
-              <button
-                className="index-cover"
-                onClick={() => openIssue(i.id)}
-                key={i.id}
-              >
-                <div className="cover-image">
-                  <img
-                    src={i.cover}
-                    alt={`The Atlantic cover, ${i.issue}`}
-                    loading="lazy"
-                  />
-                  <span className="cover-open">
-                    <ArrowUpRight size={24} />
-                  </span>
-                </div>
-                <span className="cover-date">{i.issue}</span>
-                <strong>{title(i)}</strong>
-              </button>
-            ))}
-          </div>
-          {!filtered.length && (
-            <div className="empty">
-              <h2>No matching issues.</h2>
-              <p>Try a year, author, or another word.</p>
-              <button
-                onClick={() => {
-                  setQuery('');
-                  setYear(null);
-                }}
-              >
-                See every cover <ArrowRight size={15} />
-              </button>
-            </div>
-          )}
-        </section>
-      )}
-      <footer className="collection-footer" inert={Boolean(issue || about)}>
-        <div className="collection-count">
-          <strong>55</strong>
-          <span>
-            COVERS
-            <br />
-            FIVE YEARS
-          </span>
-        </div>
-        <nav className="years" aria-label="Browse by year">
-          <button
-            onClick={() => chooseYear(null)}
-            className={year === null ? 'active' : ''}
-            aria-pressed={year === null}
-          >
-            All years
-          </button>
-          {years.map((y) => (
-            <button
-              key={y}
-              onClick={() => chooseYear(y)}
-              className={year === y ? 'active' : ''}
-              aria-pressed={year === y}
-            >
-              {y}
-              {year === y && <span className="year-dot" />}
-            </button>
-          ))}
-        </nav>
-        <span className="footer-note">
-          An ongoing conversation.
-          <br />
-          <em>Since 1857.</em>
-        </span>
-      </footer>
-      {issue && (
-        <div
-          className={`issue-dialog ${mode === 'index' ? 'flat' : ''}`}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="issue-title"
-        >
-          <div className="detail-shade" onClick={closeIssue} />
-          <button
-            ref={closeButton}
-            className="close-issue"
-            onClick={closeIssue}
-          >
-            <X size={18} />
-            <span>Return to the shelves</span>
-            <kbd>ESC</kbd>
-          </button>
-          <img
-            className="detail-cover"
-            src={issue.cover}
-            alt={`The Atlantic cover, ${issue.issue}`}
-          />
-          <article className="issue-information">
-            <p className="eyebrow">FROM THE COLLECTION</p>
-            <p className="issue-date">{issue.issue}</p>
-            <div className="small-rule" />
-            <p className="story-label">
-              {issue.coverStories.length ? 'COVER STORY' : 'IN THIS ISSUE'}
-            </p>
-            <h2 id="issue-title">{title(issue)}</h2>
-            {issue.coverStories[0]?.authors.length > 0 && (
-              <p className="byline">
-                By {issue.coverStories[0].authors.join(' and ')}
-              </p>
+              </div>
             )}
-            {issue.coverStories[0]?.dek && (
-              <p className="dek">{issue.coverStories[0].dek}</p>
-            )}
-            <a
-              className="read-link"
-              href={issue.sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Explore this issue <ArrowUpRight size={18} />
-            </a>
-            <p className="source-note">
-              At TheAtlantic.com · Subscriber access may apply
-            </p>
-            <div className="issue-pagination">
-              <button aria-label="Newer issue" onClick={() => step(-1)}>
-                <ArrowLeft size={20} />
-              </button>
-              <span>
-                {String(
-                  issues.findIndex((i) => i.id === issue.id) + 1,
-                ).padStart(2, '0')}{' '}
-                <span>/ 55</span>
-              </span>
-              <button aria-label="Older issue" onClick={() => step(1)}>
-                <ArrowRight size={20} />
-              </button>
-            </div>
-          </article>
-          <p className="cover-credit">Cover artwork © The Atlantic</p>
-        </div>
-      )}
-      {about && (
-        <div
-          className="about-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="about-title"
-          onClick={() => setAbout(false)}
-        >
-          <article className="about-card" onClick={(e) => e.stopPropagation()}>
-            <button
-              autoFocus
-              className="about-close icon-button"
-              aria-label="Close about the collection"
-              onClick={() => setAbout(false)}
-            >
-              <X size={22} />
-            </button>
-            <p className="eyebrow">BOSTON, 1857 — AND ONWARD</p>
-            <h2 id="about-title">
-              A place for
-              <br />
-              <em>restless minds.</em>
-            </h2>
-            <p>
-              The Atlantic began in 1857 as a magazine of literature, art, and
-              politics. This room brings a recent chapter of that history into
-              view, one cover at a time.
-            </p>
-            <p>
-              Explore all 55 published issues from September 2021 through
-              September 2026. Combined issues occupy a single place on the
-              shelves.
-            </p>
-            <div className="about-facts">
-              <div>
-                <strong>55</strong>
-                <span>Original covers</span>
-              </div>
-              <div>
-                <strong>5</strong>
-                <span>Years in view</span>
-              </div>
-              <div>
-                <strong>1857</strong>
-                <span>The first chapter</span>
-              </div>
-            </div>
+          </section>
+          <footer className="archive-footer">
             <a
               href="https://www.theatlantic.com/magazine/backissues/"
               target="_blank"
               rel="noreferrer"
             >
-              Visit the complete Atlantic archive <ArrowUpRight size={17} />
+              Explore the complete archive <ArrowUpRight size={14} />
             </a>
-            <p className="about-credit">
-              An independent interactive concept. Covers and editorial material
-              belong to The Atlantic. Cover-story titles follow the online issue
-              archive and may differ from printed cover lines.
-            </p>
-          </article>
+            <small>
+              Independent concept · Covers and editorial material © The Atlantic
+            </small>
+          </footer>
+        </div>
+      </div>
+      {readingIssue && (
+        <Suspense
+          fallback={
+            <div className="reader-loading-shell">
+              <button onClick={returnToLibrary}>
+                <ArrowLeft size={18} />
+                Back to covers
+              </button>
+              <p>Opening {readingIssue.issue}…</p>
+            </div>
+          }
+        >
+          <Reader
+            key={readingIssue.id}
+            issue={readingIssue}
+            onClose={returnToLibrary}
+            initialPanel={readerEntry.contents}
+            initialPage={readerEntry.page}
+            arriving={opening}
+            onReady={readerReady}
+          />
+        </Suspense>
+      )}
+      {issue && (
+        <div
+          className={`library-modal-backdrop issue-splash-backdrop ${opening ? 'issue-opening' : ''}`}
+        >
+          <section
+            className="library-modal issue-splash"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="library-modal-title"
+          >
+            <button
+              ref={modalClose}
+              className="library-modal-close"
+              onClick={closeOverlay}
+              aria-label="Back to covers"
+            >
+              <ArrowLeft size={18} /> Back to covers <kbd>Esc</kbd>
+            </button>
+            <div className="issue-splash-art" key={`cover-${issue.id}`}>
+              <img
+                className="library-detail-cover"
+                style={{ viewTransitionName: `cover-${issue.id}` }}
+                src={issue.cover}
+                alt={`The Atlantic, ${issue.issue}`}
+              />
+            </div>
+            <div className="library-detail-copy" key={issue.id}>
+              <p className="archive-kicker">{issue.issue}</p>
+              <h2 id="library-modal-title">{title(issue)}</h2>
+              {issue.coverStories[0]?.authors.length > 0 && (
+                <p className="archive-byline">
+                  By {issue.coverStories[0].authors.join(' and ')}
+                </p>
+              )}
+              {issue.coverStories[0]?.dek && (
+                <p className="library-detail-dek">
+                  {issue.coverStories[0].dek}
+                </p>
+              )}
+              {available.includes(issue.id) ? (
+                <div className="issue-reading-actions">
+                  <button
+                    className="archive-primary"
+                    disabled={opening}
+                    onClick={() => startReading(issue.id)}
+                  >
+                    <BookOpen size={18} />
+                    {opening
+                      ? 'Opening…'
+                      : places[issue.id]
+                        ? 'Continue reading'
+                        : 'Read issue'}
+                    <ArrowRight size={17} />
+                  </button>
+                  <button
+                    className="splash-contents"
+                    disabled={opening}
+                    onClick={() => startReading(issue.id, true)}
+                  >
+                    Contents
+                  </button>
+                </div>
+              ) : (
+                <p className="splash-availability">
+                  Cover preview · Read this issue at The Atlantic
+                </p>
+              )}
+              <a
+                className="archive-external"
+                href={issue.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View issue at The Atlantic <ArrowUpRight size={16} />
+              </a>
+              <nav
+                className="issue-splash-navigation"
+                aria-label="Browse issues"
+              >
+                <button
+                  aria-label="Previous issue"
+                  disabled={opening || issues[0].id === issue.id}
+                  onClick={() =>
+                    transition(() =>
+                      setSelected(issues[issues.indexOf(issue) - 1].id),
+                    )
+                  }
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <span>
+                  {issues.indexOf(issue) + 1} / {issues.length}
+                </span>
+                <button
+                  aria-label="Next issue"
+                  disabled={opening || issues.at(-1)?.id === issue.id}
+                  onClick={() =>
+                    transition(() =>
+                      setSelected(issues[issues.indexOf(issue) + 1].id),
+                    )
+                  }
+                >
+                  <ArrowRight size={18} />
+                </button>
+              </nav>
+            </div>
+          </section>
         </div>
       )}
     </main>
