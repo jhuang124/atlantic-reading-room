@@ -1,0 +1,1419 @@
+[
+  {
+    "id": "202609",
+    "year": 2026,
+    "month": 9,
+    "issue": "September 2026",
+    "datePublished": "2026-08-11T11:00:02Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/09/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/ZYIgQshtiP3k3D2GIvhGUoHNgqA=/0x0:2414x3217/703x937/media/img/issues/2026/08/10/0926_CoverWeb_JA/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/nT40fF9t17cR3ue3vLXcH2Rm444=/0x0:2414x3217/352x469/media/img/issues/2026/08/10/0926_CoverWeb_JA/original.png",
+    "coverStories": [
+      {
+        "title": "Why I Quit the Tenure Track",
+        "url": "https://www.theatlantic.com/magazine/2026/09/elite-academia-leadership-hypocrisy/687969/",
+        "dek": "The insufferable hypocrisy of elite academia",
+        "authors": [
+          "Tyler Austin Harper"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/y-FXMEpimaq4sfJTydQzLEcULtI=/0x0:2414x3217/1086x1447/media/img/issues/2026/08/10/0926_CoverWeb_JA/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 1148256,
+    "issueTheme": null,
+    "cover": "/covers/202609.png"
+  },
+  {
+    "id": "202608",
+    "year": 2026,
+    "month": 8,
+    "issue": "August 2026",
+    "datePublished": "2026-07-14T11:14:31Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/08/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/GMghOlu86LUDxDfzHwhiA9gXY7I=/0x0:2363x3150/703x937/media/img/issues/2026/07/13/0826_COVER/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/aB-sj4Q6AERxag8ZXWLnaU_6m4o=/0x0:2363x3150/352x469/media/img/issues/2026/07/13/0826_COVER/original.jpg",
+    "coverStories": [
+      {
+        "title": "The End of Reading Is Here",
+        "url": "https://www.theatlantic.com/magazine/2026/08/reading-crisis-postliterate-age/687618/",
+        "dek": "Optimists once believed that universal literacy was inevitable. Now it seems that the age of reading might be a short anomaly in human history.",
+        "authors": [
+          "Rose Horowitch"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/-zS_ekDoirRZE6uYj33XWYgCgqU=/0x0:2363x3150/1086x1447/media/img/issues/2026/07/13/0826_COVER/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 128769,
+    "issueTheme": null,
+    "cover": "/covers/202608.jpg"
+  },
+  {
+    "id": "202607",
+    "year": 2026,
+    "month": 7,
+    "issue": "July 2026",
+    "datePublished": "2026-06-16T11:39:00Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/07/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/zgvHkNf-_eEXDjFYMeZkaqla6Tw=/0x0:2363x3150/703x937/media/img/issues/2026/06/16/0726_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/IcRqc_zmwddN1vIIuFgEJ-bPAAw=/0x0:2363x3150/352x469/media/img/issues/2026/06/16/0726_Cover/original.jpg",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Pmrm-8oFX78qF9gKsFb-Q2WmGLc=/0x0:2363x3150/1086x1447/media/img/issues/2026/06/16/0726_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 172789,
+    "issueTheme": null,
+    "cover": "/covers/202607.jpg"
+  },
+  {
+    "id": "202606",
+    "year": 2026,
+    "month": 6,
+    "issue": "June 2026",
+    "datePublished": "2026-05-19T11:16:41Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/06/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/UG_-6jFrpaQurlukpmI9iPegt5I=/0x0:2363x3150/703x937/media/img/issues/2026/05/19/0626_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/iIRvcBzuS4wsKAYIrbdHTPdSSRw=/0x0:2363x3150/352x469/media/img/issues/2026/05/19/0626_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Men Who Want Women to Be Quiet",
+        "url": "https://www.theatlantic.com/magazine/2026/06/conservative-masculinism-misogyny/686939/",
+        "dek": "A virulent form of misogyny has become the single most important force holding together the American right.",
+        "authors": [
+          "Helen Lewis"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/CcD1Z-qMEZvs6sREfFaONMDiaa8=/0x0:2363x3150/1086x1447/media/img/issues/2026/05/19/0626_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 66399,
+    "issueTheme": null,
+    "cover": "/covers/202606.jpg"
+  },
+  {
+    "id": "202605",
+    "year": 2026,
+    "month": 5,
+    "issue": "May 2026",
+    "datePublished": "2026-04-21T11:10:40Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/05/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/lbACGR7n1HM4QEXePE1jdPH0zG4=/0x0:2363x3150/703x937/media/img/issues/2026/04/14/0526_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/H0Qv7jiBVQhODjNa-P7tFVMJgsI=/0x0:2363x3150/352x469/media/img/issues/2026/04/14/0526_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "I Found It: The Best Free Restaurant Bread in America",
+        "url": "https://www.theatlantic.com/magazine/2026/05/best-free-restaurant-bread-america/686582/",
+        "dek": "Thirteen thousand miles. Infinite contenders. One beautiful loaf.",
+        "authors": [
+          "Caity Weaver"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Tcv25Qj6YOliW5Lfv9aIDQclgag=/0x0:2363x3150/1086x1447/media/img/issues/2026/04/14/0526_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 148450,
+    "issueTheme": null,
+    "cover": "/covers/202605.jpg"
+  },
+  {
+    "id": "202604",
+    "year": 2026,
+    "month": 4,
+    "issue": "April 2026",
+    "datePublished": "2026-03-17T11:06:56Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/04/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/7KlV73GbQ1F2qCvoZEfpEgw1Azc=/0x0:2363x3150/703x937/media/img/issues/2026/03/16/0426_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/jvT5uMWWeA3anXVnbYft2upfoOY=/0x0:2363x3150/352x469/media/img/issues/2026/03/16/0426_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Sucker",
+        "url": "https://www.theatlantic.com/magazine/2026/04/online-sports-betting-app-addiction/686061/",
+        "dek": "My year as a degenerate gambler",
+        "authors": [
+          "McKay Coppins"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/ZV3egZlDbIGHad-NVAWzhl29vUI=/0x0:2363x3150/1086x1447/media/img/issues/2026/03/16/0426_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 139730,
+    "issueTheme": null,
+    "cover": "/covers/202604.jpg"
+  },
+  {
+    "id": "202603",
+    "year": 2026,
+    "month": 3,
+    "issue": "March 2026",
+    "datePublished": "2026-02-17T12:05:36Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/03/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/OIwM5TFvfhJqrpCoWC5sCxb0SD0=/0x0:1181x1575/703x937/media/img/issues/2026/02/17/0326_Cover_JA/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/3zLgACwumWwfyDgFCfPDw10l95E=/0x0:1181x1575/352x469/media/img/issues/2026/02/17/0326_Cover_JA/original.jpg",
+    "coverStories": [
+      {
+        "title": "America Isn\u2019t Ready for What AI Will Do to Jobs",
+        "url": "https://www.theatlantic.com/magazine/2026/03/ai-economy-labor-market-transformation/685731/",
+        "dek": "Does anyone have a plan for what happens next?",
+        "authors": [
+          "Josh Tyrangiel"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/_G8AVMJ5EEDnGm0CKr1LY4zTCS0=/0x0:1181x1575/1086x1447/media/img/issues/2026/02/17/0326_Cover_JA/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 147309,
+    "issueTheme": null,
+    "cover": "/covers/202603.jpg"
+  },
+  {
+    "id": "202602",
+    "year": 2026,
+    "month": 2,
+    "issue": "February 2026",
+    "datePublished": "2026-01-13T12:02:45Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/02/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/hVq-QFAvt2I3M3LUHJyBCh9FSYw=/0x0:2363x3150/703x937/media/img/issues/2026/01/12/0226_Cover/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/gC3aKDbD8p9HvDfhrYDEWegEQZo=/0x0:2363x3150/352x469/media/img/issues/2026/01/12/0226_Cover/original.png",
+    "coverStories": [
+      {
+        "title": "Donald Trump Wants You to Forget This Happened",
+        "url": "https://www.theatlantic.com/magazine/2026/02/jan-6-ex-nypd-officer-capitol-police-attack/685325/",
+        "dek": "January 6, five years later",
+        "authors": [
+          "Jamie Thompson"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/aapPUXr6EKF0Th5X4XBiHZUG78U=/0x0:2363x3150/1086x1447/media/img/issues/2026/01/12/0226_Cover/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 1269276,
+    "issueTheme": null,
+    "cover": "/covers/202602.png"
+  },
+  {
+    "id": "202601",
+    "year": 2026,
+    "month": 1,
+    "issue": "January 2026",
+    "datePublished": "2025-12-09T12:12:38Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2026/01/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/EKwZWYR1tfedxP9u7-U7MPHfU50=/0x0:2363x3150/703x937/media/img/issues/2025/12/09/0126_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/TfijmOXsXLCXFhY2LROa5Iid7zk=/0x0:2363x3150/352x469/media/img/issues/2025/12/09/0126_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Why Is Robert F. Kennedy Jr. So Convinced He\u2019s Right?",
+        "url": "https://www.theatlantic.com/magazine/2026/01/rfk-jr-public-health-science/684948/",
+        "dek": "How an outsider, once ignored by the public-health establishment, became the most powerful man in science",
+        "authors": [
+          "Michael Scherer"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/9xb6H3s72E97ZgamPxqOkzlKjkY=/0x0:2363x3150/1086x1447/media/img/issues/2025/12/09/0126_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 132139,
+    "issueTheme": null,
+    "cover": "/covers/202601.jpg"
+  },
+  {
+    "id": "202512",
+    "year": 2025,
+    "month": 12,
+    "issue": "December 2025",
+    "datePublished": "2025-11-11T12:02:58Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/12/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/jOuRJRkkl-InTNk7g41I6RvOmxw=/0x0:2363x3150/703x937/media/img/issues/2025/11/10/1225_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Z56joCVOPKeh-k8qsKhR5Uj-5YQ=/0x0:2363x3150/352x469/media/img/issues/2025/11/10/1225_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Donald Trump\u2019s Plan to Subvert the Midterms Is Already Under Way",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/12/2026-midterms-trump-threat/684615/",
+        "dek": "Our election system is reaching a breaking point.",
+        "authors": [
+          "David A. Graham"
+        ]
+      },
+      {
+        "title": "President for Life",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/12/trump-third-term-authoritarianism/684616/",
+        "dek": "Donald Trump is trying to amass the powers of a king.",
+        "authors": [
+          "J. Michael Luttig"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/CGSL2f7b4wikVrWi-QUB2pr4xp8=/0x0:2363x3150/1086x1447/media/img/issues/2025/11/10/1225_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 215294,
+    "issueTheme": null,
+    "cover": "/covers/202512.jpg"
+  },
+  {
+    "id": "202511",
+    "year": 2025,
+    "month": 11,
+    "issue": "November 2025",
+    "datePublished": "2025-10-14T09:54:24Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/11/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/3NsdMZjJQ43ZAK8pGvAqqC6Gdi4=/0x0:2363x3150/703x937/media/img/issues/2025/10/13/1125_Cover/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/oyyrNNS4mqTjV5AEc0WDj0y8iCg=/0x0:2363x3150/352x469/media/img/issues/2025/10/13/1125_Cover/original.png",
+    "coverStories": [
+      {
+        "title": "The Unfinished Revolution",
+        "url": "https://www.theatlantic.com/category/unfinished-revolution/",
+        "dek": "<em>The Atlantic </em>examines the founding of the United States and brings the nation\u2019s history to bear on its present\u2014and its future.",
+        "authors": []
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Hy5SYRJv2TU5Sf7qdTRPZ_yX-lE=/0x0:2363x3150/1086x1447/media/img/issues/2025/10/13/1125_Cover/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 1116090,
+    "issueTheme": null,
+    "cover": "/covers/202511.png"
+  },
+  {
+    "id": "202510",
+    "year": 2025,
+    "month": 10,
+    "issue": "October 2025",
+    "datePublished": "2025-09-16T11:17:13Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/10/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/AqxhTH8QsLIJIFlzEqJWSIhWL_A=/0x0:2363x3150/703x937/media/img/issues/2025/09/15/1025Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/FJI8lsw3WiONw-ALe1lqdpOkbXo=/0x0:2363x3150/352x469/media/img/issues/2025/09/15/1025Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "How Originalism Killed the Constitution",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/10/constitutional-originalism-amendment/683961/",
+        "dek": "A radical legal philosophy has undermined the process of constitutional evolution.",
+        "authors": [
+          "Jill Lepore"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/3t4I6cSKXU7JrHCFaJxHqq4Esbg=/0x0:2363x3150/1086x1447/media/img/issues/2025/09/15/1025Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 163526,
+    "issueTheme": null,
+    "cover": "/covers/202510.jpg"
+  },
+  {
+    "id": "202509",
+    "year": 2025,
+    "month": 9,
+    "issue": "September 2025",
+    "datePublished": "2025-08-12T11:08:05Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/09/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/q_nMjHX42_nu8R81eNXZpqvR8eg=/0x0:2363x3150/703x937/media/img/issues/2025/08/11/0925_Cover_300-1/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/1nfKR2M47J8KVA6aqFD3lKNWrzE=/0x0:2363x3150/352x469/media/img/issues/2025/08/11/0925_Cover_300-1/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Most Nihilistic Conflict on Earth",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/09/sudan-civil-war-humanitarian-crisis/683563/",
+        "dek": "Sudan\u2019s devastating civil war shows what will replace the liberal order: anarchy and greed.",
+        "authors": [
+          "Anne Applebaum"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/7AJqHWiK0uGoX7nqH80pj09WcVA=/0x0:2363x3150/1086x1447/media/img/issues/2025/08/11/0925_Cover_300-1/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 209202,
+    "issueTheme": null,
+    "cover": "/covers/202509.jpg"
+  },
+  {
+    "id": "202508",
+    "year": 2025,
+    "month": 8,
+    "issue": "August 2025",
+    "datePublished": "2025-07-15T11:17:28Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/08/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/O5p5DAk1Gra5ZF4RhVIy9oFMr2I=/0x0:2000x2666/703x937/media/img/issues/2025/06/27/0825_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/AFmIRSDxlhlZ5SxnKsTpqVA2GIo=/0x0:2000x2666/352x469/media/img/issues/2025/06/27/0825_Cover/original.jpg",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/BcEt7vjdxgBawIRV2jQfjWVi6x8=/0x0:2000x2666/1086x1447/media/img/issues/2025/06/27/0825_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 97362,
+    "issueTheme": "Eighty Years on the Edge",
+    "cover": "/covers/202508.jpg"
+  },
+  {
+    "id": "202507",
+    "year": 2025,
+    "month": 7,
+    "issue": "July 2025",
+    "datePublished": "2025-06-17T11:31:02Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/07/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/B60VLJeGoDBZVxnoSZV9B9a7Q5w=/0x0:2363x3150/703x937/media/img/issues/2025/06/17/0725_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/03XAiSsB0O6_cuqHIv7_CPCQpHg=/0x0:2363x3150/352x469/media/img/issues/2025/06/17/0725_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Inside America\u2019s Death Chambers",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/07/death-row-executions-witness/682891/",
+        "dek": "What years of witnessing executions taught me about sin, mercy, and the possibility of redemption",
+        "authors": [
+          "Elizabeth Bruenig"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/kCPCjQBrDiSLQZKTYguVSLAC4m4=/0x0:2363x3150/1086x1447/media/img/issues/2025/06/17/0725_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 136184,
+    "issueTheme": null,
+    "cover": "/covers/202507.jpg"
+  },
+  {
+    "id": "202506",
+    "year": 2025,
+    "month": 6,
+    "issue": "June 2025",
+    "datePublished": "2025-05-20T11:02:23Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/06/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/LbXc_jGGbKphEwvnvVW03z2Dlas=/0x0:2363x3150/703x937/media/img/issues/2025/05/05/0625_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/ceUDI1RTV1048bHz5U7xAcslyB8=/0x0:2363x3150/352x469/media/img/issues/2025/05/05/0625_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "\u2018I Run the Country and the World\u2019",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/06/trump-second-term-comeback/682573/",
+        "dek": "Donald Trump believes he\u2019s invincible. But the cracks are beginning to show.",
+        "authors": [
+          "Ashley Parker",
+          "Michael Scherer"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/69THneOOaYSl6jhx3mT70SNijOA=/0x0:2363x3150/1086x1447/media/img/issues/2025/05/05/0625_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 143178,
+    "issueTheme": null,
+    "cover": "/covers/202506.jpg"
+  },
+  {
+    "id": "202505",
+    "year": 2025,
+    "month": 5,
+    "issue": "May 2025",
+    "datePublished": "2025-04-15T11:50:26Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/05/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/UW_gqBsyWh9_yKetc26JxcV1FR4=/0x0:2438x3225/703x931/media/img/issues/2025/04/11/0525_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Aq6ojLkSXxc_m0DEoohgPHUn99Y=/0x0:2438x3225/352x466/media/img/issues/2025/04/11/0525_Cover/original.jpg",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/5CIkgWWN6-bDFdHp80OxVb-u3Eg=/0x0:2438x3225/1086x1437/media/img/issues/2025/04/11/0525_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 137378,
+    "issueTheme": "It\u2019s Later Than You Think",
+    "cover": "/covers/202505.jpg"
+  },
+  {
+    "id": "202504",
+    "year": 2025,
+    "month": 4,
+    "issue": "April 2025",
+    "datePublished": "2025-03-18T11:01:49Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/04/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/w-4g_BVUniZ4Q_lLeSexnoFLIpY=/0x0:2363x3150/703x937/media/img/issues/2025/03/12/0425_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/hiuTQPAWNHdoxgFfq-dZBqKqYq8=/0x0:2363x3150/352x469/media/img/issues/2025/03/12/0425_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Growing Up Murdoch",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/04/rupert-murdoch-family-succession-james-murdoch/681675/",
+        "dek": "James Murdoch on mind games, sibling rivalry, and the war for the family media empire",
+        "authors": [
+          "McKay Coppins"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/o22xjnMbEu0nOps_FulAoJqqkPo=/0x0:2363x3150/1086x1447/media/img/issues/2025/03/12/0425_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 92902,
+    "issueTheme": null,
+    "cover": "/covers/202504.jpg"
+  },
+  {
+    "id": "202503",
+    "year": 2025,
+    "month": 3,
+    "issue": "March 2025",
+    "datePublished": "2025-02-18T12:14:37Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/03/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/3XS93v3nhY9BNmLiNE_1ooQ8E4w=/0x0:2363x3150/703x937/media/img/issues/2025/02/17/0325_Cover_Stuck/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/1L2QHtgXoxfFH9rPOpGvNfIy5Z4=/0x0:2363x3150/352x469/media/img/issues/2025/02/17/0325_Cover_Stuck/original.jpg",
+    "coverStories": [
+      {
+        "title": "How Progressives Froze the American Dream",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/03/american-geographic-social-mobility/681439/",
+        "dek": "The U.S. was once the world\u2019s most geographically mobile society. Now we\u2019re stuck in place\u2014and that\u2019s a very big problem.",
+        "authors": [
+          "Yoni Appelbaum"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/yij6ZjzNKy9PHs66ujqGNmW4v44=/0x0:2363x3150/1086x1447/media/img/issues/2025/02/17/0325_Cover_Stuck/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 94277,
+    "issueTheme": null,
+    "cover": "/covers/202503.jpg"
+  },
+  {
+    "id": "202502",
+    "year": 2025,
+    "month": 2,
+    "issue": "February 2025",
+    "datePublished": "2025-01-14T12:11:27Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/02/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/gPRZdj0ixEc-VLaNQWdLdS4uTgc=/0x0:2363x3150/703x937/media/img/issues/2025/01/13/0225_Cover_300/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/zRzfBx0mBifZOOZxSASMzT4KEEQ=/0x0:2363x3150/352x469/media/img/issues/2025/01/13/0225_Cover_300/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Anti-Social Century",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/02/american-loneliness-personality-politics/681091/",
+        "dek": "Americans are now spending more time alone than ever. It\u2019s changing our personalities, our politics, and even our relationship to reality.",
+        "authors": [
+          "Derek Thompson"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/H5k5yk8R1tAnRZX0wRm6GDTSEMo=/0x0:2363x3150/1086x1447/media/img/issues/2025/01/13/0225_Cover_300/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 49188,
+    "issueTheme": null,
+    "cover": "/covers/202502.jpg"
+  },
+  {
+    "id": "202501",
+    "year": 2025,
+    "month": 1,
+    "issue": "January 2025",
+    "datePublished": "2024-12-17T12:03:28Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2025/01/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/Ka--7FvipWx_knB6SfbfEcfphsY=/0x0:2363x3150/703x937/media/img/issues/2024/12/17/0125_Cover_JA/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/pXAxxL_gWJjnj-9KiV5HFGn7X5c=/0x0:2363x3150/352x469/media/img/issues/2024/12/17/0125_Cover_JA/original.jpg",
+    "coverStories": [
+      {
+        "title": "Walk on Air Against Your Better Judgment",
+        "url": "https://www.theatlantic.com/magazine/archive/2025/01/poet-seamus-heaney-berkeley/680757/",
+        "dek": "What Seamus Heaney gave me",
+        "authors": [
+          "Caitlin Flanagan"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/xxOkPSvR1P2k9IUww6w1ppk_x1Q=/0x0:2363x3150/1086x1447/media/img/issues/2024/12/17/0125_Cover_JA/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 140639,
+    "issueTheme": null,
+    "cover": "/covers/202501.jpg"
+  },
+  {
+    "id": "202412",
+    "year": 2024,
+    "month": 12,
+    "issue": "December 2024",
+    "datePublished": "2024-11-19T12:04:07Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/12/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/wagcjiiCQCZJm0adcUN_TYNvaQk=/0x0:2363x3150/703x937/media/img/issues/2024/11/18/1224_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/6aSO-_YkVMTJfwZYzKfRF1NixYo=/0x0:2363x3150/352x469/media/img/issues/2024/11/18/1224_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "How the Ivy League Broke America",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/12/meritocracy-college-admissions-social-economic-segregation/680392/",
+        "dek": "The meritocracy isn\u2019t working. We need something new.",
+        "authors": [
+          "David Brooks"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/g64dhd_ofpvQCo9jIPf1mM3cd_s=/0x0:2363x3150/1086x1447/media/img/issues/2024/11/18/1224_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 133188,
+    "issueTheme": null,
+    "cover": "/covers/202412.jpg"
+  },
+  {
+    "id": "202411",
+    "year": 2024,
+    "month": 11,
+    "issue": "November 2024",
+    "datePublished": "2024-10-15T11:11:09Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/11/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/NuyqR9DGk6YSIh_CYv6wVA8YKH0=/0x0:2363x3150/703x937/media/img/issues/2024/10/15/1124_Cover_Web/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/eoMSn3Klg17yeo1oQJ9S8glAoP4=/0x0:2363x3150/352x469/media/img/issues/2024/10/15/1124_Cover_Web/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Moment of Truth",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/11/george-washington-nightmare-donald-trump/679946/",
+        "dek": "The reelection of Donald Trump would mark the end of George Washington\u2019s vision for the presidency\u2014and the United States.",
+        "authors": [
+          "Tom Nichols"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/ClVd9YqU-PIdpIslylaHTdUDPm8=/0x0:2363x3150/1086x1447/media/img/issues/2024/10/15/1124_Cover_Web/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 229208,
+    "issueTheme": null,
+    "cover": "/covers/202411.jpg"
+  },
+  {
+    "id": "202410",
+    "year": 2024,
+    "month": 10,
+    "issue": "October 2024",
+    "datePublished": "2024-09-17T11:03:31Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/10/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/oUY1klWGXnKymz0GnxG-FmEx4Gg=/0x0:1181x1575/703x937/media/img/issues/2024/09/13/1024_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/cdYQwTX11RZwrfWv1nDPXO1W09o=/0x0:1181x1575/352x469/media/img/issues/2024/09/13/1024_Cover/original.jpg",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/MeWIwPkCKLDv5L4BjE4M7qsj5N0=/0x0:1181x1575/1086x1447/media/img/issues/2024/09/13/1024_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 158070,
+    "issueTheme": null,
+    "cover": "/covers/202410.jpg"
+  },
+  {
+    "id": "202409",
+    "year": 2024,
+    "month": 9,
+    "issue": "September 2024",
+    "datePublished": "2024-08-13T11:01:15Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/09/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/4Aog5K9RaF5jvTTncMgEeWCKs8U=/0x0:2363x3150/703x937/media/img/issues/2024/08/11/0924_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/lQQGJwfF-YchrObufP25gvzrl6c=/0x0:2363x3150/352x469/media/img/issues/2024/08/11/0924_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Seventy Miles in Hell",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/09/darien-gap-route-migrants-panama/679156/",
+        "dek": "The Dari\u00e9n Gap was once considered impassable. Now hundreds of thousands of migrants are risking treacherous terrain, violence, hunger, and disease to travel through the jungle to the United States.",
+        "authors": [
+          "Caitlin Dickerson"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/P2O62U9taxsRMV0AS9XqBm0Mhes=/0x0:2363x3150/1086x1447/media/img/issues/2024/08/11/0924_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 138445,
+    "issueTheme": null,
+    "cover": "/covers/202409.jpg"
+  },
+  {
+    "id": "202407",
+    "year": 2024,
+    "month": 7,
+    "issue": "July/August 2024",
+    "datePublished": "2024-06-18T11:12:23Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/07/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/c6GcqyaNjTqTGsrWTIrbepgc5BU=/0x0:1600x2133/703x937/media/img/issues/2024/06/17/0724_Cover/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/vuYSh_HkI0Luw0n-azzaahS9zaU=/0x0:1600x2133/352x469/media/img/issues/2024/06/17/0724_Cover/original.png",
+    "coverStories": [
+      {
+        "title": "What Will Become of American Civilization?",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/07/phoenix-climate-drought-republican-politics/678494/",
+        "dek": "Conspiracism and hyper-partisanship in the nation\u2019s fastest-growing city",
+        "authors": [
+          "George Packer"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/x3adjd3Ww40pfer5BoNuGXAV1BQ=/0x0:1600x2133/1086x1447/media/img/issues/2024/06/17/0724_Cover/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 1223576,
+    "issueTheme": null,
+    "cover": "/covers/202407.png"
+  },
+  {
+    "id": "202406",
+    "year": 2024,
+    "month": 6,
+    "issue": "June 2024",
+    "datePublished": "2024-05-21T11:30:34Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/06/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/cO6Pckmu4Xzlre8QN4YmjkepWWI=/0x0:2363x3150/703x937/media/img/issues/2024/05/21/0624_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/FGR0zmoakAeRs_i58OtXARjoqfQ=/0x0:2363x3150/352x469/media/img/issues/2024/05/21/0624_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "The New Propaganda War",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/06/china-russia-republican-party-relations/678271/",
+        "dek": "Autocrats in China, Russia, and elsewhere are now making common cause with MAGA Republicans to discredit liberalism and freedom around the world.",
+        "authors": [
+          "Anne Applebaum"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/yyrTR6EKQbthwxIzA1JlYHn5pCo=/0x0:2363x3150/1086x1447/media/img/issues/2024/05/21/0624_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 206190,
+    "issueTheme": null,
+    "cover": "/covers/202406.jpg"
+  },
+  {
+    "id": "202405",
+    "year": 2024,
+    "month": 5,
+    "issue": "May 2024",
+    "datePublished": "2024-04-16T12:13:59Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/05/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/zYxlDhh5FEQUDOijj1Tfx_2q4Yc=/0x0:2363x3150/703x937/media/img/issues/2024/04/15/0524_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/0Itmf4N8H6VSbRAOWw2bdr-LwFQ=/0x0:2363x3150/352x469/media/img/issues/2024/04/15/0524_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "\u2018This Will Finish Us\u2019",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/05/maasai-tribe-tanzania-forced-land-evictions-serengeti/677835/",
+        "dek": "How Gulf princes, the safari industry, and conservation groups are displacing the Maasai from the last of their Serengeti homeland",
+        "authors": [
+          "Stephanie McCrummen"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/sFimHc1Hw5NQr2xtc5qaZoB8S4U=/0x0:2363x3150/1086x1447/media/img/issues/2024/04/15/0524_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 111495,
+    "issueTheme": null,
+    "cover": "/covers/202405.jpg"
+  },
+  {
+    "id": "202404",
+    "year": 2024,
+    "month": 4,
+    "issue": "April 2024",
+    "datePublished": "2024-03-12T11:36:23Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/04/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/Kjj0ysw8A0PFhc5sBqgNabIJ5Bg=/0x0:2363x3150/703x937/media/img/issues/2024/03/05/0424_Cover/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/hrge3UH1349AEeBQ6BsQ3yPXFFQ=/0x0:2363x3150/352x469/media/img/issues/2024/03/05/0424_Cover/original.png",
+    "coverStories": [
+      {
+        "title": "The Golden Age of American Jews Is Ending",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/04/us-anti-semitism-jewish-american-safety/677469/",
+        "dek": "Anti-Semitism on the right and the left threatens to bring to a close an unprecedented period of safety and prosperity for Jewish Americans\u2014and demolish the liberal order they helped establish.",
+        "authors": [
+          "Franklin Foer"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/2JwAwseXq3FysXLunH8F6yXxVWY=/0x0:2363x3150/1086x1447/media/img/issues/2024/03/05/0424_Cover/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 821423,
+    "issueTheme": null,
+    "cover": "/covers/202404.png"
+  },
+  {
+    "id": "202403",
+    "year": 2024,
+    "month": 3,
+    "issue": "March 2024",
+    "datePublished": "2024-02-13T14:51:26Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/03/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/91zQA8HpQO46NGRtDSNcffcOJt8=/0x0:2363x3150/703x937/media/img/issues/2024/02/01/0324_Cover/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/dIRVSxqgi9Vdr6gZpmPJ_Ifsmjk=/0x0:2363x3150/352x469/media/img/issues/2024/02/01/0324_Cover/original.png",
+    "coverStories": [
+      {
+        "title": "To Stop a Shooter",
+        "url": "https://www.theatlantic.com/magazine/archive/2024/03/parkland-shooter-scot-peterson-coward-broward/677170/",
+        "dek": "Why would an armed officer stand by as a school shooting unfolds?",
+        "authors": [
+          "Jamie Thompson"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Ehg9PVhQrLIWBRFpAo_PqJg-gxc=/0x0:2363x3150/1086x1447/media/img/issues/2024/02/01/0324_Cover/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 944341,
+    "issueTheme": null,
+    "cover": "/covers/202403.png"
+  },
+  {
+    "id": "202401",
+    "year": 2024,
+    "month": 1,
+    "issue": "January/February 2024",
+    "datePublished": "2023-12-19T12:06:14Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2024/01/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/Deb0VcS0raFkGmIwo_DYWVFIYMs=/0x0:2363x3150/703x937/media/img/issues/2023/12/18/0124_Cover-1/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/pGUSBkwvdfd5-4MtgXEBuXjgrS4=/0x0:2363x3150/352x469/media/img/issues/2023/12/18/0124_Cover-1/original.png",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/7EAfuG6CVNW-79Lzy0kY4Ww69Fo=/0x0:2363x3150/1086x1447/media/img/issues/2023/12/18/0124_Cover-1/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 295180,
+    "issueTheme": "If Trump Wins",
+    "cover": "/covers/202401.png"
+  },
+  {
+    "id": "202312",
+    "year": 2023,
+    "month": 12,
+    "issue": "December 2023",
+    "datePublished": "2023-11-21T12:03:45Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/12/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/-hj6WenrQYQeZk7I3ElVWjkGv2A=/0x0:2363x3150/703x937/media/img/issues/2023/11/13/1223_Cover3/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/HwOsSeiQncc6JqUBNUkrdtEvv4U=/0x0:2363x3150/352x469/media/img/issues/2023/11/13/1223_Cover3/original.png",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/O-u-hU3hRPHrLZ_Hb1OfI8SE-BQ=/0x0:2363x3150/1086x1447/media/img/issues/2023/11/13/1223_Cover3/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 168948,
+    "issueTheme": "On Reconstruction",
+    "cover": "/covers/202312.png"
+  },
+  {
+    "id": "202311",
+    "year": 2023,
+    "month": 11,
+    "issue": "November 2023",
+    "datePublished": "2023-10-17T11:02:00Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/11/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/tcQEUHhTBEQ2SNM0sQmOIYWkDrM=/0x0:2363x3150/703x937/media/img/issues/2023/10/16/1123_CoverFULL/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/7YrKIRlUu_SflHIMPbzlrPnd0aI=/0x0:2363x3150/352x469/media/img/issues/2023/10/16/1123_CoverFULL/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Patriot",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/11/general-mark-milley-trump-coup/675375/",
+        "dek": "How General Mark Milley protected the Constitution from Donald Trump",
+        "authors": [
+          "Jeffrey Goldberg"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/CavCQ6i4pM4WrJxhR-9n7tcolpw=/0x0:2363x3150/1086x1447/media/img/issues/2023/10/16/1123_CoverFULL/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 136269,
+    "issueTheme": null,
+    "cover": "/covers/202311.jpg"
+  },
+  {
+    "id": "202310",
+    "year": 2023,
+    "month": 10,
+    "issue": "October 2023",
+    "datePublished": "2023-09-19T11:02:21Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/10/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/JXJZ0JKXx2puBNkz2RXtu56_3Ew=/0x0:2363x3150/703x937/media/img/issues/2023/09/18/1023_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/hfejuyqkmzo0dzp-zZM_2uOvT4g=/0x0:2363x3150/352x469/media/img/issues/2023/09/18/1023_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Jenisha From Kentucky",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/10/family-addiction-drugs-kentucky-new-york/675113/",
+        "dek": "I came to New York sure of one thing\u2014that no one could ever know my past.",
+        "authors": [
+          "Jenisha Watts"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/TemcRjG_CckjSPXeRqXRWRKQLnU=/0x0:2363x3150/1086x1447/media/img/issues/2023/09/18/1023_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 137051,
+    "issueTheme": null,
+    "cover": "/covers/202310.jpg"
+  },
+  {
+    "id": "202309",
+    "year": 2023,
+    "month": 9,
+    "issue": "September 2023",
+    "datePublished": "2023-08-15T11:04:43Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/09/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/lgUP4A15j8DL6p4GSYBbJDNzVfY=/0x0:2363x3150/703x937/media/img/issues/2023/08/15/0923_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/2TaxeOjuNhFe5Xop70RYhpi6wF4=/0x0:2363x3150/352x469/media/img/issues/2023/08/15/0923_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Ones We Sent Away",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/09/disabled-children-institutionalization-history/674763/",
+        "dek": "I thought my mother was an only child. I was wrong.",
+        "authors": [
+          "Jennifer Senior"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/nN6v1zOYBTmxTlI4SpvIIcUkLso=/0x0:2363x3150/1086x1447/media/img/issues/2023/08/15/0923_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 164551,
+    "issueTheme": null,
+    "cover": "/covers/202309.jpg"
+  },
+  {
+    "id": "202307",
+    "year": 2023,
+    "month": 7,
+    "issue": "July/August 2023",
+    "datePublished": "2023-06-20T11:36:17Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/07/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/Vy6XnXn40YAqG4bKRaCXozaSOlQ=/0x0:2000x2666/703x937/media/img/issues/2023/06/20/0723_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/PSoduOm5MxF99TJPMsuFoOCDVuQ=/0x0:2000x2666/352x469/media/img/issues/2023/06/20/0723_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Moneyball Broke Baseball",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/07/baseball-mlb-rule-changes-2023-pitch-clock/674291/",
+        "dek": "But now the whiz kids who nearly ruined the national pastime have returned to save it.",
+        "authors": [
+          "Mark Leibovich"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/r69WNIxGAot6ogp7-aq9Q99c_N4=/0x0:2000x2666/1086x1447/media/img/issues/2023/06/20/0723_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 224747,
+    "issueTheme": null,
+    "cover": "/covers/202307.jpg"
+  },
+  {
+    "id": "202306",
+    "year": 2023,
+    "month": 6,
+    "issue": "June 2023",
+    "datePublished": "2023-05-16T11:02:21Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/06/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/YoO8_4NdPl4Vi9BWxDDFdUcg9pc=/0x0:2363x3150/703x937/media/img/issues/2023/05/01/0623_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Kjh_9lFQJSBWQprC_zmbW00v7dE=/0x0:2363x3150/352x469/media/img/issues/2023/05/01/0623_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Counteroffensive",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/06/counteroffensive-ukraine-zelensky-crimea/673781/",
+        "dek": "The future of the democratic world will be determined by whether the Ukrainian military can break a stalemate with Russia and drive the country backwards\u2014perhaps even out of Crimea for good.",
+        "authors": [
+          "Anne Applebaum",
+          "Jeffrey Goldberg"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Gr264gZYIJVPyLYwP-qElLSdjDw=/0x0:2363x3150/1086x1447/media/img/issues/2023/05/01/0623_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 100364,
+    "issueTheme": null,
+    "cover": "/covers/202306.jpg"
+  },
+  {
+    "id": "202305",
+    "year": 2023,
+    "month": 5,
+    "issue": "May 2023",
+    "datePublished": "2023-04-18T11:01:18Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/05/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/gvmsrUWZDdx2aPFat2y3Wl6FNnI=/0x0:2363x3150/703x937/media/img/issues/2023/04/17/0523_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/3KfaPfnx3LqdDQYRcKLfgbwyMfc=/0x0:2363x3150/352x469/media/img/issues/2023/04/17/0523_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "American Madness",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/05/american-madness-schizophrenia-mental-illness/673490/",
+        "dek": "Thousands of people with severe mental illness have been failed by a dysfunctional system. My friend Michael was one of them. Twenty-five years ago, he killed the person he loved most.",
+        "authors": [
+          "Jonathan Rosen"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/uyOKHlEx45kCmyBZvRBLOOAtzqs=/0x0:2363x3150/1086x1447/media/img/issues/2023/04/17/0523_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 76899,
+    "issueTheme": null,
+    "cover": "/covers/202305.jpg"
+  },
+  {
+    "id": "202304",
+    "year": 2023,
+    "month": 4,
+    "issue": "April 2023",
+    "datePublished": "2023-03-14T11:01:48Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/04/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/rYgiEcP6Njqli1czZNNnT1WNcOI=/0x0:2363x3150/703x937/media/img/issues/2023/03/14/0423_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/5jRlOL8Wx3aok_Ias0pTy9rshr4=/0x0:2363x3150/352x469/media/img/issues/2023/03/14/0423_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "The New Anarchy",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/04/us-extremism-portland-george-floyd-protests-january-6/673088/",
+        "dek": "America faces a type of extremist violence it does not know how to stop.",
+        "authors": [
+          "Adrienne LaFrance"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/0tHHeUB2PXwXtLQturOv4tcxip8=/0x0:2363x3150/1086x1447/media/img/issues/2023/03/14/0423_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 219297,
+    "issueTheme": null,
+    "cover": "/covers/202304.jpg"
+  },
+  {
+    "id": "202303",
+    "year": 2023,
+    "month": 3,
+    "issue": "March 2023",
+    "datePublished": "2023-02-14T11:04:25Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/03/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/TjziMCftF8BHtsnF1JYrmAQhKQQ=/0x0:2438x3225/703x931/media/img/issues/2023/02/14/0323_Cover_new/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Jd-nRE-GLHovzbmKX2RiTspjgAo=/0x0:2438x3225/352x466/media/img/issues/2023/02/14/0323_Cover_new/original.jpg",
+    "coverStories": [
+      {
+        "title": "We\u2019ve Lost the Plot",
+        "url": "https://www.theatlantic.com/magazine/archive/2023/03/tv-politics-entertainment-metaverse/672773/",
+        "dek": "Our constant need for entertainment has blurred the line between fiction and reality\u2014on television, in American politics, and in our everyday lives.",
+        "authors": [
+          "Megan Garber"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Vx15whyk8W2fj7Y7QtSvWNAtv5A=/0x0:2438x3225/1086x1437/media/img/issues/2023/02/14/0323_Cover_new/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 130201,
+    "issueTheme": null,
+    "cover": "/covers/202303.jpg"
+  },
+  {
+    "id": "202301",
+    "year": 2023,
+    "month": 1,
+    "issue": "January/February 2023",
+    "datePublished": "2022-12-20T11:03:56Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2023/01/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/6QxZOQ7-kAMQNVR3h4Hi_HaeK_4=/0x0:2363x3150/703x937/media/img/issues/2022/12/16/0123_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/kzBDhBV0tKtEd3W7sga9GcO8FPc=/0x0:2363x3150/352x469/media/img/issues/2022/12/16/0123_Cover/original.jpg",
+    "coverStories": [],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/rVDJmRd4Z65BZBD4-Uo1sd4LBYs=/0x0:2363x3150/1086x1447/media/img/issues/2022/12/16/0123_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 119119,
+    "issueTheme": "The Progress Report",
+    "cover": "/covers/202301.jpg"
+  },
+  {
+    "id": "202212",
+    "year": 2022,
+    "month": 12,
+    "issue": "December 2022",
+    "datePublished": "2022-11-22T11:02:56Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/12/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/zg_M1w_1wbKGUif1N0gXMXxB5cM=/0x0:2363x3150/703x937/media/img/issues/2022/11/14/1222_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/lJVRfv_GrKdwzCFq3vMyuS1U0rA=/0x0:2363x3150/352x469/media/img/issues/2022/11/14/1222_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Monuments to the Unthinkable",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/12/holocaust-remembrance-lessons-america/671893/",
+        "dek": "America still can\u2019t figure out how to memorialize the sins of our history. What can we learn from Germany?",
+        "authors": [
+          "Clint Smith"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/-kSa-Os8JpGlF7lNVzr9q9MnNRs=/0x0:2363x3150/1086x1447/media/img/issues/2022/11/14/1222_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 342469,
+    "issueTheme": null,
+    "cover": "/covers/202212.jpg"
+  },
+  {
+    "id": "202211",
+    "year": 2022,
+    "month": 11,
+    "issue": "November 2022",
+    "datePublished": "2022-10-18T10:03:48Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/11/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/6RvpF6PjH-hDBd23-knXCiAkYoA=/0x0:2363x3150/703x937/media/img/issues/2022/10/13/1122_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Mx0YhCJOcQTbMwq8XwN5HV1OrDA=/0x0:2363x3150/352x469/media/img/issues/2022/10/13/1122_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "This Is Not Justice",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/11/campaign-to-free-incarcerated-philadelphia-teenager-sixth-amendment/671527/",
+        "dek": "A Philadelphia teenager and the empty promise of the Sixth Amendment",
+        "authors": [
+          "Jake Tapper"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/RHm9neuWj944vmL9FHDPCc96W0w=/0x0:2363x3150/1086x1447/media/img/issues/2022/10/13/1122_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 233505,
+    "issueTheme": null,
+    "cover": "/covers/202211.jpg"
+  },
+  {
+    "id": "202210",
+    "year": 2022,
+    "month": 10,
+    "issue": "October 2022",
+    "datePublished": "2022-09-20T10:03:24Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/10/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/zGrsDPrxwXzYPi32RwKTW7x_xvE=/0x0:2363x3150/703x937/media/img/issues/2022/09/09/1022_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/oJb_B8npM5fh42Y6Ww1GhKLLvM8=/0x0:2363x3150/352x469/media/img/issues/2022/09/09/1022_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Ukrainians Are Defending the Values Americans Claim to Hold",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/10/ukraine-invasion-civilian-volunteers-survival/671241/",
+        "dek": "\u201cYou cannot just remain silent, you cannot remain still. You have to do something.\u201d",
+        "authors": [
+          "George Packer"
+        ]
+      },
+      {
+        "title": "\u2018Lukashenko Is Easier to Unseat Than Putin\u2019",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/10/belarus-volunteers-fighting-ukraine-invasion/671242/",
+        "dek": "A band of Belarusians is resisting the threat of a neo-Soviet empire by taking up arms in Ukraine.",
+        "authors": [
+          "Anne Applebaum"
+        ]
+      },
+      {
+        "title": "The Man Who Chased History",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/10/journalist-sergii-leshchenko-zelensky-ukraine-invasion/671243/",
+        "dek": "The Ukrainian journalist Sergii Leshchenko has a nose for a story and a knack for being in the right place at the right time. I wanted to see the war through his eyes.<span> </span>",
+        "authors": [
+          "Franklin Foer"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/nyEYzQjrexNcPjlSston1pNCgDQ=/0x0:2363x3150/1086x1447/media/img/issues/2022/09/09/1022_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 120237,
+    "issueTheme": null,
+    "cover": "/covers/202210.jpg"
+  },
+  {
+    "id": "202209",
+    "year": 2022,
+    "month": 9,
+    "issue": "September 2022",
+    "datePublished": "2022-08-16T10:03:34Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/09/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/2Hed00EnBtDD9nCKqonsKGuunRc=/0x0:2363x3150/703x937/media/img/issues/2022/08/07/0922_Cover-1/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/VGNILhe9Mud91w6k_1G2L_ezQ4o=/0x0:2363x3150/352x469/media/img/issues/2022/08/07/0922_Cover-1/original.png",
+    "coverStories": [
+      {
+        "title": "An American Catastrophe",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/09/trump-administration-family-separation-policy-immigration/670604/",
+        "dek": "The secret history of the U.S. government\u2019s family-separation policy",
+        "authors": [
+          "Caitlin Dickerson"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/VQuSfVt7rr4tuk0twcWXAeX5PC4=/0x0:2363x3150/1086x1447/media/img/issues/2022/08/07/0922_Cover-1/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 182257,
+    "issueTheme": null,
+    "cover": "/covers/202209.png"
+  },
+  {
+    "id": "202207",
+    "year": 2022,
+    "month": 7,
+    "issue": "July/August 2022",
+    "datePublished": "2022-06-21T10:03:07Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/07/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/5cC0zj_NfMUHJX1GZARqkeyJrdw=/0x0:2363x3150/703x937/media/img/issues/2022/06/15/0722_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/IMbTt8Si-qwifKikByrFvPAXoVM=/0x0:2363x3150/352x469/media/img/issues/2022/06/15/0722_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "How Animals Perceive the World",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/07/light-noise-pollution-animal-sensory-impact/638446/",
+        "dek": "Every creature lives within its own sensory bubble, but only humans have the capacity to appreciate the experiences of other species. What we\u2019ve learned is astounding.",
+        "authors": [
+          "Ed Yong"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/kUS5N7uB2A364X_dXd6daX3893Q=/0x0:2363x3150/1086x1447/media/img/issues/2022/06/15/0722_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 182065,
+    "issueTheme": null,
+    "cover": "/covers/202207.jpg"
+  },
+  {
+    "id": "202206",
+    "year": 2022,
+    "month": 6,
+    "issue": "June 2022",
+    "datePublished": "2022-05-17T10:11:48Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/06/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/zWho2AvdAvOxPhVDR0cozKPBOWg=/0x0:2363x3150/703x937/media/img/issues/2022/05/17/0622_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Xj2mCWg8Y3PUjajpXrClNr3XHnk=/0x0:2363x3150/352x469/media/img/issues/2022/05/17/0622_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Joan Didion\u2019s Magic Trick",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/06/chasing-joan-didion-california/629633/",
+        "dek": "What was it that gave her such power?",
+        "authors": [
+          "Caitlin Flanagan"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/LcFPPoN5Yf6bEH4Cz23e64T1mAQ=/0x0:2363x3150/1086x1447/media/img/issues/2022/05/17/0622_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 117702,
+    "issueTheme": null,
+    "cover": "/covers/202206.jpg"
+  },
+  {
+    "id": "202205",
+    "year": 2022,
+    "month": 5,
+    "issue": "May 2022",
+    "datePublished": "2022-04-19T10:03:36Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/05/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/52L8-TzF9YNLDtuEcRGyhyL3c8s=/0x0:2363x3150/703x937/media/img/issues/2022/04/06/0522_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/-TuU0zWfmLV292Qyg8dKkqqNbmw=/0x0:2363x3150/352x469/media/img/issues/2022/04/06/0522_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "The Future of Abortion in a Post-<em>Roe</em> America",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/05/roe-v-wade-overturn-abortion-rights/629366/",
+        "dek": "Inside the covert network preparing to circumvent restrictions",
+        "authors": [
+          "Jessica Bruder"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/RfivEspI78ph8zY5m7xKk4b3MkQ=/0x0:2363x3150/1086x1447/media/img/issues/2022/04/06/0522_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 216761,
+    "issueTheme": null,
+    "cover": "/covers/202205.jpg"
+  },
+  {
+    "id": "202204",
+    "year": 2022,
+    "month": 4,
+    "issue": "April 2022",
+    "datePublished": "2022-03-15T10:02:24Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/04/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/WNbIRq42tAZeP7_embyeIUzloWM=/0x0:2363x3150/703x937/media/img/issues/2022/03/04/0422_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/s4XmNkMLM22L85qPca5SEVIr-uc=/0x0:2363x3150/352x469/media/img/issues/2022/03/04/0422_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Absolute Power",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/04/mohammed-bin-salman-saudi-arabia-palace-interview/622822/",
+        "dek": "Asked about the murder of Jamal Khashoggi, Mohammed bin Salman said, \u201cIf that\u2019s the way we did things, Khashoggi would not even be among the top 1,000 people on the list.\u201d",
+        "authors": [
+          "Graeme Wood"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/VISs6LKQIc26Mc9aJ4gbaaBLDCg=/0x0:2363x3150/1086x1447/media/img/issues/2022/03/04/0422_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 68258,
+    "issueTheme": null,
+    "cover": "/covers/202204.jpg"
+  },
+  {
+    "id": "202203",
+    "year": 2022,
+    "month": 3,
+    "issue": "March 2022",
+    "datePublished": "2022-02-15T11:02:25Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/03/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/GNUGJh2cIkxv06Hyk5S-vKAIpp8=/0x0:2363x3150/703x937/media/img/issues/2022/02/10/0322_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/zZJTIHzf__9tteKmJv4CS4UaIz0=/0x0:2363x3150/352x469/media/img/issues/2022/02/10/0322_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "How to Want Less",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/03/why-we-are-never-satisfied-happiness/621304/",
+        "dek": "The secret to satisfaction has nothing to do with achievement, money, or stuff.",
+        "authors": [
+          "Arthur C. Brooks"
+        ]
+      },
+      {
+        "title": "It\u2019s Your Friends Who Break Your Heart",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/03/why-we-lose-friends-aging-happiness/621305/",
+        "dek": "The older we get, the more we need our friends\u2014and the harder it is to keep them.",
+        "authors": [
+          "Jennifer Senior"
+        ]
+      },
+      {
+        "title": "I Gave Myself Three Months to Change My Personality",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/03/how-to-change-your-personality-happiness/621306/",
+        "dek": "The results were mixed.",
+        "authors": [
+          "Olga Khazan"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/pjW3cPfYd0Ovc34d2mdYLH1CFGs=/0x0:2363x3150/1086x1447/media/img/issues/2022/02/10/0322_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 298655,
+    "issueTheme": null,
+    "cover": "/covers/202203.jpg"
+  },
+  {
+    "id": "202201",
+    "year": 2022,
+    "month": 1,
+    "issue": "January/February 2022",
+    "datePublished": "2021-12-21T11:04:33Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2022/01/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/KjpNKN-vN2sIBLqd_wKH-yf0JJE=/0x0:2363x3150/703x937/media/img/issues/2021/12/07/0122_Cover/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/ERC8JiebvkJqDIUgZoBMz6fmh7c=/0x0:2363x3150/352x469/media/img/issues/2021/12/07/0122_Cover/original.jpg",
+    "coverStories": [
+      {
+        "title": "Trump\u2019s Next Coup Has Already Begun",
+        "url": "https://www.theatlantic.com/magazine/archive/2022/01/january-6-insurrection-trump-coup-2024-election/620843/",
+        "dek": "January 6 was practice. Donald Trump\u2019s GOP is much better positioned to subvert the next election.",
+        "authors": [
+          "Barton Gellman"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Wzy2Y63odForygj8o2jZrrwLDnY=/0x0:2363x3150/1086x1447/media/img/issues/2021/12/07/0122_Cover/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 56722,
+    "issueTheme": null,
+    "cover": "/covers/202201.jpg"
+  },
+  {
+    "id": "202112",
+    "year": 2021,
+    "month": 12,
+    "issue": "December 2021",
+    "datePublished": "2021-11-24T11:03:26Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2021/12/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/UhKIJtAZfyuHSBXxPnT3ixfHu6o=/0x0:2363x3150/703x937/media/img/issues/2021/11/23/1221_Cover_test/original.png",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Giio173mFcQcc4AjeEAtWtg8tys=/0x0:2363x3150/352x469/media/img/issues/2021/11/23/1221_Cover_test/original.png",
+    "coverStories": [
+      {
+        "title": "The Bad Guys Are Winning",
+        "url": "https://www.theatlantic.com/magazine/archive/2021/12/the-autocrats-are-winning/620526/",
+        "dek": "If the 20th century was the story of slow, uneven progress toward the victory of liberal democracy over other ideologies\u2014communism, fascism, virulent nationalism\u2014the 21st century is, so far, a story of the reverse.",
+        "authors": [
+          "Anne Applebaum"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/ISweS6AdoWtTh0UCQsSQz-GqGNU=/0x0:2363x3150/1086x1447/media/img/issues/2021/11/23/1221_Cover_test/original.png",
+    "imageWidth": 703,
+    "imageHeight": 937,
+    "imageFormat": "PNG",
+    "imageBytes": 155849,
+    "issueTheme": null,
+    "cover": "/covers/202112.png"
+  },
+  {
+    "id": "202111",
+    "year": 2021,
+    "month": 11,
+    "issue": "November 2021",
+    "datePublished": "2021-10-19T10:02:35Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2021/11/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/3vu6HXRTGQPpHPCwejkw4Coa9oo=/0x0:2363x3150/703x937/media/img/issues/2021/10/18/1121_Cover-1/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/sCXF9crJbLYuQK4lThILXqfGqGU=/0x0:2363x3150/352x469/media/img/issues/2021/10/18/1121_Cover-1/original.jpg",
+    "coverStories": [
+      {
+        "title": "A Secretive Hedge Fund Is Gutting Newsrooms",
+        "url": "https://www.theatlantic.com/magazine/archive/2021/11/alden-global-capital-killing-americas-newspapers/620171/",
+        "dek": "Inside Alden Global Capital",
+        "authors": [
+          "McKay Coppins"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/9drt3gzVGzmV1tXS9DbumG_hev0=/0x0:2363x3150/1086x1447/media/img/issues/2021/10/18/1121_Cover-1/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 83042,
+    "issueTheme": null,
+    "cover": "/covers/202111.jpg"
+  },
+  {
+    "id": "202110",
+    "year": 2021,
+    "month": 10,
+    "issue": "October 2021",
+    "datePublished": "2021-09-14T10:04:02Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2021/10/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/sJzS1Cyay_JztYXN843XlYLiFlA=/0x0:2363x3150/703x937/media/img/issues/2021/09/14/1021_Cover-1/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/e7Z0W2cUMwEcVDVu0EU9yHNgIow=/0x0:2363x3150/352x469/media/img/issues/2021/09/14/1021_Cover-1/original.jpg",
+    "coverStories": [
+      {
+        "title": "Not Enough Has Changed Since <em>Sanford and Son</em>",
+        "url": "https://www.theatlantic.com/magazine/archive/2021/10/the-unwritten-rules-of-black-tv/619816/",
+        "dek": "The unwritten rules of Black TV",
+        "authors": [
+          "Hannah Giorgis"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/nrOs-M8nEdespObTrlAcjFVsoeQ=/0x0:2363x3150/1086x1447/media/img/issues/2021/09/14/1021_Cover-1/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 165586,
+    "issueTheme": null,
+    "cover": "/covers/202110.jpg"
+  },
+  {
+    "id": "202109",
+    "year": 2021,
+    "month": 9,
+    "issue": "September 2021",
+    "datePublished": "2021-08-10T10:03:00Z",
+    "sourceUrl": "https://www.theatlantic.com/magazine/toc/2021/09/",
+    "imageUrl": "https://cdn.theatlantic.com/thumbor/_t8vZW5BN_3yy-9YXntmQ_m3fg4=/0x0:2363x3150/703x937/media/img/issues/2021/08/09/0921_Cover-1/original.jpg",
+    "smallImageUrl": "https://cdn.theatlantic.com/thumbor/FkViLRmh1A9sq82xcxLsiwVL0TE=/0x0:2363x3150/352x469/media/img/issues/2021/08/09/0921_Cover-1/original.jpg",
+    "coverStories": [
+      {
+        "title": "What Bobby McIlvaine Left Behind",
+        "url": "https://www.theatlantic.com/magazine/archive/2021/09/twenty-years-gone-911-bobby-mcilvaine/619490/",
+        "dek": "Grief, conspiracy theories, and one family\u2019s search for meaning in the two decades since 9/11",
+        "authors": [
+          "Jennifer Senior"
+        ]
+      }
+    ],
+    "largeImageUrl": "https://cdn.theatlantic.com/thumbor/Ng226sMaCSuLGIdVbpYG6FhpT6U=/0x0:2363x3150/1086x1447/media/img/issues/2021/08/09/0921_Cover-1/original.jpg",
+    "imageFormat": "JPEG",
+    "imageWidth": 703,
+    "imageBytes": 115343,
+    "issueTheme": null,
+    "cover": "/covers/202109.jpg"
+  }
+]
