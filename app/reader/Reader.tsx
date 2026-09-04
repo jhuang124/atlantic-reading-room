@@ -429,7 +429,12 @@ export default function Reader({
   }, []);
   const navigate = useCallback(
     (n: number, remember = true) => {
-      if (remember && n !== page && !historySnapshot.current) {
+      if (
+        remember &&
+        page > 2 &&
+        (n !== page || articleId) &&
+        !historySnapshot.current
+      ) {
         setHistoryPage(page);
         historySnapshot.current = capturePlace();
         historyView.current = {
@@ -453,7 +458,7 @@ export default function Reader({
       }
       queuedTurn.current = 0;
     },
-    [issue.pageCount, page, mobile, capturePlace],
+    [issue.pageCount, page, articleId, capturePlace],
   );
   const turn = useCallback(
     (dir: number) => {
