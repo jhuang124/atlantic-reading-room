@@ -23,4 +23,18 @@ Production build and TypeScript checks pass. All 55 unique issue records have lo
 
 Browser visual and interaction testing was not run. The optional WebMCP tool is feature-detected; no supported WebMCP validation context was available, so its runtime contract is unverified.
 
-See COVER-SOURCES.md for provenance. This is an independent private concept, not an official Atlantic product.
+See COVER-SOURCES.md for provenance. This is an independent interactive concept, not an official Atlantic product.
+
+## GitHub Pages
+
+Live site: https://jhuang124.github.io/atlantic-reading-room/
+
+```sh
+npm run dev:pages
+npm run build:pages
+npm run preview:pages
+```
+
+The static build uses the same reading-room components as the Sites version. Its output is `dist-pages/`, with relative asset paths that support GitHub project URLs. No server, database, or API keys are needed.
+
+Pushing to `main` runs `.github/workflows/pages.yml`, builds the static site, and deploys it to GitHub Pages. The existing Sites build remains available through `npm run build`.

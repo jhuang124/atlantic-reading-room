@@ -24,7 +24,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1148256,
     "issueTheme": null,
-    "cover": "/covers/202609.png"
+    "cover": "covers/202609.png"
   },
   {
     "id": "202608",
@@ -50,7 +50,7 @@
     "imageWidth": 703,
     "imageBytes": 128769,
     "issueTheme": null,
-    "cover": "/covers/202608.jpg"
+    "cover": "covers/202608.jpg"
   },
   {
     "id": "202607",
@@ -67,7 +67,7 @@
     "imageWidth": 703,
     "imageBytes": 172789,
     "issueTheme": null,
-    "cover": "/covers/202607.jpg"
+    "cover": "covers/202607.jpg"
   },
   {
     "id": "202606",
@@ -93,7 +93,7 @@
     "imageWidth": 703,
     "imageBytes": 66399,
     "issueTheme": null,
-    "cover": "/covers/202606.jpg"
+    "cover": "covers/202606.jpg"
   },
   {
     "id": "202605",
@@ -119,7 +119,7 @@
     "imageWidth": 703,
     "imageBytes": 148450,
     "issueTheme": null,
-    "cover": "/covers/202605.jpg"
+    "cover": "covers/202605.jpg"
   },
   {
     "id": "202604",
@@ -145,7 +145,7 @@
     "imageWidth": 703,
     "imageBytes": 139730,
     "issueTheme": null,
-    "cover": "/covers/202604.jpg"
+    "cover": "covers/202604.jpg"
   },
   {
     "id": "202603",
@@ -171,7 +171,7 @@
     "imageWidth": 703,
     "imageBytes": 147309,
     "issueTheme": null,
-    "cover": "/covers/202603.jpg"
+    "cover": "covers/202603.jpg"
   },
   {
     "id": "202602",
@@ -198,7 +198,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1269276,
     "issueTheme": null,
-    "cover": "/covers/202602.png"
+    "cover": "covers/202602.png"
   },
   {
     "id": "202601",
@@ -224,7 +224,7 @@
     "imageWidth": 703,
     "imageBytes": 132139,
     "issueTheme": null,
-    "cover": "/covers/202601.jpg"
+    "cover": "covers/202601.jpg"
   },
   {
     "id": "202512",
@@ -258,7 +258,7 @@
     "imageWidth": 703,
     "imageBytes": 215294,
     "issueTheme": null,
-    "cover": "/covers/202512.jpg"
+    "cover": "covers/202512.jpg"
   },
   {
     "id": "202511",
@@ -283,7 +283,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1116090,
     "issueTheme": null,
-    "cover": "/covers/202511.png"
+    "cover": "covers/202511.png"
   },
   {
     "id": "202510",
@@ -309,7 +309,7 @@
     "imageWidth": 703,
     "imageBytes": 163526,
     "issueTheme": null,
-    "cover": "/covers/202510.jpg"
+    "cover": "covers/202510.jpg"
   },
   {
     "id": "202509",
@@ -335,7 +335,7 @@
     "imageWidth": 703,
     "imageBytes": 209202,
     "issueTheme": null,
-    "cover": "/covers/202509.jpg"
+    "cover": "covers/202509.jpg"
   },
   {
     "id": "202508",
@@ -352,7 +352,7 @@
     "imageWidth": 703,
     "imageBytes": 97362,
     "issueTheme": "Eighty Years on the Edge",
-    "cover": "/covers/202508.jpg"
+    "cover": "covers/202508.jpg"
   },
   {
     "id": "202507",
@@ -378,7 +378,7 @@
     "imageWidth": 703,
     "imageBytes": 136184,
     "issueTheme": null,
-    "cover": "/covers/202507.jpg"
+    "cover": "covers/202507.jpg"
   },
   {
     "id": "202506",
@@ -405,7 +405,7 @@
     "imageWidth": 703,
     "imageBytes": 143178,
     "issueTheme": null,
-    "cover": "/covers/202506.jpg"
+    "cover": "covers/202506.jpg"
   },
   {
     "id": "202505",
@@ -422,7 +422,7 @@
     "imageWidth": 703,
     "imageBytes": 137378,
     "issueTheme": "It\u2019s Later Than You Think",
-    "cover": "/covers/202505.jpg"
+    "cover": "covers/202505.jpg"
   },
   {
     "id": "202504",
@@ -448,7 +448,7 @@
     "imageWidth": 703,
     "imageBytes": 92902,
     "issueTheme": null,
-    "cover": "/covers/202504.jpg"
+    "cover": "covers/202504.jpg"
   },
   {
     "id": "202503",
@@ -474,7 +474,7 @@
     "imageWidth": 703,
     "imageBytes": 94277,
     "issueTheme": null,
-    "cover": "/covers/202503.jpg"
+    "cover": "covers/202503.jpg"
   },
   {
     "id": "202502",
@@ -500,7 +500,7 @@
     "imageWidth": 703,
     "imageBytes": 49188,
     "issueTheme": null,
-    "cover": "/covers/202502.jpg"
+    "cover": "covers/202502.jpg"
   },
   {
     "id": "202501",
@@ -526,7 +526,7 @@
     "imageWidth": 703,
     "imageBytes": 140639,
     "issueTheme": null,
-    "cover": "/covers/202501.jpg"
+    "cover": "covers/202501.jpg"
   },
   {
     "id": "202412",
@@ -552,7 +552,7 @@
     "imageWidth": 703,
     "imageBytes": 133188,
     "issueTheme": null,
-    "cover": "/covers/202412.jpg"
+    "cover": "covers/202412.jpg"
   },
   {
     "id": "202411",
@@ -578,7 +578,7 @@
     "imageWidth": 703,
     "imageBytes": 229208,
     "issueTheme": null,
-    "cover": "/covers/202411.jpg"
+    "cover": "covers/202411.jpg"
   },
   {
     "id": "202410",
@@ -595,7 +595,7 @@
     "imageWidth": 703,
     "imageBytes": 158070,
     "issueTheme": null,
-    "cover": "/covers/202410.jpg"
+    "cover": "covers/202410.jpg"
   },
   {
     "id": "202409",
@@ -621,7 +621,7 @@
     "imageWidth": 703,
     "imageBytes": 138445,
     "issueTheme": null,
-    "cover": "/covers/202409.jpg"
+    "cover": "covers/202409.jpg"
   },
   {
     "id": "202407",
@@ -648,7 +648,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1223576,
     "issueTheme": null,
-    "cover": "/covers/202407.png"
+    "cover": "covers/202407.png"
   },
   {
     "id": "202406",
@@ -674,7 +674,7 @@
     "imageWidth": 703,
     "imageBytes": 206190,
     "issueTheme": null,
-    "cover": "/covers/202406.jpg"
+    "cover": "covers/202406.jpg"
   },
   {
     "id": "202405",
@@ -700,7 +700,7 @@
     "imageWidth": 703,
     "imageBytes": 111495,
     "issueTheme": null,
-    "cover": "/covers/202405.jpg"
+    "cover": "covers/202405.jpg"
   },
   {
     "id": "202404",
@@ -727,7 +727,7 @@
     "imageFormat": "PNG",
     "imageBytes": 821423,
     "issueTheme": null,
-    "cover": "/covers/202404.png"
+    "cover": "covers/202404.png"
   },
   {
     "id": "202403",
@@ -754,7 +754,7 @@
     "imageFormat": "PNG",
     "imageBytes": 944341,
     "issueTheme": null,
-    "cover": "/covers/202403.png"
+    "cover": "covers/202403.png"
   },
   {
     "id": "202401",
@@ -772,7 +772,7 @@
     "imageFormat": "PNG",
     "imageBytes": 295180,
     "issueTheme": "If Trump Wins",
-    "cover": "/covers/202401.png"
+    "cover": "covers/202401.png"
   },
   {
     "id": "202312",
@@ -790,7 +790,7 @@
     "imageFormat": "PNG",
     "imageBytes": 168948,
     "issueTheme": "On Reconstruction",
-    "cover": "/covers/202312.png"
+    "cover": "covers/202312.png"
   },
   {
     "id": "202311",
@@ -816,7 +816,7 @@
     "imageWidth": 703,
     "imageBytes": 136269,
     "issueTheme": null,
-    "cover": "/covers/202311.jpg"
+    "cover": "covers/202311.jpg"
   },
   {
     "id": "202310",
@@ -842,7 +842,7 @@
     "imageWidth": 703,
     "imageBytes": 137051,
     "issueTheme": null,
-    "cover": "/covers/202310.jpg"
+    "cover": "covers/202310.jpg"
   },
   {
     "id": "202309",
@@ -868,7 +868,7 @@
     "imageWidth": 703,
     "imageBytes": 164551,
     "issueTheme": null,
-    "cover": "/covers/202309.jpg"
+    "cover": "covers/202309.jpg"
   },
   {
     "id": "202307",
@@ -894,7 +894,7 @@
     "imageWidth": 703,
     "imageBytes": 224747,
     "issueTheme": null,
-    "cover": "/covers/202307.jpg"
+    "cover": "covers/202307.jpg"
   },
   {
     "id": "202306",
@@ -921,7 +921,7 @@
     "imageWidth": 703,
     "imageBytes": 100364,
     "issueTheme": null,
-    "cover": "/covers/202306.jpg"
+    "cover": "covers/202306.jpg"
   },
   {
     "id": "202305",
@@ -947,7 +947,7 @@
     "imageWidth": 703,
     "imageBytes": 76899,
     "issueTheme": null,
-    "cover": "/covers/202305.jpg"
+    "cover": "covers/202305.jpg"
   },
   {
     "id": "202304",
@@ -973,7 +973,7 @@
     "imageWidth": 703,
     "imageBytes": 219297,
     "issueTheme": null,
-    "cover": "/covers/202304.jpg"
+    "cover": "covers/202304.jpg"
   },
   {
     "id": "202303",
@@ -999,7 +999,7 @@
     "imageWidth": 703,
     "imageBytes": 130201,
     "issueTheme": null,
-    "cover": "/covers/202303.jpg"
+    "cover": "covers/202303.jpg"
   },
   {
     "id": "202301",
@@ -1016,7 +1016,7 @@
     "imageWidth": 703,
     "imageBytes": 119119,
     "issueTheme": "The Progress Report",
-    "cover": "/covers/202301.jpg"
+    "cover": "covers/202301.jpg"
   },
   {
     "id": "202212",
@@ -1042,7 +1042,7 @@
     "imageWidth": 703,
     "imageBytes": 342469,
     "issueTheme": null,
-    "cover": "/covers/202212.jpg"
+    "cover": "covers/202212.jpg"
   },
   {
     "id": "202211",
@@ -1068,7 +1068,7 @@
     "imageWidth": 703,
     "imageBytes": 233505,
     "issueTheme": null,
-    "cover": "/covers/202211.jpg"
+    "cover": "covers/202211.jpg"
   },
   {
     "id": "202210",
@@ -1110,7 +1110,7 @@
     "imageWidth": 703,
     "imageBytes": 120237,
     "issueTheme": null,
-    "cover": "/covers/202210.jpg"
+    "cover": "covers/202210.jpg"
   },
   {
     "id": "202209",
@@ -1137,7 +1137,7 @@
     "imageFormat": "PNG",
     "imageBytes": 182257,
     "issueTheme": null,
-    "cover": "/covers/202209.png"
+    "cover": "covers/202209.png"
   },
   {
     "id": "202207",
@@ -1163,7 +1163,7 @@
     "imageWidth": 703,
     "imageBytes": 182065,
     "issueTheme": null,
-    "cover": "/covers/202207.jpg"
+    "cover": "covers/202207.jpg"
   },
   {
     "id": "202206",
@@ -1189,7 +1189,7 @@
     "imageWidth": 703,
     "imageBytes": 117702,
     "issueTheme": null,
-    "cover": "/covers/202206.jpg"
+    "cover": "covers/202206.jpg"
   },
   {
     "id": "202205",
@@ -1215,7 +1215,7 @@
     "imageWidth": 703,
     "imageBytes": 216761,
     "issueTheme": null,
-    "cover": "/covers/202205.jpg"
+    "cover": "covers/202205.jpg"
   },
   {
     "id": "202204",
@@ -1241,7 +1241,7 @@
     "imageWidth": 703,
     "imageBytes": 68258,
     "issueTheme": null,
-    "cover": "/covers/202204.jpg"
+    "cover": "covers/202204.jpg"
   },
   {
     "id": "202203",
@@ -1283,7 +1283,7 @@
     "imageWidth": 703,
     "imageBytes": 298655,
     "issueTheme": null,
-    "cover": "/covers/202203.jpg"
+    "cover": "covers/202203.jpg"
   },
   {
     "id": "202201",
@@ -1309,7 +1309,7 @@
     "imageWidth": 703,
     "imageBytes": 56722,
     "issueTheme": null,
-    "cover": "/covers/202201.jpg"
+    "cover": "covers/202201.jpg"
   },
   {
     "id": "202112",
@@ -1336,7 +1336,7 @@
     "imageFormat": "PNG",
     "imageBytes": 155849,
     "issueTheme": null,
-    "cover": "/covers/202112.png"
+    "cover": "covers/202112.png"
   },
   {
     "id": "202111",
@@ -1362,7 +1362,7 @@
     "imageWidth": 703,
     "imageBytes": 83042,
     "issueTheme": null,
-    "cover": "/covers/202111.jpg"
+    "cover": "covers/202111.jpg"
   },
   {
     "id": "202110",
@@ -1388,7 +1388,7 @@
     "imageWidth": 703,
     "imageBytes": 165586,
     "issueTheme": null,
-    "cover": "/covers/202110.jpg"
+    "cover": "covers/202110.jpg"
   },
   {
     "id": "202109",
@@ -1414,6 +1414,6 @@
     "imageWidth": 703,
     "imageBytes": 115343,
     "issueTheme": null,
-    "cover": "/covers/202109.jpg"
+    "cover": "covers/202109.jpg"
   }
 ]
