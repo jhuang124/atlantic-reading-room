@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { flushSync } from 'react-dom';
 import data from './issues.json';
+import availableIssues from '../public/reader-assets/available.json';
 import { readerIssues } from './reader/catalog';
 import { loadPlace, type ReadingPlace } from './reader/place';
 import { pageLabel } from './reader/model';
@@ -38,6 +39,9 @@ function transition(update: () => void) {
 }
 type Issue = (typeof data)[number];
 const issues: Issue[] = data;
+const available = availableIssues.filter((id) =>
+  readerIssues.some((issue) => issue.id === id),
+);
 const years = [...new Set(issues.map((issue) => issue.year))].sort(
   (a, b) => b - a,
 );
@@ -87,7 +91,6 @@ export default function Home() {
   const [selected, setSelected] = useState<string | null>(null);
   const [transitionCover, setTransitionCover] = useState<string | null>(null);
   const [readingId, setReadingId] = useState<string | null>(null);
-  const [available, setAvailable] = useState<string[]>([]);
   const [places, setPlaces] = useState<Record<string, ReadingPlace>>({});
   const [readerEntry, setReaderEntry] = useState<{
     contents: boolean;
@@ -104,20 +107,6 @@ export default function Home() {
   useLayoutEffect(() => {
     if (library.current) library.current.inert = !!(selected || readingId);
   }, [selected, readingId]);
-  useEffect(() => {
-    const abort = new AbortController();
-    fetch('reader-assets/available.json', { signal: abort.signal })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((ids) =>
-        setAvailable(
-          Array.isArray(ids)
-            ? ids.filter((id) => readerIssues.some((i) => i.id === id))
-            : [],
-        ),
-      )
-      .catch(() => {});
-    return () => abort.abort();
-  }, []);
   useEffect(() => {
     const next: Record<string, ReadingPlace> = {};
     readerIssues.forEach((i) => {
