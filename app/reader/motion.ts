@@ -78,5 +78,11 @@ export function curlSampleU(
 }
 
 export function rasterScale(width: number, ratio: number, dpr: number) {
-  return Math.min(dpr, 2, 3000 / Math.max(width, width * ratio));
+  // Native phone density at Fit; cap enlarged pages at four million pixels.
+  return Math.min(
+    dpr,
+    3,
+    3000 / Math.max(width, width * ratio),
+    Math.sqrt(4_000_000 / (width * width * ratio)),
+  );
 }

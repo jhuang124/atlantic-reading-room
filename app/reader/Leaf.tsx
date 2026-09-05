@@ -4,6 +4,13 @@ import type { PDFDocumentProxy, TextLayer } from 'pdfjs-dist';
 import { pageLabel, matchWords, type IndexedPage } from './model';
 import { loadPDF } from './pdf';
 import { pageRasters } from './page-raster';
+function releaseSurface(node: HTMLElement | null) {
+  node?.querySelectorAll('canvas').forEach((canvas) => {
+    canvas.width = canvas.height = 0;
+  });
+  node?.replaceChildren();
+}
+
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
 
 export default function Leaf({
@@ -36,6 +43,7 @@ export default function Leaf({
   const surface = useRef<HTMLDivElement>(null),
     text = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [renderWidth, setRenderWidth] = useState(width);
   const [paintedWidth, setPaintedWidth] = useState(width);
   useEffect(() => {
@@ -51,7 +59,12 @@ export default function Leaf({
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.getContext('2d')?.drawImage(ready, 0, 0);
+    releaseSurface(surface.current);
     surface.current?.replaceChildren(canvas);
+  }, [pdf, number]);
+  useEffect(() => {
+    const node = surface.current;
+    return () => releaseSurface(node);
   }, [pdf, number]);
   const ratio = index ? index.height / index.width : 4 / 3;
   const hits = useMemo(
@@ -80,33 +93,41 @@ export default function Leaf({
         canvas.style.width = '100%';
         canvas.style.height = '100%';
         canvas.getContext('2d')?.drawImage(raster, 0, 0);
+        releaseSurface(surface.current);
         surface.current?.replaceChildren(canvas);
         painted.current?.();
-        layerNode.style.setProperty(
-          '--total-scale-factor',
-          String(viewport.scale),
-        );
-        const textContent = await page.getTextContent();
-        if (stopped) return;
-        layer = new lib.TextLayer({
-          textContentSource: textContent,
-          container: layerNode,
-          viewport,
-        });
-        await layer.render();
-        if (stopped) return;
-        text.current?.replaceChildren(layerNode);
-        setPaintedWidth(renderWidth);
+        // A text-selection failure must not obscure a successfully drawn page.
+        try {
+          layerNode.style.setProperty(
+            '--total-scale-factor',
+            String(viewport.scale),
+          );
+          const textContent = await page.getTextContent();
+          if (stopped) return;
+          layer = new lib.TextLayer({
+            textContentSource: textContent,
+            container: layerNode,
+            viewport,
+          });
+          await layer.render();
+          if (stopped) return;
+          text.current?.replaceChildren(layerNode);
+          setPaintedWidth(renderWidth);
+        } catch {
+          if (!stopped) text.current?.replaceChildren();
+        }
       } catch (e) {
-        if (!stopped && (e as Error).name !== 'RenderingCancelledException')
+        if (!stopped && (e as Error).name !== 'RenderingCancelledException') {
+          console.warn('PDF page render failed', number, e);
           setError(true);
+        }
       }
     })();
     return () => {
       stopped = true;
       layer?.cancel();
     };
-  }, [pdf, number, renderWidth]);
+  }, [pdf, number, renderWidth, retry]);
   return (
     <div
       className="reader-leaf"
@@ -142,8 +163,8 @@ export default function Leaf({
       <div className="leaf-edge" aria-hidden="true" />
       {error && (
         <div className="page-render-error">
-          This page couldn’t render at full resolution. Turn the page and return
-          to retry.
+          <span>This page couldn’t load.</span>
+          <button onClick={() => setRetry((n) => n + 1)}>Try again</button>
         </div>
       )}
     </div>

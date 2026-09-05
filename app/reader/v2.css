@@ -1349,5 +1349,14 @@
 .continuous-page {
   position: absolute;
   left: 0;
-  box-shadow: 0 2px 5px #0002, 0 12px 30px #0002;
+  box-shadow:
+    0 2px 5px #0002,
+    0 12px 30px #0002;
+}
+
+.page-render-error button {
+  min-height: 44px;
+  margin-top: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

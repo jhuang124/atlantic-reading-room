@@ -15,7 +15,7 @@ import { WebView } from 'react-native-webview';
 
 const READER_URL =
   process.env.EXPO_PUBLIC_READER_URL ||
-  'https://jhuang124.github.io/atlantic-reading-room/?app=expo&v=scroll-1';
+  'https://jhuang124.github.io/atlantic-reading-room/?app=expo&v=mobile-fix-2';
 const reader = new URL(READER_URL);
 const openExternal = (url: string) => {
   if (/^https?:\/\//i.test(url)) void Linking.openURL(url).catch(() => {});

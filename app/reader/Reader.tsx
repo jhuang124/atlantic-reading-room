@@ -34,6 +34,7 @@ import {
 } from './model';
 import PageTurn, { type TurnControl, type TurnRenderer } from './PageTurn';
 import { clampZoom, pinchZoom } from './motion';
+import { createPinchPreview } from './pinch-preview';
 import {
   loadPlace,
   storePlace,
@@ -154,6 +155,7 @@ export default function Reader({
     y: number;
     clientX: number;
     clientY: number;
+    selector: string;
   } | null>(null);
   const actualSpread = mode === 'spread' && !mobile;
   const visible = spreadPages(page, issue.pageCount, actualSpread);
@@ -433,7 +435,17 @@ export default function Reader({
         queuedTurn.current = 0;
       }
       const el = viewport.current,
-        paper = el?.querySelector<HTMLElement>('.open-magazine');
+        paper =
+          (clientY === undefined
+            ? null
+            : [
+                ...(el?.querySelectorAll<HTMLElement>('.continuous-page') ||
+                  []),
+              ].find((node) => {
+                const box = node.getBoundingClientRect();
+                return clientY >= box.top && clientY <= box.bottom;
+              })) ||
+          el?.querySelector<HTMLElement>('.open-magazine, .continuous-page');
       const next = clampZoom(value);
       if (el && paper) {
         const box = el.getBoundingClientRect(),
@@ -445,6 +457,9 @@ export default function Reader({
           y: (cy - book.top) / book.height,
           clientX: cx,
           clientY: cy,
+          selector: paper.dataset.page
+            ? `.continuous-page[data-page="${paper.dataset.page}"]`
+            : '.open-magazine',
         };
       }
       zoomRef.current = next;
@@ -456,7 +471,7 @@ export default function Reader({
     const el = viewport.current,
       anchor = zoomAnchor.current;
     const book = el
-      ?.querySelector<HTMLElement>('.open-magazine')
+      ?.querySelector<HTMLElement>(anchor?.selector || '.open-magazine')
       ?.getBoundingClientRect();
     if (el && anchor && book) {
       el.scrollLeft += book.left + anchor.x * book.width - anchor.clientX;
@@ -470,13 +485,15 @@ export default function Reader({
     restoreView.current = null;
   }, [page, zoom]);
   useEffect(() => {
-    if (!pdf || turning || mode === 'scroll') return;
+    if (!pdf || turning || mode === 'scroll' || zoom > 1) return;
     const abort = new AbortController();
     const timer = setTimeout(
       () =>
         warmTurnPages(
           pdf,
-          [start, end, end + 1, end + 2, start - 2, start - 1],
+          mobile
+            ? [end + 1]
+            : [start, end, end + 1, end + 2, start - 2, start - 1],
           leafWidth,
           abort.signal,
         ),
@@ -486,7 +503,7 @@ export default function Reader({
       clearTimeout(timer);
       abort.abort();
     };
-  }, [pdf, start, end, leafWidth, turning, mode]);
+  }, [pdf, start, end, leafWidth, turning, mode, zoom, mobile]);
   useEffect(() => {
     if (error) onReady?.();
   }, [error, onReady]);
@@ -528,12 +545,17 @@ export default function Reader({
         turn(Math.sign(gesture.sum));
       }
     };
+    // Touchscreens use the pinch preview below; Safari's gesture events are
+    // only for trackpads, otherwise each pinch is processed twice.
+    const touchDevice = navigator.maxTouchPoints > 0;
     let gestureZoom = 1;
     const gestureStart = (event: Event) => {
+      if (touchDevice) return;
       event.preventDefault();
       gestureZoom = zoomRef.current;
     };
     const gestureChange = (event: Event) => {
+      if (touchDevice) return;
       event.preventDefault();
       const e = event as Event & {
         scale: number;
@@ -548,45 +570,35 @@ export default function Reader({
       );
     };
     el.addEventListener('wheel', wheel, { passive: false });
+    const pinch = createPinchPreview({
+      getSurface: () =>
+        el.querySelector<HTMLElement>('.open-magazine, .continuous-pages'),
+      getZoom: () => zoomRef.current,
+      commit: (value, x, y) => changeZoom(value, x, y),
+    });
     let touchStart: {
       x: number;
       y: number;
-      distance: number;
-      zoom: number;
       pinched: boolean;
     } | null = null;
-    const touchDistance = (touches: TouchList) =>
-      Math.hypot(
-        touches[1].clientX - touches[0].clientX,
-        touches[1].clientY - touches[0].clientY,
-      );
     const touchBegin = (e: TouchEvent) => {
       if ((e.target as HTMLElement).closest('button')) return;
       const two = e.touches.length === 2;
+      if (two) pinch.begin(e.touches);
       touchStart = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
-        distance: two ? touchDistance(e.touches) : 0,
-        zoom: zoomRef.current,
         pinched: two,
       };
     };
     const touchMove = (e: TouchEvent) => {
       if (!touchStart || e.touches.length !== 2) return;
       e.preventDefault();
-      if (!touchStart.distance) {
-        touchStart.distance = touchDistance(e.touches);
-        touchStart.zoom = zoomRef.current;
-      }
       touchStart.pinched = true;
-      changeZoom(
-        (touchStart.zoom * touchDistance(e.touches)) /
-          Math.max(1, touchStart.distance),
-        (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      );
+      pinch.move(e.touches);
     };
     const touchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) pinch.end();
       if (!touchStart || e.touches.length) return;
       const t = touchStart;
       touchStart = null;
@@ -602,6 +614,7 @@ export default function Reader({
         turn(dx < 0 ? 1 : -1);
     };
     const touchCancel = () => {
+      pinch.cancel();
       touchStart = null;
     };
     el.addEventListener('touchstart', touchBegin, { passive: true });
@@ -611,6 +624,7 @@ export default function Reader({
     el.addEventListener('gesturestart', gestureStart, { passive: false });
     el.addEventListener('gesturechange', gestureChange, { passive: false });
     return () => {
+      pinch.cancel();
       el.removeEventListener('wheel', wheel);
       el.removeEventListener('touchstart', touchBegin);
       el.removeEventListener('touchmove', touchMove);
@@ -693,10 +707,17 @@ export default function Reader({
         if (disposed) return;
         task = lib.getDocument({
           url: `reader-assets/${issue.id}.pdf`,
-          cMapUrl: 'reader-assets/pdfjs/cmaps/',
+          cMapUrl: new URL(
+            'reader-assets/pdfjs/cmaps/',
+            window.document.baseURI,
+          ).href,
           cMapPacked: true,
-          standardFontDataUrl: 'reader-assets/pdfjs/standard_fonts/',
-          wasmUrl: 'reader-assets/pdfjs/wasm/',
+          standardFontDataUrl: new URL(
+            'reader-assets/pdfjs/standard_fonts/',
+            window.document.baseURI,
+          ).href,
+          wasmUrl: new URL('reader-assets/pdfjs/wasm/', window.document.baseURI)
+            .href,
         });
         task.onProgress = ({
           loaded,
@@ -1074,6 +1095,7 @@ export default function Reader({
             inert={!!articleId}
             onPointerDown={(e) => {
               if (
+                e.pointerType !== 'mouse' ||
                 zoom <= 1 ||
                 e.button !== 0 ||
                 (e.target as HTMLElement).closest('.textLayer span')

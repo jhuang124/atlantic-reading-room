@@ -19,8 +19,14 @@ export class PageRasterCache {
   private maxPages: number;
   constructor(
     pdf: PDFDocumentProxy,
-    maxBytes = 64 * 1024 * 1024,
-    maxPages = 12,
+    maxBytes = (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+      ? 24
+      : 64) *
+      1024 *
+      1024,
+    maxPages = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0
+      ? 4
+      : 12,
   ) {
     this.pdf = pdf;
     this.maxBytes = maxBytes;
