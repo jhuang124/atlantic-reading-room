@@ -1309,9 +1309,7 @@
 .open-magazine:has(.physical-page-turn.ready) > .leaf-wrap {
   visibility: hidden;
 }
-.open-magazine:has(.physical-page-turn.ready)::after {
-  opacity: 0;
-}
+
 .return-to-reading {
   position: absolute;
   z-index: 12;

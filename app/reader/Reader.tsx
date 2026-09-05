@@ -39,7 +39,7 @@ import PageTurn, {
   type TurnControl,
   type TurnRenderer,
 } from './PageTurn';
-import { clampZoom, pinchZoom } from './motion';
+import { clampZoom, pinchZoom, rasterScale } from './motion';
 import {
   loadPlace,
   storePlace,
@@ -135,10 +135,10 @@ function Leaf({
         if (stopped) return;
         const base = page.getViewport({ scale: 1 }),
           viewport = page.getViewport({ scale: renderWidth / base.width });
-        const dpr = Math.min(
+        const dpr = rasterScale(
+          viewport.width,
+          base.height / base.width,
           devicePixelRatio,
-          1.8,
-          3000 / Math.max(viewport.width, viewport.height),
         );
         canvas.width = Math.ceil(viewport.width * dpr);
         canvas.height = Math.ceil(viewport.height * dpr);

@@ -34,7 +34,7 @@ node --test scripts/reader-*.test.mjs
 npm run build:pages
 ```
 
-The 18 targeted tests cover physical-page sequence, printed folios, curl reverse faces and geometry, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
+The 19 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
 The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
 

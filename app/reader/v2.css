@@ -104,7 +104,13 @@
 }
 .reader-v2 .book-gutter {
   width: 22px;
-  opacity: 0.6;
+  opacity: 1;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(0 0 0 / 14%) 50%,
+    transparent
+  );
 }
 .reader-v2 .page-corner {
   width: 40px;

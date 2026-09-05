@@ -2,7 +2,7 @@
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type * as THREE from 'three';
-import { cornerCurl, TURN_MS } from './motion';
+import { cornerCurl, curlSampleU, rasterScale, TURN_MS } from './motion';
 import { turnFaces } from './model';
 
 const resolvedPages = new WeakMap<
@@ -22,18 +22,24 @@ function pageImage(pdf: PDFDocumentProxy, number: number, width: number) {
     cache = new Map();
     pageCache.set(pdf, cache);
   }
-  const pixels = Math.min(1500, Math.ceil((width * 1.5) / 100) * 100);
+  const pixels = width;
   const key = `${number}:${pixels}`;
   let result = cache.get(key);
   if (!result) {
     result = (async () => {
       const page = await pdf.getPage(number);
       const base = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: pixels / base.width });
+      const viewport = page.getViewport({ scale: width / base.width });
+      const dpr = rasterScale(
+        width,
+        base.height / base.width,
+        devicePixelRatio,
+      );
       const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(viewport.width);
-      canvas.height = Math.ceil(viewport.height);
-      await page.render({ canvas, viewport }).promise;
+      canvas.width = Math.ceil(viewport.width * dpr);
+      canvas.height = Math.ceil(viewport.height * dpr);
+      await page.render({ canvas, viewport, transform: [dpr, 0, 0, dpr, 0, 0] })
+        .promise;
       let ready = resolvedPages.get(pdf);
       if (!ready) {
         ready = new Map();
@@ -130,8 +136,8 @@ export default function PageTurn({
       pages.forEach((n, i) => {
         const texture = new THREE.CanvasTexture(images[i]);
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.minFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.generateMipmaps = true;
         textures.set(n, texture);
         resources.push(texture);
       });
@@ -151,15 +157,59 @@ export default function PageTurn({
         rendererPool.current ||
         new THREE.WebGLRenderer({ alpha: true, antialias: true });
       rendererPool.current = renderer;
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.setSize(width * span, width * ratio);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
+      textures.forEach((texture) => {
+        texture.anisotropy = Math.min(
+          8,
+          renderer!.capabilities.getMaxAnisotropy(),
+        );
+      });
       renderer.setClearColor(0x000000, 0);
       host.current.appendChild(renderer.domElement);
+      // Use the same spine shading in the raster handoff and the moving sheet.
+      const shadePaper = (
+        material: THREE.MeshBasicMaterial,
+        side: 'left' | 'right' | 'sheet',
+      ) => {
+        material.onBeforeCompile = (shader) => {
+          shader.uniforms.gutterWidth = { value: 11 / width };
+          shader.vertexShader =
+            'attribute float spineDistance; varying float vSpineDistance;\n' +
+            shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            '#include <begin_vertex>\nvSpineDistance = spineDistance;',
+          );
+          shader.fragmentShader =
+            'uniform float gutterWidth; varying float vSpineDistance;\n' +
+            shader.fragmentShader;
+          shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <color_fragment>',
+            `#include <color_fragment>
+            float crease = clamp(1.0 - vSpineDistance / gutterWidth, 0.0, 1.0);
+            diffuseColor.rgb *= pow(1.0 - 0.14 * crease, 2.2);`,
+          );
+        };
+        material.customProgramCacheKey = () => 'paper-spine-' + side;
+      };
       const plane = (n: number | undefined, x: number) => {
         if (!n) return;
         const geometry = new THREE.PlaneGeometry(1, ratio);
+        const distances = new Float32Array(geometry.attributes.position.count);
+        for (let i = 0; i < distances.length; i++)
+          distances[i] = pair
+            ? x < 0
+              ? 1 - geometry.attributes.uv.getX(i)
+              : geometry.attributes.uv.getX(i)
+            : 1;
+        geometry.setAttribute(
+          'spineDistance',
+          new THREE.BufferAttribute(distances, 1),
+        );
         const material = new THREE.MeshBasicMaterial({ map: textures.get(n) });
+        shadePaper(material, x < 0 ? 'left' : 'right');
         resources.push(geometry, material);
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(x, 0, -0.025);
@@ -178,86 +228,149 @@ export default function PageTurn({
           'The reverse page must be present in the destination spread.',
         );
       const geometry = new THREE.PlaneGeometry(1, ratio, 80, 48);
-      const backGeometry = geometry.clone();
-      const color = new Float32Array(
-        geometry.attributes.position.count * 3,
-      ).fill(1);
-      geometry.setAttribute('color', new THREE.BufferAttribute(color, 3));
-      backGeometry.setAttribute(
+      geometry.setAttribute(
         'color',
-        new THREE.BufferAttribute(color.slice(), 3),
+        new THREE.BufferAttribute(
+          new Float32Array(geometry.attributes.position.count * 3).fill(1),
+          3,
+        ),
       );
-      const frontUV = geometry.attributes.uv,
-        backUV = backGeometry.attributes.uv;
-      for (let i = 0; i < frontUV.count; i++) {
-        const u = frontUV.getX(i);
-        frontUV.setX(i, forward ? u : 1 - u);
-        backUV.setX(i, forward ? 1 - u : u);
-      }
-      const frontMat = new THREE.MeshBasicMaterial({
+      geometry.setAttribute(
+        'spineDistance',
+        new THREE.BufferAttribute(
+          new Float32Array(geometry.attributes.position.count),
+          1,
+        ),
+      );
+      // One two-sided surface: there are no coincident front/back meshes to compete.
+      const paperMaterial = new THREE.MeshBasicMaterial({
         map: textures.get(frontNumber),
-        side: forward ? THREE.FrontSide : THREE.BackSide,
-        vertexColors: true,
-      });
-      const backMat = new THREE.MeshBasicMaterial({
-        map: textures.get(backNumber),
-        side: forward ? THREE.BackSide : THREE.FrontSide,
-        vertexColors: true,
-      });
-      const front = new THREE.Mesh(geometry, frontMat),
-        back = new THREE.Mesh(backGeometry, backMat);
-      scene.add(front, back);
-      const shadowGeometry = geometry.clone();
-      const shadowCanvas = document.createElement('canvas');
-      shadowCanvas.width = shadowCanvas.height = 128;
-      const brush = shadowCanvas.getContext('2d')!;
-      brush.shadowColor = 'black';
-      brush.shadowBlur = 14;
-      brush.fillStyle = 'black';
-      brush.fillRect(18, 18, 92, 92);
-      const shadowTexture = new THREE.CanvasTexture(shadowCanvas);
-      resources.push(shadowTexture);
-      const shadowMaterial = new THREE.MeshBasicMaterial({
-        map: shadowTexture,
-        color: 0x302419,
-        transparent: true,
-        opacity: 0,
         side: THREE.DoubleSide,
+        vertexColors: true,
+      });
+      shadePaper(paperMaterial, 'sheet');
+      const paperShader = paperMaterial.onBeforeCompile;
+      paperMaterial.onBeforeCompile = (shader, context) => {
+        paperShader.call(paperMaterial, shader, context);
+        shader.uniforms.reverseMap = { value: textures.get(backNumber) };
+        shader.fragmentShader =
+          'uniform sampler2D reverseMap;\n' + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <map_fragment>',
+          `
+          vec4 ink = ${forward ? 'gl_FrontFacing' : '!gl_FrontFacing'}
+            ? texture2D(map, vMapUv) : texture2D(reverseMap, vec2(1.0 - vMapUv.x, vMapUv.y));
+          diffuseColor *= ink;`,
+        );
+      };
+      paperMaterial.customProgramCacheKey = () => 'curl-paper-' + direction;
+      const paper = new THREE.Mesh(geometry, paperMaterial);
+      paper.frustumCulled = false;
+      scene.add(paper);
+
+      // Project an opaque silhouette into one mask. Overlapping parts cannot
+      // multiply their opacity as they did with the flattened transparent mesh.
+      const shadowGeometry = geometry.clone();
+      const maskMaterial = new THREE.MeshBasicMaterial({
+        color: 0x000000,
+        side: THREE.DoubleSide,
+        depthTest: false,
         depthWrite: false,
       });
-      const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
+      const maskScene = new THREE.Scene();
+      const maskMesh = new THREE.Mesh(shadowGeometry, maskMaterial);
+      maskMesh.frustumCulled = false;
+      maskScene.add(maskMesh);
+      const targetWidth = Math.min(1400, Math.ceil(width * span * 1.5));
+      const targetHeight = Math.ceil((targetWidth * ratio) / span);
+      const maskTarget = new THREE.WebGLRenderTarget(
+        targetWidth,
+        targetHeight,
+        { depthBuffer: false },
+      );
+      const blurTarget = new THREE.WebGLRenderTarget(
+        targetWidth,
+        targetHeight,
+        { depthBuffer: false },
+      );
+      const softTarget = new THREE.WebGLRenderTarget(
+        targetWidth,
+        targetHeight,
+        { depthBuffer: false },
+      );
+      const blurGeometry = new THREE.PlaneGeometry(2, 2);
+      const blurMaterial = new THREE.ShaderMaterial({
+        depthTest: false,
+        depthWrite: false,
+        uniforms: {
+          source: { value: maskTarget.texture },
+          stepSize: { value: new THREE.Vector2() },
+        },
+        vertexShader:
+          'varying vec2 vUv; void main(){vUv=uv; gl_Position=vec4(position.xy,0.0,1.0);}',
+        fragmentShader: `uniform sampler2D source; uniform vec2 stepSize; varying vec2 vUv;
+          void main(){float a=texture2D(source,vUv).a*0.227027;
+          a+=(texture2D(source,vUv+stepSize*1.384615).a+texture2D(source,vUv-stepSize*1.384615).a)*0.316216;
+          a+=(texture2D(source,vUv+stepSize*3.230769).a+texture2D(source,vUv-stepSize*3.230769).a)*0.070270;
+          gl_FragColor=vec4(0.0,0.0,0.0,a);}`,
+      });
+      const blurScene = new THREE.Scene();
+      blurScene.add(new THREE.Mesh(blurGeometry, blurMaterial));
+      const shadowMaterial = new THREE.MeshBasicMaterial({
+        map: softTarget.texture,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      });
+      const receiverGeometry = new THREE.PlaneGeometry(span, ratio);
+      const shadow = new THREE.Mesh(receiverGeometry, shadowMaterial);
+      shadow.position.z = -0.012;
       scene.add(shadow);
       resources.push(
         geometry,
-        backGeometry,
-        frontMat,
-        backMat,
+        paperMaterial,
         shadowGeometry,
+        maskMaterial,
+        maskTarget,
+        blurTarget,
+        softTarget,
+        blurGeometry,
+        blurMaterial,
+        receiverGeometry,
         shadowMaterial,
       );
       const initial = performance.now();
       let releasedAt = 0,
         releasedFrom = 0,
-        lastRelease: number | null = null;
+        lastRelease: number | null = null,
+        fastAt: number | null = null,
+        fastFrom = 0;
       const tick = (now: number) => {
         if (disposed || finished || !renderer) return;
         if (control.release !== lastRelease) {
           releasedAt = now;
           releasedFrom = control.progress;
           lastRelease = control.release;
+          fastAt = null;
         }
         const duration = Math.max(
           100,
           TURN_MS * Math.abs((control.release ?? 1) - releasedFrom),
         );
-        const elapsed = control.fast
-          ? 1
-          : Math.min(1, (now - releasedAt) / duration);
+        if (control.fast && fastAt === null) {
+          fastAt = now;
+          fastFrom = control.progress;
+        }
+        const elapsed = Math.min(
+          1,
+          (now - (fastAt ?? releasedAt)) / (fastAt !== null ? 110 : duration),
+        );
         const progress =
           control.release === null
             ? control.progress
-            : releasedFrom +
-              (control.release - releasedFrom) * (1 - Math.pow(1 - elapsed, 3));
+            : (fastAt !== null ? fastFrom : releasedFrom) +
+              (control.release - (fastAt !== null ? fastFrom : releasedFrom)) *
+                (0.5 - 0.5 * Math.cos(Math.PI * elapsed));
         control.progress = progress;
 
         if (pair) {
@@ -271,34 +384,46 @@ export default function PageTurn({
           );
         }
         const hinge = pair ? 0 : forward ? -0.5 : 0.5;
+        let maxHeight = 0;
         for (let row = 0; row <= 48; row++)
           for (let col = 0; col <= 80; col++) {
             const i = row * 81 + col;
-            const c = cornerCurl(
-              col / 80,
-              ratio * (0.5 - row / 48),
-              ratio,
-              progress,
-            );
+            const y = ratio * (0.5 - row / 48);
+            const u = curlSampleU(col, 80, y, ratio, progress);
+            const c = cornerCurl(u, y, ratio, progress);
             const x = hinge + (forward ? c.x : -c.x),
               z = c.z + 0.008;
-            for (const g of [geometry, backGeometry]) {
-              g.attributes.position.setXYZ(i, x, c.y, z);
-              g.attributes.color.setXYZ(i, c.shade, c.shade, c.shade);
-            }
+            maxHeight = Math.max(maxHeight, c.z);
+            geometry.attributes.position.setXYZ(i, x, c.y, z);
+            // Canvas textures are sRGB; lighting is linear, so preserve paper white.
+            const shade = Math.pow(c.shade, 2.2);
+            geometry.attributes.color.setXYZ(i, shade, shade, shade);
+            geometry.attributes.uv.setXY(i, forward ? u : 1 - u, 1 - row / 48);
+            geometry.attributes.spineDistance.setX(i, pair ? u : 1);
             shadowGeometry.attributes.position.setXYZ(
               i,
-              x + z * 0.16,
-              c.y - z * 0.2,
-              -0.01,
+              x + c.z * 0.16,
+              c.y - c.z * 0.2,
+              0,
             );
           }
-        for (const g of [geometry, backGeometry, shadowGeometry]) {
-          g.attributes.position.needsUpdate = true;
-          if (g.attributes.color) g.attributes.color.needsUpdate = true;
-          g.computeBoundingSphere();
-        }
-        shadowMaterial.opacity = Math.sin(Math.PI * progress) * 0.3;
+        for (const name of ['position', 'color', 'uv', 'spineDistance'])
+          geometry.attributes[name].needsUpdate = true;
+        shadowGeometry.attributes.position.needsUpdate = true;
+        shadow.position.x = camera.position.x;
+        shadowMaterial.opacity = 0.24 * Math.min(1, maxHeight / 0.035);
+        renderer.setRenderTarget(maskTarget);
+        renderer.render(maskScene, camera);
+        const softness = 0.65 + maxHeight * width * 0.018;
+        blurMaterial.uniforms.source.value = maskTarget.texture;
+        blurMaterial.uniforms.stepSize.value.set(softness / targetWidth, 0);
+        renderer.setRenderTarget(blurTarget);
+        renderer.render(blurScene, camera);
+        blurMaterial.uniforms.source.value = blurTarget.texture;
+        blurMaterial.uniforms.stepSize.value.set(0, softness / targetHeight);
+        renderer.setRenderTarget(softTarget);
+        renderer.render(blurScene, camera);
+        renderer.setRenderTarget(null);
         renderer.render(scene, camera);
         host.current?.classList.add('ready');
         if (control.release === null || elapsed < 1)
