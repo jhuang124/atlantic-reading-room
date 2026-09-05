@@ -1,0 +1,31 @@
+{
+  "202601": [
+    {
+      "title": "Postcolonial Chicken",
+      "author": "Yasmin Tayag",
+      "printedPage": 48,
+      "section": "Features",
+      "sourceContentsPage": 9,
+      "visualCheckPage": 50
+    }
+  ],
+  "202312": [
+    {
+      "title": "The Annotated Frederick Douglass",
+      "author": "David W. Blight",
+      "printedPage": 30,
+      "section": "Features",
+      "sourceContentsPage": 6
+    }
+  ],
+  "202009": [
+    {
+      "title": "Anatomy of an American Failure",
+      "author": "Ed Yong",
+      "printedPage": 32,
+      "section": "Features",
+      "sourceContentsPage": 5,
+      "pdfLinkPage": 34
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
 import { registerHooks } from 'node:module';
 import { pageColumns } from '../app/reader/columns.ts';
 registerHooks({
@@ -68,9 +69,9 @@ test('A complete print and article place round-trips with 26px text preference',
 });
 test('Actual print page 12 has four usable columns; sparse artwork stays one region', () => {
   const pages = JSON.parse(
-    fs.readFileSync(
-      new URL('../public/reader-assets/202609/index.json', import.meta.url),
-    ),
+    gunzipSync(fs.readFileSync(
+      new URL('../public/reader-assets/202609/index.json.gz', import.meta.url),
+    )),
   );
   const columns = pageColumns(pages[13].words);
   assert.equal(columns.length, 4);

@@ -1,13 +1,21 @@
+import archiveCatalog from './archive-catalog.json' with { type: 'json' };
+
 export type ContentsEntry = {
   title: string;
   author?: string;
   printedPage: number;
   section: string;
+  sourceContentsPage?: number;
+  pdfLinkPage?: number | null;
+  visualCheckPage?: number;
 };
 export type ReadableIssue = {
   id: string;
   issue: string;
   pageCount: number;
+  printOffset?: number;
+  backMatterPages?: number;
+  indexEncoding?: string;
   contentsPage: number;
   coverStoryPage: number;
   contents: ContentsEntry[];
@@ -21,6 +29,7 @@ const item = (
 export const readerIssues: ReadableIssue[] = [
   {
     id: '202609',
+    indexEncoding: 'gzip',
     issue: 'September 2026',
     pageCount: 112,
     contentsPage: 7,
@@ -67,6 +76,7 @@ export const readerIssues: ReadableIssue[] = [
   },
   {
     id: '202608',
+    indexEncoding: 'gzip',
     issue: 'August 2026',
     pageCount: 104,
     contentsPage: 5,
@@ -101,6 +111,7 @@ export const readerIssues: ReadableIssue[] = [
   },
   {
     id: '202512',
+    indexEncoding: 'gzip',
     issue: 'December 2025',
     pageCount: 108,
     contentsPage: 7,
@@ -139,4 +150,5 @@ export const readerIssues: ReadableIssue[] = [
       item('Caleb’s Inferno', 'Caleb Madison', 104, 'Back'),
     ],
   },
+  ...archiveCatalog,
 ];

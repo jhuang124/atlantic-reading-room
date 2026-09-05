@@ -1,6 +1,6 @@
 # The Print Edition — V2
 
-An Atlantic magazine archive and reader: 55 covers from September 2021 through September 2026, with full print editions for September 2026, August 2026, and December 2025.
+An Atlantic magazine archive and reader: 71 complete issues from January/February 2020 through September 2026.
 
 [Open the demo](https://jhuang124.github.io/atlantic-reading-room/)
 
@@ -22,7 +22,7 @@ Keyboard: arrows turn pages; C opens Contents; / opens Search; B saves; F toggle
 
 The visual system adapts the Atlantic WWW kit's wordmark, Atlantic Condensed headings, Adobe Garamond, Graphik, warm white, thin black rules, and restrained red. The local kit derives from `theatlantic/frontend` at `6bff7379`; this independent prototype is not a claim of current production parity. Fonts load from official Atlantic URLs. See [COVER-SOURCES.md](COVER-SOURCES.md) for cover provenance.
 
-The three full PDFs were obtained from the Atlantic subscriber library, at `cdn.theatlantic.com/media/magazine/pdfs/{202609,202608,202512}.pdf`. Their thumbnails, indexes, selected article text, and PDF.js support assets are included for the user-authorized public demo.
+The 71 full PDFs were obtained from the Atlantic subscriber library, at `cdn.theatlantic.com/media/magazine/pdfs/YYYYMM.pdf`. Their thumbnails, indexes, selected article text, and PDF.js support assets are included for the user-authorized public demo.
 
 ## Run and verify
 
@@ -34,7 +34,7 @@ node --test scripts/reader-*.test.mjs
 npm run build:pages
 ```
 
-The 19 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
+The 22 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
 The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
 
@@ -43,3 +43,7 @@ The repository-wide linter still flags inherited prototype/template patterns, in
 Pushing `main` triggers `.github/workflows/pages.yml`, which builds the static Vite application to `dist-pages/` and publishes with GitHub Pages. All paths are relative so the reader works under `/atlantic-reading-room/`. No server or account is needed; reading state is saved in that browser's local storage.
 
 `python3 scripts/prepare-reader-assets.py` rebuilds thumbnails, word positions, and PDF.js assets (requires Poppler). `python3 scripts/prepare-articles.py` rebuilds selected article text. `node scripts/check-pdf-rendering.mjs` checks sample PDF rendering.
+
+## Archive preparation
+
+Original subscriber-library downloads remain untouched in ignored `work/archive-originals/`. Run `scripts/import-archive.py` with PyMuPDF and Poppler to extract covers, verified contents destinations, folio offsets, thumbnails, and gzip word indexes. `--catalog-only` refreshes metadata without touching PDFs. `scripts/compact-archive.py` compacts web PDFs with sampled pixel comparisons; `scripts/optimize-reader-data.py` compresses navigation thumbnails and search indexes. These steps keep the static publication below 1 GB. Only web image streams are reduced; vector print text remains sharp. Manual TOC exceptions are recorded in `app/reader/archive-overrides.json`.

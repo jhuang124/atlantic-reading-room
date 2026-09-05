@@ -1,7 +1,8 @@
 """Prepare local-only thumbnails, page text and word positions from authorized PDFs."""
-import pathlib,subprocess,xml.etree.ElementTree as ET,json,concurrent.futures,re,shutil
+import gzip,pathlib,subprocess,xml.etree.ElementTree as ET,json,concurrent.futures,re,shutil
 root=pathlib.Path(__file__).resolve().parents[1]/'public/reader-assets'
-issues={'202609':112,'202608':104,'202512':108}
+issues={p.stem:int(re.search(r'Pages:\s+(\d+)',subprocess.check_output(['pdfinfo',str(p)],text=True)).group(1)) for p in root.glob('*.pdf')}
+if not issues: raise SystemExit('No reader PDFs found; run import-archive.py first.')
 def build(item):
  id,count=item;folder=root/id;folder.mkdir(exist_ok=True)
  if len(list(folder.glob('*.jpg')))<count:subprocess.run(['pdftoppm','-scale-to','240','-jpeg','-jpegopt','quality=76',str(root/(id+'.pdf')),str(folder/'page')],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
@@ -15,7 +16,7 @@ def build(item):
   if src.exists():src.rename(dest)
   out.append({'page':n,'width':w,'height':h,'text':' '.join(x['t'] for x in words),'words':words})
  assert len(out)==count
- (folder/'index.json').write_text(json.dumps(out,separators=(',',':')))
+ (folder/'index.json.gz').write_bytes(gzip.compress(json.dumps(out,separators=(',',':')).encode(),mtime=0))
  print(id, len(out),'pages;',sum(len(p['words']) for p in out),'searchable words',flush=True)
 with concurrent.futures.ThreadPoolExecutor(3) as ex:list(ex.map(build,issues.items()))
 

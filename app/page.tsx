@@ -37,7 +37,8 @@ function transition(update: () => void) {
 }
 type Issue = (typeof data)[number];
 const issues: Issue[] = data;
-const years = [2026, 2025, 2024, 2023, 2022, 2021];
+const years = [...new Set(issues.map((issue) => issue.year))].sort((a, b) => b - a);
+const storySearch = new Map(readerIssues.map((issue) => [issue.id, issue.contents.map((story) => `${story.title} ${story.author || ''}`).join(' ')]));
 const title = (issue: Issue) =>
   (
     issue.coverStories[0]?.title ||
@@ -193,7 +194,7 @@ export default function Home() {
           (i) =>
             (year === 'all' || i.year === Number(year)) &&
             (!readableOnly || available.includes(i.id)) &&
-            `${i.issue} ${title(i)} ${i.coverStories.flatMap((s) => s.authors).join(' ')}`
+            `${i.issue} ${title(i)} ${i.coverStories.flatMap((s) => s.authors).join(' ')} ${storySearch.get(i.id) || ''}`
               .toLowerCase()
               .includes(query.trim().toLowerCase()),
         )
@@ -213,7 +214,7 @@ export default function Home() {
     const entry = readerIssues.find((i) => i.id === id),
       place = places[id];
     if (!entry || !place) return '';
-    const label = pageLabel(place.page, entry.pageCount);
+    const label = pageLabel(place.page, entry.pageCount, entry.printOffset, entry.backMatterPages);
     return /^\d+$/.test(label) ? `Page ${label}` : label;
   };
   return (
@@ -257,8 +258,8 @@ export default function Home() {
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search covers and authors"
-                  aria-label="Search covers, issues, and authors"
+                  placeholder="Search issues, stories, and authors"
+                  aria-label="Search issues, stories, and authors"
                 />
                 {query && (
                   <button
@@ -290,7 +291,7 @@ export default function Home() {
                   <option value="newest">Newest first</option>
                   <option value="oldest">Oldest first</option>
                 </select>
-                {available.length > 0 && (
+                {available.length > 0 && available.length < issues.length && (
                   <label className="archive-available-filter">
                     <input
                       type="checkbox"

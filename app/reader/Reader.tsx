@@ -84,6 +84,8 @@ function Leaf({
   query,
   onDoubleClick,
   onPaint,
+  printOffset,
+  backMatterPages,
 }: {
   pdf: PDFDocumentProxy;
   number: number;
@@ -93,6 +95,8 @@ function Leaf({
   query: string;
   onDoubleClick: (x: number, y: number) => void;
   onPaint?: () => void;
+  printOffset?: number;
+  backMatterPages?: number;
 }) {
   const painted = useRef(onPaint);
   painted.current = onPaint;
@@ -181,7 +185,7 @@ function Leaf({
     <div
       className="reader-leaf"
       style={{ width, height: width * ratio }}
-      aria-label={pageLabel(number, pdf.numPages)}
+      aria-label={pageLabel(number, pdf.numPages, printOffset, backMatterPages)}
       onDoubleClick={(e) => {
         if (!(e.target as HTMLElement).closest('.textLayer span'))
           onDoubleClick(e.clientX, e.clientY);
@@ -793,9 +797,16 @@ export default function Reader({
         if (!disposed)
           setError('This issue couldn’t be opened. Please try again.');
       });
-    fetch(asset(issue.id, 'index.json'), { signal: abort.signal })
-      .then((r) => {
+    fetch(asset(issue.id, issue.indexEncoding === 'gzip' ? 'index.json.gz' : 'index.json'), { signal: abort.signal })
+      .then(async (r) => {
         if (!r.ok) throw Error('Missing index');
+        if (issue.indexEncoding === 'gzip') {
+          const bytes = new Uint8Array(await r.arrayBuffer());
+          // Hosts may transparently decode Content-Encoding before fetch.
+          if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return JSON.parse(new TextDecoder().decode(bytes));
+          const compressed = new Response(bytes).body!;
+          return new Response(compressed.pipeThrough(new DecompressionStream('gzip'))).json();
+        }
         return r.json();
       })
       .then((x) => {
@@ -868,7 +879,7 @@ export default function Reader({
     setArticleId(currentEdition.id);
   }
   function goToStory(n: number) {
-    const entry = issue.contents.find((c) => physicalPage(c.printedPage) === n);
+    const entry = issue.contents.find((c) => physicalPage(c.printedPage, issue) === n);
     const edition = entry && articleForStory(issue, entry.printedPage);
     const stayInArticle = !!articleId && !!edition;
     navigate(n);
@@ -1021,7 +1032,7 @@ export default function Reader({
     returnToPrint,
   ]);
   function submitJump() {
-    const n = parsePrintedPage(jump ?? '', issue.pageCount);
+    const n = parsePrintedPage(jump ?? '', issue.pageCount, issue.printOffset, issue.backMatterPages);
     if (n !== null) navigate(n);
     else {
       announce(
@@ -1030,7 +1041,7 @@ export default function Reader({
       setJump(null);
     }
   }
-  const label = (n: number) => pageLabel(n, issue.pageCount);
+  const label = (n: number) => pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages);
   return (
     <div
       ref={dialog}
@@ -1165,6 +1176,8 @@ export default function Reader({
                     <div className="leaf-wrap" key={n}>
                       <Leaf
                         pdf={pdf}
+                        printOffset={issue.printOffset}
+                        backMatterPages={issue.backMatterPages}
                         onPaint={paintedPage}
                         number={n}
                         width={leafWidth}
@@ -1280,7 +1293,7 @@ export default function Reader({
             disabled={!previousStory}
             onClick={() =>
               previousStory &&
-              goToStory(physicalPage(previousStory.printedPage))
+              goToStory(physicalPage(previousStory.printedPage, issue))
             }
           >
             <ArrowLeft size={18} />
@@ -1298,7 +1311,7 @@ export default function Reader({
             title={nextStory?.title || 'No next story'}
             disabled={!nextStory}
             onClick={() =>
-              nextStory && goToStory(physicalPage(nextStory.printedPage))
+              nextStory && goToStory(physicalPage(nextStory.printedPage, issue))
             }
           >
             <ArrowRight size={18} />
@@ -1567,6 +1580,8 @@ export default function Reader({
               <div className="preview-page">
                 <Leaf
                   pdf={pdf}
+                        printOffset={issue.printOffset}
+                        backMatterPages={issue.backMatterPages}
                   number={preview}
                   width={Math.max(
                     120,

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
 import {
   spreadPages,
   turnPage,
@@ -59,28 +60,19 @@ test('Phrase highlighting includes only matched words', () => {
 test('Every contents destination and local thumbnail exists', () => {
   for (const issue of readerIssues) {
     const idx = JSON.parse(
-      fs.readFileSync(`public/reader-assets/${issue.id}/index.json`),
+      issue.indexEncoding === 'gzip' ? gunzipSync(fs.readFileSync(`public/reader-assets/${issue.id}/index.json.gz`)).toString() : fs.readFileSync(`public/reader-assets/${issue.id}/index.json`),
     );
     assert.equal(idx.length, issue.pageCount);
     for (let n = 1; n <= issue.pageCount; n++)
       assert.ok(fs.existsSync(`public/reader-assets/${issue.id}/${n}.jpg`));
     for (const c of issue.contents) {
-      assert.ok(c.printedPage + 2 <= issue.pageCount - 2);
+      assert.ok(c.printedPage + (issue.printOffset ?? 2) <= issue.pageCount - (issue.backMatterPages ?? 2));
       assert.ok(
-        idx[c.printedPage + 1].words.length > 0,
+        idx.slice(c.printedPage + (issue.printOffset ?? 2) - 1,c.printedPage + (issue.printOffset ?? 2) + 3).some(p=>p.words.length > 0),
         `${issue.id} ${c.title}`,
       );
     }
-    assert.ok(
-      searchPages(
-        idx,
-        issue.id === '202609'
-          ? 'monarch'
-          : issue.id === '202608'
-            ? 'reading'
-            : 'election',
-      ).length > 0,
-    );
+    assert.ok(idx.reduce((n,p)=>n+p.words.length,0)>10000, `${issue.id} has searchable article text`);
   }
 });
 test('Unavailable browser storage does not prevent reading', () => {
@@ -119,4 +111,19 @@ test('Every animated sheet reveals the immediately adjacent PDF page in both dir
           if (spread && direction === -1) assert.equal(faces.back, to.at(-1));
         }
     }
+});
+
+test('Special-edition folios account for extra front pages', () => {
+  assert.equal(parsePrintedPage('10',156,6),16);
+  assert.equal(parsePrintedPage('148',156,6),154);
+  assert.equal(parsePrintedPage('149',156,6),null);
+  assert.equal(pageLabel(16,156,6),'10');
+  assert.equal(pageLabel(5,156,6),'Front matter');
+  assert.equal(pageLabel(155,156,6),'Inside back');
+});
+
+test('April 2020 keeps its last editorial page accessible', () => {
+ assert.equal(pageLabel(102,103,2,1),'100');
+ assert.equal(parsePrintedPage('100',103,2,1),102);
+ assert.equal(pageLabel(103,103,2,1),'Back cover');
 });

@@ -30,20 +30,20 @@ export function turnPage(
     count,
   );
 }
-export function pageLabel(page: number, count: number) {
+export function pageLabel(page: number, count: number, offset = 2, backMatterPages = 2) {
   if (page === 1) return 'Cover';
   if (page === 2) return 'Inside cover';
-  if (page === count) return 'Back cover';
-  if (page === count - 1) return 'Inside back';
-  return String(page - 2);
+  if (backMatterPages > 0 && page === count) return 'Back cover';
+  if (backMatterPages > 1 && page === count - 1) return 'Inside back';
+  return page <= offset ? 'Front matter' : String(page - offset);
 }
-export function parsePrintedPage(value: string, count: number): number | null {
+export function parsePrintedPage(value: string, count: number, offset = 2, backMatterPages = 2): number | null {
   const v = value.trim().toLowerCase();
   if (v === 'cover') return 1;
   if (v === 'back') return count;
   if (!/^\d+$/.test(v)) return null;
   const n = Number(v);
-  return n >= 1 && n <= count - 4 ? n + 2 : null;
+  return n >= 1 && n <= count - backMatterPages - offset ? n + offset : null;
 }
 export function normalize(text: string) {
   return text

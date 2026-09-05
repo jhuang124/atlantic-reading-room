@@ -1,11 +1,11 @@
 import type { ReadableIssue } from './catalog';
 import { articleEditions } from './articles';
-// Printed folios exclude the front cover and inside front cover.
-export const physicalPage = (printed: number) => printed + 2;
+// Special editions can have extra covers before printed folio 1.
+export const physicalPage = (printed: number, issue?: Pick<ReadableIssue, 'printOffset'>) => printed + (issue?.printOffset ?? 2);
 export function storyIndex(issue: ReadableIssue, page: number) {
-  if (page > issue.pageCount - 2) return -1;
+  if (page > issue.pageCount - (issue.backMatterPages ?? 2)) return -1;
   return issue.contents.findLastIndex(
-    (entry) => physicalPage(entry.printedPage) <= page,
+    (entry) => physicalPage(entry.printedPage, issue) <= page,
   );
 }
 export function adjacentStory(
@@ -13,9 +13,10 @@ export function adjacentStory(
   page: number,
   direction: number,
 ) {
+  if (!issue.contents.length) return undefined;
   const current = storyIndex(issue, page);
   if (current < 0)
-    return page <= physicalPage(issue.contents[0].printedPage)
+    return page <= physicalPage(issue.contents[0].printedPage, issue)
       ? direction > 0
         ? issue.contents[0]
         : undefined
@@ -26,7 +27,7 @@ export function adjacentStory(
 }
 export function articleForStory(issue: ReadableIssue, printedPage: number) {
   return articleEditions.find(
-    (a) => a.issueId === issue.id && a.pages[0] === physicalPage(printedPage),
+    (a) => a.issueId === issue.id && a.pages[0] === physicalPage(printedPage, issue),
   );
 }
 export function locationTitle(issue: ReadableIssue, page: number) {

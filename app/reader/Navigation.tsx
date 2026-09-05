@@ -165,7 +165,7 @@ export default function Navigation({
                     <button
                       className="story-destination"
                       aria-current={i === current ? 'location' : undefined}
-                      onClick={() => onStory(physicalPage(entry.printedPage))}
+                      onClick={() => onStory(physicalPage(entry.printedPage, issue))}
                     >
                       <span>
                         <strong>{entry.title}</strong>
@@ -196,7 +196,7 @@ export default function Navigation({
                 (n) => (
                   <button
                     key={n}
-                    aria-label={`Preview ${pageLabel(n, issue.pageCount)}`}
+                    aria-label={`Preview ${pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages)}`}
                     aria-current={n === page ? 'location' : undefined}
                     onClick={() => onPreview(n)}
                   >
@@ -205,7 +205,7 @@ export default function Navigation({
                       alt=""
                       loading="lazy"
                     />
-                    <span>{pageLabel(n, issue.pageCount)}</span>
+                    <span>{pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages)}</span>
                     {marks.includes(n) && <Bookmark size={12} />}
                   </button>
                 ),
@@ -245,7 +245,7 @@ export default function Navigation({
                   onClick={() => onNavigate(result.page)}
                 >
                   <small>
-                    Page {pageLabel(result.page, issue.pageCount)} ·{' '}
+                    Page {pageLabel(result.page, issue.pageCount, issue.printOffset, issue.backMatterPages)} ·{' '}
                     {locationTitle(issue, result.page)}
                   </small>
                   <p>{result.snippet}</p>
@@ -266,12 +266,12 @@ export default function Navigation({
                     <img src={`reader-assets/${issue.id}/${n}.jpg`} alt="" />
                     <span>
                       {locationTitle(issue, n)}
-                      <small>Page {pageLabel(n, issue.pageCount)}</small>
+                      <small>Page {pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages)}</small>
                     </span>
                   </button>
                   <button
                     onClick={() => onRemoveMark(n)}
-                    aria-label={`Remove bookmark at ${pageLabel(n, issue.pageCount)}`}
+                    aria-label={`Remove bookmark at ${pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages)}`}
                   >
                     <X size={16} />
                   </button>

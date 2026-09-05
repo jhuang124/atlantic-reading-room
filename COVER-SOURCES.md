@@ -11,3 +11,7 @@ All 55 image downloads succeeded and have valid JPEG or PNG file signatures. 10 
 Source-page URLs and original image URLs are retained in app/issues.json for verification. No PDFs, subscriber text, or access-controlled content were downloaded.
 
 Reuse information: https://support.theatlantic.com/hc/en-us/articles/360049974014-Permissions-to-reprint-or-reproduce-content-from-The-Atlantic describes Atlantic reproduction permission and licensed-photo handling. The archive does not state an open license for these images. This research manifest is provenance, not a rights clearance.
+
+## January 2020–July/August 2021 expansion
+
+The 16 additional covers are rendered from the first pages of the corresponding authorized subscriber-library PDFs, downloaded through the browser from `https://accounts.theatlantic.com/accounts/library/magazine-issues/`. PDF URLs follow `https://cdn.theatlantic.com/media/magazine/pdfs/YYYYMM.pdf`. Combined January/February and July/August issues use January and July IDs.

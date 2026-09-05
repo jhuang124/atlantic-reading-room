@@ -158,7 +158,7 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/3zLgACwumWwfyDgFCfPDw10l95E=/0x0:1181x1575/352x469/media/img/issues/2026/02/17/0326_Cover_JA/original.jpg",
     "coverStories": [
       {
-        "title": "America Isn\u2019t Ready for What AI Will Do to Jobs",
+        "title": "America Isn’t Ready for What AI Will Do to Jobs",
         "url": "https://www.theatlantic.com/magazine/2026/03/ai-economy-labor-market-transformation/685731/",
         "dek": "Does anyone have a plan for what happens next?",
         "authors": [
@@ -211,7 +211,7 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/TfijmOXsXLCXFhY2LROa5Iid7zk=/0x0:2363x3150/352x469/media/img/issues/2025/12/09/0126_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "Why Is Robert F. Kennedy Jr. So Convinced He\u2019s Right?",
+        "title": "Why Is Robert F. Kennedy Jr. So Convinced He’s Right?",
         "url": "https://www.theatlantic.com/magazine/2026/01/rfk-jr-public-health-science/684948/",
         "dek": "How an outsider, once ignored by the public-health establishment, became the most powerful man in science",
         "authors": [
@@ -237,7 +237,7 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Z56joCVOPKeh-k8qsKhR5Uj-5YQ=/0x0:2363x3150/352x469/media/img/issues/2025/11/10/1225_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "Donald Trump\u2019s Plan to Subvert the Midterms Is Already Under Way",
+        "title": "Donald Trump’s Plan to Subvert the Midterms Is Already Under Way",
         "url": "https://www.theatlantic.com/magazine/archive/2025/12/2026-midterms-trump-threat/684615/",
         "dek": "Our election system is reaching a breaking point.",
         "authors": [
@@ -273,7 +273,7 @@
       {
         "title": "The Unfinished Revolution",
         "url": "https://www.theatlantic.com/category/unfinished-revolution/",
-        "dek": "<em>The Atlantic </em>examines the founding of the United States and brings the nation\u2019s history to bear on its present\u2014and its future.",
+        "dek": "<em>The Atlantic </em>examines the founding of the United States and brings the nation’s history to bear on its present—and its future.",
         "authors": []
       }
     ],
@@ -324,7 +324,7 @@
       {
         "title": "The Most Nihilistic Conflict on Earth",
         "url": "https://www.theatlantic.com/magazine/archive/2025/09/sudan-civil-war-humanitarian-crisis/683563/",
-        "dek": "Sudan\u2019s devastating civil war shows what will replace the liberal order: anarchy and greed.",
+        "dek": "Sudan’s devastating civil war shows what will replace the liberal order: anarchy and greed.",
         "authors": [
           "Anne Applebaum"
         ]
@@ -365,7 +365,7 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/03XAiSsB0O6_cuqHIv7_CPCQpHg=/0x0:2363x3150/352x469/media/img/issues/2025/06/17/0725_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "Inside America\u2019s Death Chambers",
+        "title": "Inside America’s Death Chambers",
         "url": "https://www.theatlantic.com/magazine/archive/2025/07/death-row-executions-witness/682891/",
         "dek": "What years of witnessing executions taught me about sin, mercy, and the possibility of redemption",
         "authors": [
@@ -391,9 +391,9 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/ceUDI1RTV1048bHz5U7xAcslyB8=/0x0:2363x3150/352x469/media/img/issues/2025/05/05/0625_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "\u2018I Run the Country and the World\u2019",
+        "title": "‘I Run the Country and the World’",
         "url": "https://www.theatlantic.com/magazine/archive/2025/06/trump-second-term-comeback/682573/",
-        "dek": "Donald Trump believes he\u2019s invincible. But the cracks are beginning to show.",
+        "dek": "Donald Trump believes he’s invincible. But the cracks are beginning to show.",
         "authors": [
           "Ashley Parker",
           "Michael Scherer"
@@ -421,7 +421,7 @@
     "imageFormat": "JPEG",
     "imageWidth": 703,
     "imageBytes": 137378,
-    "issueTheme": "It\u2019s Later Than You Think",
+    "issueTheme": "It’s Later Than You Think",
     "cover": "covers/202505.jpg"
   },
   {
@@ -463,7 +463,7 @@
       {
         "title": "How Progressives Froze the American Dream",
         "url": "https://www.theatlantic.com/magazine/archive/2025/03/american-geographic-social-mobility/681439/",
-        "dek": "The U.S. was once the world\u2019s most geographically mobile society. Now we\u2019re stuck in place\u2014and that\u2019s a very big problem.",
+        "dek": "The U.S. was once the world’s most geographically mobile society. Now we’re stuck in place—and that’s a very big problem.",
         "authors": [
           "Yoni Appelbaum"
         ]
@@ -489,7 +489,7 @@
       {
         "title": "The Anti-Social Century",
         "url": "https://www.theatlantic.com/magazine/archive/2025/02/american-loneliness-personality-politics/681091/",
-        "dek": "Americans are now spending more time alone than ever. It\u2019s changing our personalities, our politics, and even our relationship to reality.",
+        "dek": "Americans are now spending more time alone than ever. It’s changing our personalities, our politics, and even our relationship to reality.",
         "authors": [
           "Derek Thompson"
         ]
@@ -541,7 +541,7 @@
       {
         "title": "How the Ivy League Broke America",
         "url": "https://www.theatlantic.com/magazine/archive/2024/12/meritocracy-college-admissions-social-economic-segregation/680392/",
-        "dek": "The meritocracy isn\u2019t working. We need something new.",
+        "dek": "The meritocracy isn’t working. We need something new.",
         "authors": [
           "David Brooks"
         ]
@@ -567,7 +567,7 @@
       {
         "title": "The Moment of Truth",
         "url": "https://www.theatlantic.com/magazine/archive/2024/11/george-washington-nightmare-donald-trump/679946/",
-        "dek": "The reelection of Donald Trump would mark the end of George Washington\u2019s vision for the presidency\u2014and the United States.",
+        "dek": "The reelection of Donald Trump would mark the end of George Washington’s vision for the presidency—and the United States.",
         "authors": [
           "Tom Nichols"
         ]
@@ -610,7 +610,7 @@
       {
         "title": "Seventy Miles in Hell",
         "url": "https://www.theatlantic.com/magazine/archive/2024/09/darien-gap-route-migrants-panama/679156/",
-        "dek": "The Dari\u00e9n Gap was once considered impassable. Now hundreds of thousands of migrants are risking treacherous terrain, violence, hunger, and disease to travel through the jungle to the United States.",
+        "dek": "The Darién Gap was once considered impassable. Now hundreds of thousands of migrants are risking treacherous terrain, violence, hunger, and disease to travel through the jungle to the United States.",
         "authors": [
           "Caitlin Dickerson"
         ]
@@ -636,7 +636,7 @@
       {
         "title": "What Will Become of American Civilization?",
         "url": "https://www.theatlantic.com/magazine/archive/2024/07/phoenix-climate-drought-republican-politics/678494/",
-        "dek": "Conspiracism and hyper-partisanship in the nation\u2019s fastest-growing city",
+        "dek": "Conspiracism and hyper-partisanship in the nation’s fastest-growing city",
         "authors": [
           "George Packer"
         ]
@@ -687,7 +687,7 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/0Itmf4N8H6VSbRAOWw2bdr-LwFQ=/0x0:2363x3150/352x469/media/img/issues/2024/04/15/0524_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "\u2018This Will Finish Us\u2019",
+        "title": "‘This Will Finish Us’",
         "url": "https://www.theatlantic.com/magazine/archive/2024/05/maasai-tribe-tanzania-forced-land-evictions-serengeti/677835/",
         "dek": "How Gulf princes, the safari industry, and conservation groups are displacing the Maasai from the last of their Serengeti homeland",
         "authors": [
@@ -715,7 +715,7 @@
       {
         "title": "The Golden Age of American Jews Is Ending",
         "url": "https://www.theatlantic.com/magazine/archive/2024/04/us-anti-semitism-jewish-american-safety/677469/",
-        "dek": "Anti-Semitism on the right and the left threatens to bring to a close an unprecedented period of safety and prosperity for Jewish Americans\u2014and demolish the liberal order they helped establish.",
+        "dek": "Anti-Semitism on the right and the left threatens to bring to a close an unprecedented period of safety and prosperity for Jewish Americans—and demolish the liberal order they helped establish.",
         "authors": [
           "Franklin Foer"
         ]
@@ -831,7 +831,7 @@
       {
         "title": "Jenisha From Kentucky",
         "url": "https://www.theatlantic.com/magazine/archive/2023/10/family-addiction-drugs-kentucky-new-york/675113/",
-        "dek": "I came to New York sure of one thing\u2014that no one could ever know my past.",
+        "dek": "I came to New York sure of one thing—that no one could ever know my past.",
         "authors": [
           "Jenisha Watts"
         ]
@@ -909,7 +909,7 @@
       {
         "title": "The Counteroffensive",
         "url": "https://www.theatlantic.com/magazine/archive/2023/06/counteroffensive-ukraine-zelensky-crimea/673781/",
-        "dek": "The future of the democratic world will be determined by whether the Ukrainian military can break a stalemate with Russia and drive the country backwards\u2014perhaps even out of Crimea for good.",
+        "dek": "The future of the democratic world will be determined by whether the Ukrainian military can break a stalemate with Russia and drive the country backwards—perhaps even out of Crimea for good.",
         "authors": [
           "Anne Applebaum",
           "Jeffrey Goldberg"
@@ -986,9 +986,9 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Jd-nRE-GLHovzbmKX2RiTspjgAo=/0x0:2438x3225/352x466/media/img/issues/2023/02/14/0323_Cover_new/original.jpg",
     "coverStories": [
       {
-        "title": "We\u2019ve Lost the Plot",
+        "title": "We’ve Lost the Plot",
         "url": "https://www.theatlantic.com/magazine/archive/2023/03/tv-politics-entertainment-metaverse/672773/",
-        "dek": "Our constant need for entertainment has blurred the line between fiction and reality\u2014on television, in American politics, and in our everyday lives.",
+        "dek": "Our constant need for entertainment has blurred the line between fiction and reality—on television, in American politics, and in our everyday lives.",
         "authors": [
           "Megan Garber"
         ]
@@ -1031,7 +1031,7 @@
       {
         "title": "Monuments to the Unthinkable",
         "url": "https://www.theatlantic.com/magazine/archive/2022/12/holocaust-remembrance-lessons-america/671893/",
-        "dek": "America still can\u2019t figure out how to memorialize the sins of our history. What can we learn from Germany?",
+        "dek": "America still can’t figure out how to memorialize the sins of our history. What can we learn from Germany?",
         "authors": [
           "Clint Smith"
         ]
@@ -1083,13 +1083,13 @@
       {
         "title": "Ukrainians Are Defending the Values Americans Claim to Hold",
         "url": "https://www.theatlantic.com/magazine/archive/2022/10/ukraine-invasion-civilian-volunteers-survival/671241/",
-        "dek": "\u201cYou cannot just remain silent, you cannot remain still. You have to do something.\u201d",
+        "dek": "“You cannot just remain silent, you cannot remain still. You have to do something.”",
         "authors": [
           "George Packer"
         ]
       },
       {
-        "title": "\u2018Lukashenko Is Easier to Unseat Than Putin\u2019",
+        "title": "‘Lukashenko Is Easier to Unseat Than Putin’",
         "url": "https://www.theatlantic.com/magazine/archive/2022/10/belarus-volunteers-fighting-ukraine-invasion/671242/",
         "dek": "A band of Belarusians is resisting the threat of a neo-Soviet empire by taking up arms in Ukraine.",
         "authors": [
@@ -1125,7 +1125,7 @@
       {
         "title": "An American Catastrophe",
         "url": "https://www.theatlantic.com/magazine/archive/2022/09/trump-administration-family-separation-policy-immigration/670604/",
-        "dek": "The secret history of the U.S. government\u2019s family-separation policy",
+        "dek": "The secret history of the U.S. government’s family-separation policy",
         "authors": [
           "Caitlin Dickerson"
         ]
@@ -1152,7 +1152,7 @@
       {
         "title": "How Animals Perceive the World",
         "url": "https://www.theatlantic.com/magazine/archive/2022/07/light-noise-pollution-animal-sensory-impact/638446/",
-        "dek": "Every creature lives within its own sensory bubble, but only humans have the capacity to appreciate the experiences of other species. What we\u2019ve learned is astounding.",
+        "dek": "Every creature lives within its own sensory bubble, but only humans have the capacity to appreciate the experiences of other species. What we’ve learned is astounding.",
         "authors": [
           "Ed Yong"
         ]
@@ -1176,7 +1176,7 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/Xj2mCWg8Y3PUjajpXrClNr3XHnk=/0x0:2363x3150/352x469/media/img/issues/2022/05/17/0622_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "Joan Didion\u2019s Magic Trick",
+        "title": "Joan Didion’s Magic Trick",
         "url": "https://www.theatlantic.com/magazine/archive/2022/06/chasing-joan-didion-california/629633/",
         "dek": "What was it that gave her such power?",
         "authors": [
@@ -1230,7 +1230,7 @@
       {
         "title": "Absolute Power",
         "url": "https://www.theatlantic.com/magazine/archive/2022/04/mohammed-bin-salman-saudi-arabia-palace-interview/622822/",
-        "dek": "Asked about the murder of Jamal Khashoggi, Mohammed bin Salman said, \u201cIf that\u2019s the way we did things, Khashoggi would not even be among the top 1,000 people on the list.\u201d",
+        "dek": "Asked about the murder of Jamal Khashoggi, Mohammed bin Salman said, “If that’s the way we did things, Khashoggi would not even be among the top 1,000 people on the list.”",
         "authors": [
           "Graeme Wood"
         ]
@@ -1262,9 +1262,9 @@
         ]
       },
       {
-        "title": "It\u2019s Your Friends Who Break Your Heart",
+        "title": "It’s Your Friends Who Break Your Heart",
         "url": "https://www.theatlantic.com/magazine/archive/2022/03/why-we-lose-friends-aging-happiness/621305/",
-        "dek": "The older we get, the more we need our friends\u2014and the harder it is to keep them.",
+        "dek": "The older we get, the more we need our friends—and the harder it is to keep them.",
         "authors": [
           "Jennifer Senior"
         ]
@@ -1296,9 +1296,9 @@
     "smallImageUrl": "https://cdn.theatlantic.com/thumbor/ERC8JiebvkJqDIUgZoBMz6fmh7c=/0x0:2363x3150/352x469/media/img/issues/2021/12/07/0122_Cover/original.jpg",
     "coverStories": [
       {
-        "title": "Trump\u2019s Next Coup Has Already Begun",
+        "title": "Trump’s Next Coup Has Already Begun",
         "url": "https://www.theatlantic.com/magazine/archive/2022/01/january-6-insurrection-trump-coup-2024-election/620843/",
-        "dek": "January 6 was practice. Donald Trump\u2019s GOP is much better positioned to subvert the next election.",
+        "dek": "January 6 was practice. Donald Trump’s GOP is much better positioned to subvert the next election.",
         "authors": [
           "Barton Gellman"
         ]
@@ -1324,7 +1324,7 @@
       {
         "title": "The Bad Guys Are Winning",
         "url": "https://www.theatlantic.com/magazine/archive/2021/12/the-autocrats-are-winning/620526/",
-        "dek": "If the 20th century was the story of slow, uneven progress toward the victory of liberal democracy over other ideologies\u2014communism, fascism, virulent nationalism\u2014the 21st century is, so far, a story of the reverse.",
+        "dek": "If the 20th century was the story of slow, uneven progress toward the victory of liberal democracy over other ideologies—communism, fascism, virulent nationalism—the 21st century is, so far, a story of the reverse.",
         "authors": [
           "Anne Applebaum"
         ]
@@ -1403,7 +1403,7 @@
       {
         "title": "What Bobby McIlvaine Left Behind",
         "url": "https://www.theatlantic.com/magazine/archive/2021/09/twenty-years-gone-911-bobby-mcilvaine/619490/",
-        "dek": "Grief, conspiracy theories, and one family\u2019s search for meaning in the two decades since 9/11",
+        "dek": "Grief, conspiracy theories, and one family’s search for meaning in the two decades since 9/11",
         "authors": [
           "Jennifer Senior"
         ]
@@ -1415,5 +1415,293 @@
     "imageBytes": 115343,
     "issueTheme": null,
     "cover": "covers/202109.jpg"
+  },
+  {
+    "id": "202107",
+    "year": 2021,
+    "month": 7,
+    "issue": "July/August 2021",
+    "datePublished": "2021-07-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 122772,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202107.jpg"
+  },
+  {
+    "id": "202106",
+    "year": 2021,
+    "month": 6,
+    "issue": "June 2021",
+    "datePublished": "2021-06-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 99724,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202106.jpg"
+  },
+  {
+    "id": "202105",
+    "year": 2021,
+    "month": 5,
+    "issue": "May 2021",
+    "datePublished": "2021-05-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 189774,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202105.jpg"
+  },
+  {
+    "id": "202104",
+    "year": 2021,
+    "month": 4,
+    "issue": "April 2021",
+    "datePublished": "2021-04-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 107087,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202104.jpg"
+  },
+  {
+    "id": "202103",
+    "year": 2021,
+    "month": 3,
+    "issue": "March 2021",
+    "datePublished": "2021-03-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 100019,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202103.jpg"
+  },
+  {
+    "id": "202101",
+    "year": 2021,
+    "month": 1,
+    "issue": "January/February 2021",
+    "datePublished": "2021-01-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 75202,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202101.jpg"
+  },
+  {
+    "id": "202012",
+    "year": 2020,
+    "month": 12,
+    "issue": "December 2020",
+    "datePublished": "2020-12-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 127333,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202012.jpg"
+  },
+  {
+    "id": "202011",
+    "year": 2020,
+    "month": 11,
+    "issue": "November 2020",
+    "datePublished": "2020-11-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 71636,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202011.jpg"
+  },
+  {
+    "id": "202010",
+    "year": 2020,
+    "month": 10,
+    "issue": "October 2020",
+    "datePublished": "2020-10-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 279570,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202010.jpg"
+  },
+  {
+    "id": "202009",
+    "year": 2020,
+    "month": 9,
+    "issue": "September 2020",
+    "datePublished": "2020-09-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 43860,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202009.jpg"
+  },
+  {
+    "id": "202007",
+    "year": 2020,
+    "month": 7,
+    "issue": "July/August 2020",
+    "datePublished": "2020-07-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 173009,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202007.jpg"
+  },
+  {
+    "id": "202006",
+    "year": 2020,
+    "month": 6,
+    "issue": "June 2020",
+    "datePublished": "2020-06-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 330927,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202006.jpg"
+  },
+  {
+    "id": "202005",
+    "year": 2020,
+    "month": 5,
+    "issue": "May 2020",
+    "datePublished": "2020-05-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 357925,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202005.jpg"
+  },
+  {
+    "id": "202004",
+    "year": 2020,
+    "month": 4,
+    "issue": "April 2020",
+    "datePublished": "2020-04-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 92568,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202004.jpg"
+  },
+  {
+    "id": "202003",
+    "year": 2020,
+    "month": 3,
+    "issue": "March 2020",
+    "datePublished": "2020-03-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 191569,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202003.jpg"
+  },
+  {
+    "id": "202001",
+    "year": 2020,
+    "month": 1,
+    "issue": "January/February 2020",
+    "datePublished": "2020-01-01T00:00:00Z",
+    "sourceUrl": "https://accounts.theatlantic.com/accounts/library/magazine-issues/",
+    "imageUrl": "",
+    "smallImageUrl": "",
+    "largeImageUrl": "",
+    "imageWidth": 750,
+    "imageHeight": 1000,
+    "imageFormat": "JPEG",
+    "imageBytes": 150092,
+    "coverStories": [],
+    "issueTheme": null,
+    "cover": "covers/202001.jpg"
   }
 ]
