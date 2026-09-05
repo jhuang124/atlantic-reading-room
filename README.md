@@ -34,7 +34,7 @@ node --test scripts/reader-*.test.mjs
 npm run build:pages
 ```
 
-The 32 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, and preservation of the original curl mesh. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
+The 35 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, and preservation of the original curl mesh. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
 The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
 
@@ -53,3 +53,7 @@ The mobile refinement and research rationale are recorded in [UX-AUDIT.md](UX-AU
 Light mode is the default; the archive/splash theme button and reader Appearance settings share a persisted light/dark preference. Both themes preserve the original PDF artwork.
 
 Performance measurements, implementation boundaries, and reproduction steps are in [PERFORMANCE-AUDIT.md](PERFORMANCE-AUDIT.md).
+
+## Expo Go and continuous scrolling
+
+The [mobile package](mobile/README.md) runs the reader in Expo Go on iOS and Android. Run `npm --prefix mobile ci` once, then `npm run mobile` and scan the QR code on the same Wi-Fi. In the reader, select **Reading settings → Page view → Scroll** for continuous vertical reading on mobile or desktop. Nearby pages render on demand; story jumps and saved reading positions work in this mode.

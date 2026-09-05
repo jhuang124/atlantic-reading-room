@@ -1335,3 +1335,19 @@
 .reader-v2 .navigation-search input:focus-visible {
   outline: none;
 }
+
+/* Continuous print keeps a stable scroll track; only nearby pages are rasterized. */
+.reader-v2 .page-viewport.continuous-viewport {
+  display: block;
+  padding: 0 12px;
+  overflow-anchor: none;
+}
+.continuous-pages {
+  position: relative;
+  margin: 0 auto;
+}
+.continuous-page {
+  position: absolute;
+  left: 0;
+  box-shadow: 0 2px 5px #0002, 0 12px 30px #0002;
+}

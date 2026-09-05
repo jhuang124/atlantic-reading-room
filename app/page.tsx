@@ -103,6 +103,20 @@ export default function Home() {
   const modalClose = useRef<HTMLButtonElement>(null);
   const issue = issues.find((i) => i.id === selected);
   const readingIssue = readerIssues.find((i) => i.id === readingId);
+  useEffect(() => {
+    const native = (
+      window as Window & {
+        ReactNativeWebView?: { postMessage: (message: string) => void };
+      }
+    ).ReactNativeWebView;
+    native?.postMessage(
+      JSON.stringify({
+        type: 'reader-state',
+        theme,
+        canGoBack: !!(selected || readingId),
+      }),
+    );
+  }, [theme, selected, readingId]);
   // One owner controls background interactivity for both details and the reader.
   useLayoutEffect(() => {
     if (library.current) library.current.inert = !!(selected || readingId);

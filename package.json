@@ -16,7 +16,9 @@
     "preview:pages": "vite preview --config vite.pages.config.ts",
     "test": "node --test scripts/reader-*.test.mjs",
     "typecheck": "tsc --noEmit",
-    "benchmark": "node scripts/reader-performance.mjs"
+    "benchmark": "node scripts/reader-performance.mjs",
+    "mobile": "npm --prefix mobile start",
+    "mobile:tunnel": "npm --prefix mobile run start:tunnel"
   },
   "dependencies": {
     "lucide-react": "1.31.0",

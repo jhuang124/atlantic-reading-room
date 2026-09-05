@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "The Atlantic \u00b7 Print Edition",
+    "slug": "atlantic-print-edition",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    }
+  }
+}

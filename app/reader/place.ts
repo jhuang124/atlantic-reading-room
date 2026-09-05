@@ -1,5 +1,5 @@
-import { clampPage, readSaved, saveLocal } from './model';
-export type ReadingMode = 'spread' | 'page' | 'column';
+import { clampPage, readSaved, saveLocal } from './model.ts';
+export type ReadingMode = 'spread' | 'page' | 'column' | 'scroll';
 export type ReadingPlace = {
   page: number;
   zoom: number;
@@ -10,6 +10,7 @@ export type ReadingPlace = {
   updated: number;
   article?: string;
   articleTop?: number;
+  pageOffset?: number;
 };
 export type ReaderPreferences = {
   warm: boolean;
@@ -33,7 +34,10 @@ export function normalizePlace(
   return {
     page: clampPage(p.page!, count),
     zoom: Number.isFinite(p.zoom) ? Math.max(1, Math.min(4, p.zoom!)) : 1,
-    mode: p.mode === 'column' || p.mode === 'page' ? p.mode : 'spread',
+    mode:
+      p.mode === 'column' || p.mode === 'page' || p.mode === 'scroll'
+        ? p.mode
+        : 'spread',
     left: Number.isFinite(p.left) ? Math.max(0, p.left!) : 0,
     top: Number.isFinite(p.top) ? Math.max(0, p.top!) : 0,
     column: Number.isInteger(p.column)
@@ -42,6 +46,13 @@ export function normalizePlace(
     updated: p.updated || 0,
     article: typeof p.article === 'string' ? p.article : undefined,
     articleTop: Number.isFinite(p.articleTop) ? p.articleTop : 0,
+    ...(p.mode === 'scroll'
+      ? {
+          pageOffset: Number.isFinite(p.pageOffset)
+            ? Math.max(0, Math.min(1, p.pageOffset!))
+            : 0,
+        }
+      : {}),
   };
 }
 export const loadPlace = (id: string, count: number) =>

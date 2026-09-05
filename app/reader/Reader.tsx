@@ -52,6 +52,7 @@ import {
   physicalPage,
 } from './story-model';
 import Leaf from './Leaf';
+import ContinuousPages, { type ScrollTarget } from './ContinuousPages';
 import { loadPDF, type PDFModule } from './pdf';
 import { pageRasters, warmTurnPages } from './page-raster';
 import './reader.css';
@@ -112,6 +113,12 @@ export default function Reader({
     drag = useRef<{ x: number; y: number; left: number; top: number } | null>(
       null,
     );
+  const [scrollTarget, setScrollTarget] = useState<ScrollTarget | null>(null);
+  const scrollOffset = useRef(0);
+  const scrollPosition = useCallback((next: number, offset: number) => {
+    scrollOffset.current = offset;
+    setPage(next);
+  }, []);
   const [articleId, setArticleId] = useState<string | null>(null);
   const articleTop = useRef(0),
     articlePrint = useRef<ReadingPlace | null>(null);
@@ -172,11 +179,13 @@ export default function Reader({
     ),
   );
   const leafWidth =
-    (mode === 'page'
-      ? Math.max(120, area.width - horizontalSpace)
-      : mode === 'column'
-        ? Math.max(120, area.width - horizontalSpace) / activeColumn.width
-        : fitWidth) * zoom;
+    (mode === 'scroll'
+      ? Math.max(120, Math.min(900, area.width - horizontalSpace))
+      : mode === 'page'
+        ? Math.max(120, area.width - horizontalSpace)
+        : mode === 'column'
+          ? Math.max(120, area.width - horizontalSpace) / activeColumn.width
+          : fitWidth) * zoom;
   const capturePlace = useCallback(
     (): ReadingPlace => ({
       page,
@@ -188,6 +197,7 @@ export default function Reader({
       updated: Date.now(),
       article: articleId || undefined,
       articleTop: articleTop.current,
+      ...(mode === 'scroll' ? { pageOffset: scrollOffset.current } : {}),
     }),
     [page, mode, column, articleId],
   );
@@ -230,7 +240,9 @@ export default function Reader({
   useLayoutEffect(() => {
     const place = pendingPlace.current;
     if (!place || !pdf || (!index.length && !indexError) || !area.width) return;
-    viewport.current?.scrollTo({ left: place.left, top: place.top });
+    if (place.mode === 'scroll')
+      setScrollTarget({ page: place.page, offset: place.pageOffset });
+    else viewport.current?.scrollTo({ left: place.left, top: place.top });
     pendingPlace.current = null;
     restored.current = true;
   }, [
@@ -251,6 +263,8 @@ export default function Reader({
     });
   }, [mode, column, page]);
   function chooseMode(next: ReadingMode) {
+    if (next === 'scroll') setScrollTarget({ page, offset: 0 });
+    else viewport.current?.scrollTo({ left: 0, top: 0 });
     setMode(next);
     setColumn(0);
     zoomRef.current = 1;
@@ -291,7 +305,8 @@ export default function Reader({
       setTurning(null);
       setPage(value);
       setJump(null);
-      viewport.current?.scrollTo({ left: 0, top: 0 });
+      if (mode === 'scroll') setScrollTarget({ page: value, offset: 0 });
+      else viewport.current?.scrollTo({ left: 0, top: 0 });
       setPanel(null);
       setArticleId(null);
       if (remember) {
@@ -301,7 +316,7 @@ export default function Reader({
       }
       queuedTurn.current = 0;
     },
-    [issue.pageCount, page, articleId, capturePlace],
+    [issue.pageCount, page, articleId, capturePlace, mode],
   );
   const turn = useCallback(
     (dir: number) => {
@@ -316,6 +331,7 @@ export default function Reader({
       if (
         !pdf ||
         motion === 'simple' ||
+        mode === 'scroll' ||
         matchMedia('(prefers-reduced-motion:reduce)').matches
       ) {
         navigate(target, false);
@@ -339,6 +355,7 @@ export default function Reader({
       visible.join(),
       turning,
       motion,
+      mode,
     ],
   );
   useEffect(() => {
@@ -453,7 +470,7 @@ export default function Reader({
     restoreView.current = null;
   }, [page, zoom]);
   useEffect(() => {
-    if (!pdf || turning) return;
+    if (!pdf || turning || mode === 'scroll') return;
     const abort = new AbortController();
     const timer = setTimeout(
       () =>
@@ -469,7 +486,7 @@ export default function Reader({
       clearTimeout(timer);
       abort.abort();
     };
-  }, [pdf, start, end, leafWidth, turning]);
+  }, [pdf, start, end, leafWidth, turning, mode]);
   useEffect(() => {
     if (error) onReady?.();
   }, [error, onReady]);
@@ -1047,7 +1064,7 @@ export default function Reader({
               clearTimeout(saveTimer.current);
               saveTimer.current = setTimeout(persist, 250);
             }}
-            className={`page-viewport ${zoom > 1 ? 'zoomed' : ''}`}
+            className={`page-viewport ${zoom > 1 ? 'zoomed' : ''} ${mode === 'scroll' ? 'continuous-viewport' : ''}`}
             style={
               articleId
                 ? { visibility: 'hidden', pointerEvents: 'none' }
@@ -1080,7 +1097,24 @@ export default function Reader({
             onPointerUp={() => (drag.current = null)}
             onPointerCancel={() => (drag.current = null)}
           >
-            {pdf && (
+            {pdf && mode === 'scroll' && (
+              <ContinuousPages
+                pdf={pdf}
+                issue={issue}
+                index={index}
+                width={leafWidth}
+                viewport={viewport}
+                target={scrollTarget}
+                initialPage={page}
+                query={query}
+                onPosition={scrollPosition}
+                onPaint={paintedPage}
+                onZoom={(x, y) =>
+                  changeZoom(zoomRef.current === 1 ? 2 : 1, x, y)
+                }
+              />
+            )}
+            {pdf && mode !== 'scroll' && (
               <div
                 className={`page-surface ${visible.length === 2 ? 'spread' : 'single'} ${turning ? 'is-turning' : ''}`}
               >
@@ -1448,19 +1482,23 @@ export default function Reader({
               <>
                 <fieldset>
                   <legend>Page view</legend>
-                  {(['spread', 'page', 'column'] as const).map((v) => (
-                    <button
-                      key={v}
-                      aria-pressed={mode === v}
-                      onClick={() => chooseMode(v)}
-                    >
-                      {v === 'spread'
-                        ? 'Fit'
-                        : v === 'page'
-                          ? 'Page width'
-                          : 'Column'}
-                    </button>
-                  ))}
+                  {(['spread', 'page', 'column', 'scroll'] as const).map(
+                    (v) => (
+                      <button
+                        key={v}
+                        aria-pressed={mode === v}
+                        onClick={() => chooseMode(v)}
+                      >
+                        {v === 'spread'
+                          ? 'Fit'
+                          : v === 'page'
+                            ? 'Page width'
+                            : v === 'column'
+                              ? 'Column'
+                              : 'Scroll'}
+                      </button>
+                    ),
+                  )}
                 </fieldset>
                 {mode === 'column' && (
                   <fieldset>
@@ -1494,21 +1532,23 @@ export default function Reader({
                     <Plus size={16} />
                   </button>
                 </fieldset>
-                <fieldset>
-                  <legend>Page turn</legend>
-                  <button
-                    aria-pressed={motion === 'curl'}
-                    onClick={() => setMotion('curl')}
-                  >
-                    Classic curl
-                  </button>
-                  <button
-                    aria-pressed={motion === 'simple'}
-                    onClick={() => setMotion('simple')}
-                  >
-                    Instant
-                  </button>
-                </fieldset>
+                {mode !== 'scroll' && (
+                  <fieldset>
+                    <legend>Page turn</legend>
+                    <button
+                      aria-pressed={motion === 'curl'}
+                      onClick={() => setMotion('curl')}
+                    >
+                      Classic curl
+                    </button>
+                    <button
+                      aria-pressed={motion === 'simple'}
+                      onClick={() => setMotion('simple')}
+                    >
+                      Instant
+                    </button>
+                  </fieldset>
+                )}
               </>
             )}
             <label>
