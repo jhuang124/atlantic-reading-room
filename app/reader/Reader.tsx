@@ -52,7 +52,6 @@ import ArticleView from './ArticleView';
 import { articleEditions } from './articles';
 import Navigation, { type NavigationTab } from './Navigation';
 import {
-  adjacentStory,
   articleForStory,
   locationTitle,
   storyIndex,
@@ -231,8 +230,12 @@ export default function Reader({
   onReady,
   initialPanel = false,
   initialPage,
+  theme,
+  onTheme,
 }: {
   issue: ReadableIssue;
+  theme: 'light' | 'dark';
+  onTheme: (theme: 'light' | 'dark') => void;
   onClose: () => void;
   initialPanel?: boolean;
   initialPage?: number;
@@ -281,7 +284,6 @@ export default function Reader({
     [motion, setMotion] = useState<'curl' | 'simple'>('curl'),
     [pinned, setPinned] = useState(true),
     [column, setColumn] = useState(0),
-    [preview, setPreview] = useState<number | null>(null),
     [revealed, setRevealed] = useState(false),
     [fontSize, setFontSize] = useState(20);
   const readySent = useRef(false),
@@ -319,8 +321,6 @@ export default function Reader({
   const currentEdition = currentArticle
     ? articleForStory(issue, currentArticle.printedPage)
     : undefined;
-  const previousStory = adjacentStory(issue, page, -1);
-  const nextStory = adjacentStory(issue, page, 1);
   const baseRatio = index[0] ? index[0].height / index[0].width : 4 / 3;
   const columns = useMemo(
     () => pageColumns(index[page - 1]?.words || []),
@@ -920,7 +920,11 @@ export default function Reader({
     if (panel)
       requestAnimationFrame(() =>
         dialog.current
-          ?.querySelector<HTMLElement>('.reader-navigation button')
+          ?.querySelector<HTMLElement>(
+            panel === 'search'
+              ? '.navigation-search input'
+              : '.reader-navigation button',
+          )
           ?.focus(),
       );
     if (appearance)
@@ -929,13 +933,7 @@ export default function Reader({
           ?.querySelector<HTMLElement>('.appearance-popover button')
           ?.focus(),
       );
-    if (preview !== null)
-      requestAnimationFrame(() =>
-        dialog.current
-          ?.querySelector<HTMLElement>('.skim-overlay button')
-          ?.focus(),
-      );
-  }, [panel, appearance, preview]);
+  }, [panel, appearance]);
   const returnToPrint = useCallback(() => {
     if (!articleId) return;
     setArticleId(null);
@@ -994,13 +992,11 @@ export default function Reader({
       if (e.key === 'Tab') {
         const scope =
           dialog.current?.querySelector(
-            preview !== null
-              ? '.skim-overlay'
-              : appearance
-                ? '.appearance-popover'
-                : panel
-                  ? '.reader-navigation'
-                  : '.reader',
+            appearance
+              ? '.appearance-popover'
+              : panel
+                ? '.reader-navigation'
+                : '.reader',
           ) || dialog.current;
         const nodes = Array.from(
           scope?.querySelectorAll<HTMLElement>(
@@ -1037,10 +1033,6 @@ export default function Reader({
           queuedTurn.current = 0;
           return;
         }
-        if (preview !== null) {
-          setPreview(null);
-          return;
-        }
         if (appearance) {
           setAppearance(false);
           return;
@@ -1055,6 +1047,7 @@ export default function Reader({
       if (editing || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'c') {
         e.preventDefault();
+        if (!panel) setQuery('');
         setPanel(panel ? null : 'contents');
         return;
       }
@@ -1062,7 +1055,7 @@ export default function Reader({
         setFocus(!quiet);
         return;
       }
-      if (articleId || panel || preview !== null || appearance) return;
+      if (articleId || panel || appearance) return;
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         turn(1);
@@ -1102,7 +1095,6 @@ export default function Reader({
     panel,
     issue.pageCount,
     turning,
-    preview,
     appearance,
     articleId,
     setFocus,
@@ -1140,10 +1132,7 @@ export default function Reader({
       aria-modal="true"
       aria-label={`${issue.issue} full issue reader`}
     >
-      <header
-        className="reader-header"
-        inert={!!panel || appearance || preview !== null}
-      >
+      <header className="reader-header" inert={!!panel || appearance}>
         <div className="reader-header-left">
           <button
             ref={close}
@@ -1154,19 +1143,12 @@ export default function Reader({
             <ArrowLeft size={18} />
             <span>Archive</span>
           </button>
-          <span className="reader-issue-date">{issue.issue}</span>
-        </div>
-        <img
-          className="reader-brand"
-          src="brand/atlantic-logo.svg"
-          alt="The Atlantic"
-        />
-        <div className="reader-header-tools">
           <button
             ref={contentsTrigger}
             aria-label="Contents"
             aria-expanded={!!panel}
             onClick={() => {
+              if (!panel) setQuery('');
               setPanel(panel ? null : 'contents');
               setAppearance(false);
             }}
@@ -1174,6 +1156,14 @@ export default function Reader({
             <PanelLeftOpen size={18} />
             <span>Contents</span>
           </button>
+        </div>
+        <img
+          className="reader-brand"
+          src="brand/atlantic-logo.svg"
+          alt="The Atlantic"
+        />
+        <div className="reader-header-tools">
+          <span className="reader-issue-date">{issue.issue}</span>
           <button
             className="reader-icon"
             aria-label={quiet ? 'Leave focus mode' : 'Enter focus mode'}
@@ -1193,10 +1183,7 @@ export default function Reader({
           •••
         </button>
       )}
-      <div
-        className="reader-workspace"
-        inert={!!panel || appearance || preview !== null}
-      >
+      <div className="reader-workspace" inert={!!panel || appearance}>
         <section className="reading-desk" aria-label="Magazine">
           {!pdf && (
             <div className="reader-loading" role="status">
@@ -1397,39 +1384,19 @@ export default function Reader({
       </div>
       <footer
         className={`reader-toolbar ${currentEdition || articleId ? 'has-article' : ''}`}
-        inert={!!panel || appearance || preview !== null}
+        inert={!!panel || appearance}
       >
         <div className="story-controls">
           <button
-            aria-label="Previous story"
-            title={previousStory?.title || 'No previous story'}
-            disabled={!previousStory}
-            onClick={() =>
-              previousStory &&
-              goToStory(physicalPage(previousStory.printedPage, issue))
-            }
-          >
-            <ArrowLeft size={18} />
-            <span className="story-direction-label">Story</span>
-          </button>
-          <button
             className="current-story"
-            onClick={() => setPanel('contents')}
+            onClick={() => {
+              setQuery('');
+              setPanel('contents');
+            }}
             aria-label={`Current story: ${locationTitle(issue, page)}. Open contents`}
           >
-            <span>In this issue</span>
+            <span>Contents</span>
             <strong>{locationTitle(issue, page)}</strong>
-          </button>
-          <button
-            aria-label="Next story"
-            title={nextStory?.title || 'No next story'}
-            disabled={!nextStory}
-            onClick={() =>
-              nextStory && goToStory(physicalPage(nextStory.printedPage, issue))
-            }
-          >
-            <ArrowRight size={18} />
-            <span className="story-direction-label">Story</span>
           </button>
         </div>
         {(currentEdition || articleId) && (
@@ -1558,8 +1525,6 @@ export default function Reader({
           }}
           onNavigate={navigate}
           onStory={goToStory}
-          suspended={preview !== null}
-          onPreview={setPreview}
           onClose={closeNavigation}
         />
       )}
@@ -1585,6 +1550,21 @@ export default function Reader({
                 <X size={18} />
               </button>
             </div>
+            <fieldset className="reader-theme-options">
+              <legend>Appearance</legend>
+              <button
+                aria-pressed={theme === 'light'}
+                onClick={() => onTheme('light')}
+              >
+                Light
+              </button>
+              <button
+                aria-pressed={theme === 'dark'}
+                onClick={() => onTheme('dark')}
+              >
+                Dark
+              </button>
+            </fieldset>
             {mobile && (currentEdition || articleId) && (
               <fieldset>
                 <legend>Read as</legend>
@@ -1711,81 +1691,6 @@ export default function Reader({
                 </>
               )}
             </p>
-          </div>
-        </div>
-      )}
-      {preview !== null && (
-        <div
-          className="skim-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Page preview"
-        >
-          <div className="skim-card">
-            <div className="popover-title">
-              <strong>Page {label(preview)}</strong>
-              <button
-                aria-label="Close preview"
-                onClick={() => setPreview(null)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            {pdf ? (
-              <div className="preview-page">
-                <Leaf
-                  pdf={pdf}
-                  printOffset={issue.printOffset}
-                  backMatterPages={issue.backMatterPages}
-                  number={preview}
-                  width={Math.max(
-                    120,
-                    Math.min(
-                      mobile ? area.width - 92 : 420,
-                      (area.height - 130) / baseRatio,
-                    ),
-                  )}
-                  id={issue.id}
-                  index={index[preview - 1]}
-                  query=""
-                  onDoubleClick={() => {}}
-                />
-              </div>
-            ) : (
-              <img
-                src={asset(issue.id, `${preview}.jpg`)}
-                alt={`Preview of page ${label(preview)}`}
-              />
-            )}
-            <div className="skim-actions">
-              <button
-                aria-label="Preview previous page"
-                disabled={preview === 1}
-                onClick={() => setPreview((n) => Math.max(1, n! - 1))}
-              >
-                <ArrowLeft size={18} />
-              </button>
-              <button
-                onClick={() => {
-                  navigate(preview);
-                  setPreview(null);
-                }}
-              >
-                Read from here
-              </button>
-              <button
-                aria-label="Preview next page"
-                disabled={preview === issue.pageCount}
-                onClick={() =>
-                  setPreview((n) => Math.min(issue.pageCount, n! + 1))
-                }
-              >
-                <ArrowRight size={18} />
-              </button>
-            </div>
-            <button className="skim-return" onClick={() => setPreview(null)}>
-              Keep browsing · Your reading place is unchanged
-            </button>
           </div>
         </div>
       )}

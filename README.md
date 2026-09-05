@@ -8,8 +8,8 @@ An Atlantic magazine archive and reader: 71 complete issues from January/Februar
 
 - A cover index with dates, story/author search, and year/sort controls. Every issue is readable; Continue restores the last reading place.
 - Charcoal, white, and Atlantic-red issue splashes with an animated cover transition. Read and Contents remain within reach on phones. Returning preserves archive filters and scroll.
-- One reader for Print and selected Article views, with previous/next story navigation and a single Contents panel for Stories, Pages, Search, and Saved.
-- Sharp, noncommittal page previews; search results jump to the matching print page. Multiple detours retain the original return destination.
+- One reader for Print and selected Article views, with previous/next story navigation and a compact left-hand Contents panel for Stories, Pages, and Saved, with unified story/page search.
+- Page thumbnails and search results jump directly to the requested print page. Multiple detours retain the original return destination.
 - Responsive fitted spreads and single pages, page-width and column reading, pointer-anchored pinch zoom, panning, and a classic page curl with the correct reverse face.
 - Focus fills the viewport without cropping a fitted page. Controls overlay the reading surface without changing its geometry.
 - Saved page, zoom, print offsets, article scroll, and text preferences. Reduced motion and Instant mode skip the curl.
@@ -49,3 +49,5 @@ Pushing `main` triggers `.github/workflows/pages.yml`, which builds the static V
 Original subscriber-library downloads remain untouched in ignored `work/archive-originals/`. Run `scripts/import-archive.py` with PyMuPDF and Poppler to extract covers, verified contents destinations, folio offsets, thumbnails, and gzip word indexes. `--catalog-only` refreshes metadata without touching PDFs. `scripts/compact-archive.py` compacts web PDFs with sampled pixel comparisons; `scripts/optimize-reader-data.py` compresses navigation thumbnails and search indexes. These steps keep the static publication below 1 GB. Only web image streams are reduced; vector print text remains sharp. Manual TOC exceptions are recorded in `app/reader/archive-overrides.json`.
 
 The mobile refinement and research rationale are recorded in [UX-AUDIT.md](UX-AUDIT.md). Phone reading includes directly accessible column enlargement, a bottom settings sheet, and safe-area-aware controls. Article presentation appears only where prepared text exists.
+
+Light mode is the default; the archive/splash theme button and reader Appearance settings share a persisted light/dark preference. Both themes preserve the original PDF artwork.

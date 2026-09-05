@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Bookmark, Search, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { ArrowLeft, ArrowRight, Bookmark, Search, X } from 'lucide-react';
 import type { ReadableIssue } from './catalog';
 import { pageLabel, searchPages, type IndexedPage } from './model';
 import {
-  articleForStory,
+  adjacentStory,
   physicalPage,
   storyIndex,
   locationTitle,
 } from './story-model';
 export type NavigationTab = 'contents' | 'pages' | 'search' | 'saved';
+const tabs = ['contents', 'pages', 'saved'] as const;
 export default function Navigation({
   issue,
   tab,
@@ -22,8 +23,6 @@ export default function Navigation({
   onRemoveMark,
   onNavigate,
   onStory,
-  suspended,
-  onPreview,
   onClose,
 }: {
   issue: ReadableIssue;
@@ -38,15 +37,21 @@ export default function Navigation({
   onRemoveMark: (n: number) => void;
   onNavigate: (n: number) => void;
   onStory: (n: number) => void;
-  suspended: boolean;
-  onPreview: (n: number) => void;
   onClose: () => void;
 }) {
-  const root = useRef<HTMLElement>(null);
-  const search = useRef<HTMLInputElement>(null);
-  const [storyQuery, setStoryQuery] = useState('');
-  const current = storyIndex(issue, page);
-  const results = searchPages(index, query);
+  const root = useRef<HTMLElement>(null),
+    search = useRef<HTMLInputElement>(null);
+  const current = storyIndex(issue, page),
+    results = searchPages(index, query);
+  const previous = adjacentStory(issue, page, -1),
+    next = adjacentStory(issue, page, 1);
+  const matching = issue.contents.filter((e) =>
+    `${e.title} ${e.author || ''}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()),
+  );
+  const label = (n: number) =>
+    pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages);
   useEffect(() => {
     if (tab === 'search') search.current?.focus();
     else
@@ -54,16 +59,38 @@ export default function Navigation({
         ?.querySelector<HTMLElement>('[aria-current="location"]')
         ?.scrollIntoView({ block: 'nearest' });
   }, [tab]);
+  useEffect(() => {
+    if (tab === 'search')
+      root.current?.querySelector('.navigation-results')?.scrollTo({ top: 0 });
+  }, [query, tab]);
+  const selectTab = (value: (typeof tabs)[number]) => {
+    onQuery('');
+    onTab(value);
+  };
+  const storyButton = (entry: ReadableIssue['contents'][number]) => (
+    <button
+      className="story-destination"
+      key={entry.printedPage}
+      aria-current={
+        issue.contents.indexOf(entry) === current ? 'location' : undefined
+      }
+      onClick={() => onStory(physicalPage(entry.printedPage, issue))}
+    >
+      <span>
+        <strong>{entry.title}</strong>
+        {entry.author && <small>{entry.author}</small>}
+      </span>
+      <span className="story-folio">{entry.printedPage}</span>
+    </button>
+  );
   return (
     <>
       <button
-        inert={suspended}
         className="navigation-scrim"
         aria-label="Close contents"
         onClick={onClose}
       />
       <aside
-        inert={suspended}
         className="reader-navigation"
         role="dialog"
         aria-modal="true"
@@ -71,6 +98,11 @@ export default function Navigation({
         ref={root}
       >
         <header>
+          <img
+            className="contents-cover"
+            src={`reader-assets/${issue.id}/1.jpg`}
+            alt=""
+          />
           <div>
             <p>{issue.issue}</p>
             <h2 id="contents-heading">Contents</h2>
@@ -79,117 +111,90 @@ export default function Navigation({
             <X size={20} />
           </button>
         </header>
+        <label className="navigation-search">
+          <Search size={17} />
+          <input
+            ref={search}
+            type="search"
+            aria-label="Search this issue"
+            placeholder="Search this issue"
+            value={query}
+            onChange={(e) => {
+              onQuery(e.target.value);
+              onTab(e.target.value ? 'search' : 'contents');
+            }}
+          />
+          {query && (
+            <button
+              aria-label="Clear search"
+              onClick={() => {
+                onQuery('');
+                onTab('contents');
+                search.current?.focus();
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </label>
         <div
           className="navigation-tabs"
           role="tablist"
           aria-label="Browse this issue"
         >
-          {(['contents', 'pages', 'search', 'saved'] as const).map(
-            (value, i) => (
-              <button
-                key={value}
-                role="tab"
-                id={`nav-${value}`}
-                aria-selected={tab === value}
-                aria-controls="navigation-results"
-                tabIndex={tab === value ? 0 : -1}
-                onClick={() => onTab(value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    const tabs = [
-                      'contents',
-                      'pages',
-                      'search',
-                      'saved',
-                    ] as const;
-                    const next =
-                      tabs[(i + (e.key === 'ArrowRight' ? 1 : 3)) % 4];
-                    onTab(next);
-                    requestAnimationFrame(() =>
-                      document.getElementById(`nav-${next}`)?.focus(),
-                    );
-                  }
-                }}
-              >
-                {value === 'contents'
-                  ? 'Stories'
-                  : value === 'saved'
-                    ? 'Saved'
-                    : value === 'pages'
-                      ? 'Pages'
-                      : 'Search'}
-              </button>
-            ),
-          )}
+          {tabs.map((value, i) => (
+            <button
+              key={value}
+              role="tab"
+              id={`nav-${value}`}
+              aria-selected={tab === value}
+              aria-controls="navigation-results"
+              tabIndex={tab === value || (tab === 'search' && i === 0) ? 0 : -1}
+              onClick={() => selectTab(value)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                  e.preventDefault();
+                  const nextTab =
+                    tabs[(i + (e.key === 'ArrowRight' ? 1 : 2)) % 3];
+                  selectTab(nextTab);
+                  requestAnimationFrame(() =>
+                    document.getElementById(`nav-${nextTab}`)?.focus(),
+                  );
+                }
+              }}
+            >
+              {value === 'contents'
+                ? 'Stories'
+                : value === 'pages'
+                  ? 'Pages'
+                  : 'Saved'}
+            </button>
+          ))}
         </div>
         <div
           className="navigation-results"
           id="navigation-results"
-          role="tabpanel"
-          aria-labelledby={`nav-${tab}`}
+          role={tab === 'search' ? 'region' : 'tabpanel'}
+          aria-label={tab === 'search' ? 'Search results' : undefined}
+          aria-labelledby={tab === 'search' ? undefined : `nav-${tab}`}
         >
           {tab === 'contents' && (
             <>
-              <label className="navigation-search">
-                <Search size={16} />
-                <input
-                  aria-label="Find a story or author"
-                  placeholder="Find a story or author"
-                  value={storyQuery}
-                  onChange={(e) => setStoryQuery(e.target.value)}
-                />
-              </label>
-              {!storyQuery && (
-                <div className="contents-utility">
-                  <button onClick={() => onNavigate(1)}>Cover</button>
-                  <button onClick={() => onNavigate(issue.contentsPage)}>
-                    Printed contents <ArrowRight size={14} />
-                  </button>
+              <div className="contents-utility">
+                <button onClick={() => onNavigate(1)}>Cover</button>
+                <button onClick={() => onNavigate(issue.contentsPage)}>
+                  Printed contents <ArrowRight size={14} />
+                </button>
+              </div>
+              {issue.contents.map((entry, i) => (
+                <div className="contents-item" key={entry.printedPage}>
+                  {(i === 0 ||
+                    entry.section !== issue.contents[i - 1].section) && (
+                    <h3>{entry.section}</h3>
+                  )}
+                  {storyButton(entry)}
                 </div>
-              )}
-              {issue.contents
-                .map((entry, i) => ({ entry, i }))
-                .filter(({ entry }) =>
-                  `${entry.title} ${entry.author} ${entry.section}`
-                    .toLowerCase()
-                    .includes(storyQuery.toLowerCase()),
-                )
-                .map(({ entry, i }) => (
-                  <div className="contents-item" key={entry.printedPage}>
-                    {(storyQuery ||
-                      i === 0 ||
-                      entry.section !== issue.contents[i - 1].section) && (
-                      <h3>{entry.section}</h3>
-                    )}
-                    <button
-                      className="story-destination"
-                      aria-current={i === current ? 'location' : undefined}
-                      onClick={() =>
-                        onStory(physicalPage(entry.printedPage, issue))
-                      }
-                    >
-                      <span>
-                        <strong>{entry.title}</strong>
-                        <small>{entry.author}</small>
-                        {articleForStory(issue, entry.printedPage) && (
-                          <em>Article view available</em>
-                        )}
-                      </span>
-                      <span className="story-folio">{entry.printedPage}</span>
-                    </button>
-                  </div>
-                ))}
-              {storyQuery &&
-                !issue.contents.some((e) =>
-                  `${e.title} ${e.author} ${e.section}`
-                    .toLowerCase()
-                    .includes(storyQuery.toLowerCase()),
-                ) && (
-                  <p className="navigation-empty">
-                    No matching stories. Try a different title or author.
-                  </p>
-                )}
+              ))}
             </>
           )}
           {tab === 'pages' && (
@@ -198,23 +203,16 @@ export default function Navigation({
                 (n) => (
                   <button
                     key={n}
-                    aria-label={`Preview ${pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages)}`}
+                    aria-label={`Read ${label(n)}`}
                     aria-current={n === page ? 'location' : undefined}
-                    onClick={() => onPreview(n)}
+                    onClick={() => onNavigate(n)}
                   >
                     <img
                       src={`reader-assets/${issue.id}/${n}.jpg`}
                       alt=""
                       loading="lazy"
                     />
-                    <span>
-                      {pageLabel(
-                        n,
-                        issue.pageCount,
-                        issue.printOffset,
-                        issue.backMatterPages,
-                      )}
-                    </span>
+                    <span>{label(n)}</span>
                     {marks.includes(n) && <Bookmark size={12} />}
                   </button>
                 ),
@@ -223,28 +221,19 @@ export default function Navigation({
           )}
           {tab === 'search' && (
             <>
-              <label className="navigation-search">
-                <Search size={16} />
-                <input
-                  ref={search}
-                  aria-label="Search this issue"
-                  placeholder="Search this issue"
-                  value={query}
-                  onChange={(e) => onQuery(e.target.value)}
-                />
-                {query && (
-                  <button aria-label="Clear search" onClick={() => onQuery('')}>
-                    <X size={16} />
-                  </button>
-                )}
-              </label>
+              {matching.length > 0 && (
+                <div className="contents-item">
+                  <h3>Stories</h3>
+                  {matching.map(storyButton)}
+                </div>
+              )}
               <p className="navigation-empty" role="status">
                 {query.trim().length < 2
-                  ? 'Search the text of every page.'
+                  ? 'Type at least two letters to search every page.'
                   : !index.length
                     ? indexError
-                      ? 'Search is unavailable. Use Stories or Pages to browse.'
-                      : 'Preparing search…'
+                      ? 'Page search is unavailable. Browse Stories or Pages.'
+                      : 'Searching…'
                     : `${results.length} matching pages`}
               </p>
               {results.map((result) => (
@@ -254,14 +243,9 @@ export default function Navigation({
                   onClick={() => onNavigate(result.page)}
                 >
                   <small>
-                    Page{' '}
-                    {pageLabel(
-                      result.page,
-                      issue.pageCount,
-                      issue.printOffset,
-                      issue.backMatterPages,
-                    )}{' '}
-                    · {locationTitle(issue, result.page)}
+                    {label(result.page)}
+                    {label(result.page) !== locationTitle(issue, result.page) &&
+                      ` · ${locationTitle(issue, result.page)}`}
                   </small>
                   <p>{result.snippet}</p>
                 </button>
@@ -272,7 +256,7 @@ export default function Navigation({
             <>
               {!marks.length && (
                 <p className="navigation-empty">
-                  No saved pages yet. Use Save in the reader to add one.
+                  Save a page while reading to find it here.
                 </p>
               )}
               {marks.map((n) => (
@@ -281,20 +265,12 @@ export default function Navigation({
                     <img src={`reader-assets/${issue.id}/${n}.jpg`} alt="" />
                     <span>
                       {locationTitle(issue, n)}
-                      <small>
-                        Page{' '}
-                        {pageLabel(
-                          n,
-                          issue.pageCount,
-                          issue.printOffset,
-                          issue.backMatterPages,
-                        )}
-                      </small>
+                      <small>Page {label(n)}</small>
                     </span>
                   </button>
                   <button
                     onClick={() => onRemoveMark(n)}
-                    aria-label={`Remove bookmark at ${pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages)}`}
+                    aria-label={`Remove bookmark at ${label(n)}`}
                   >
                     <X size={16} />
                   </button>
@@ -303,6 +279,30 @@ export default function Navigation({
             </>
           )}
         </div>
+        <footer className="contents-story-nav">
+          <button
+            aria-label="Previous story"
+            disabled={!previous}
+            title={previous?.title}
+            onClick={() =>
+              previous && onStory(physicalPage(previous.printedPage, issue))
+            }
+          >
+            <ArrowLeft size={15} />
+            <span>Previous story</span>
+          </button>
+          <button
+            aria-label="Next story"
+            disabled={!next}
+            title={next?.title}
+            onClick={() =>
+              next && onStory(physicalPage(next.printedPage, issue))
+            }
+          >
+            <span>Next story</span>
+            <ArrowRight size={15} />
+          </button>
+        </footer>
       </aside>
     </>
   );

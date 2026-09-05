@@ -1,0 +1,216 @@
+/* One palette governs chrome and editorial text. Print artwork keeps its original colors. */
+.archive-app {
+  --edition-surface: #faf9f6;
+  --edition-raised: #ffffff;
+  --edition-ink: #242323;
+  --edition-muted: #65635f;
+  --edition-rule: #d5d2cc;
+  --edition-hover: #eeece6;
+  --edition-accent: #c91420;
+  --edition-desk: #e6e4df;
+  --edition-translucent: #faf9f6ed;
+  --edition-logo: none;
+  color-scheme: light;
+  color: var(--edition-ink);
+  background: var(--edition-surface);
+}
+.archive-app[data-theme='dark'] {
+  --edition-surface: #1b1b1e;
+  --edition-raised: #222225;
+  --edition-ink: #f2f0eb;
+  --edition-muted: #b4b2ac;
+  --edition-rule: #414145;
+  --edition-hover: #2c2c30;
+  --edition-accent: #ff6670;
+  --edition-desk: #262629;
+  --edition-translucent: #1b1b1ef2;
+  --edition-logo: invert(1);
+  color-scheme: dark;
+}
+.archive-app .library-shell {
+  background: var(--edition-surface);
+  scrollbar-color: var(--edition-muted) var(--edition-surface);
+}
+.archive-app .archive-masthead {
+  background: var(--edition-raised);
+  border-bottom-color: var(--edition-ink);
+}
+.archive-app .atlantic-wordmark img,
+.archive-app .reader-brand {
+  filter: var(--edition-logo);
+}
+.archive-app .archive-search {
+  color: var(--edition-muted);
+  border-color: var(--edition-rule);
+}
+.archive-app .archive-search input,
+.archive-app .archive-compact-filters select,
+.archive-app .archive-card h2,
+.archive-app .archive-read-link {
+  color: var(--edition-ink);
+}
+.archive-app input::placeholder {
+  color: var(--edition-muted);
+  opacity: 1;
+}
+.archive-app .archive-compact-filters select option {
+  background: var(--edition-surface);
+  color: var(--edition-ink);
+}
+.archive-app .archive-footer {
+  border-color: var(--edition-rule);
+  color: var(--edition-muted);
+}
+.archive-app .archive-footer a,
+.archive-app .archive-footer small {
+  color: var(--edition-muted);
+}
+.archive-app .archive-icon:hover {
+  background: var(--edition-hover);
+}
+.archive-app .archive-empty {
+  color: var(--edition-ink);
+}
+.archive-app .archive-empty p {
+  color: var(--edition-muted);
+}
+.archive-app :focus-visible {
+  outline-color: var(--edition-accent);
+}
+.archive-app .issue-splash-backdrop {
+  background: var(--edition-surface);
+}
+.archive-app .issue-splash {
+  color: var(--edition-ink);
+}
+.archive-app[data-theme='light'] .issue-splash {
+  background: radial-gradient(
+    ellipse at 25% 40%,
+    #ffffff 0%,
+    #f4f2ed 55%,
+    #ebe8e1 100%
+  );
+}
+.archive-app[data-theme='light'] .issue-splash .library-detail-cover {
+  box-shadow:
+    2px 3px 0 #d6d1c6,
+    12px 30px 52px #39312a30;
+}
+.archive-app .issue-splash .library-detail-copy h2,
+.archive-app .issue-splash .library-modal-close,
+.archive-app .issue-splash .splash-contents {
+  color: var(--edition-ink);
+}
+.archive-app .issue-splash .archive-kicker {
+  color: var(--edition-accent);
+}
+.archive-app .issue-splash .archive-byline,
+.archive-app .issue-splash .library-detail-dek,
+.archive-app .issue-splash .archive-external,
+.archive-app .issue-splash-navigation span {
+  color: var(--edition-muted);
+}
+.archive-app .issue-splash-navigation,
+.archive-app .issue-splash-navigation button,
+.archive-app .splash-contents {
+  border-color: var(--edition-rule);
+}
+.archive-app .issue-splash button:hover:not(:disabled) {
+  background: var(--edition-hover);
+}
+.archive-app .issue-splash .archive-primary {
+  background: #c91420;
+  color: #fff;
+  font-family: Graphik, sans-serif;
+}
+.archive-app .issue-splash .archive-primary:hover {
+  background: #aa101b;
+}
+.archive-app .splash-wordmark {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  filter: var(--edition-logo);
+}
+.splash-theme-toggle {
+  position: absolute;
+  z-index: 3;
+  top: 24px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--edition-ink);
+}
+.archive-app[data-theme='light'] .reader-v2 .open-magazine {
+  box-shadow:
+    0 1px 3px #2925211a,
+    0 16px 36px #29252124;
+}
+.archive-app .reader-v2 .reader-navigation,
+.archive-app .reader-v2 .appearance-popover,
+.archive-app .reader-v2 .skim-card {
+  color: var(--edition-ink);
+}
+.archive-app .reader-v2 .page-jump input {
+  background: transparent;
+}
+.archive-app .reader-v2 .page-render-error {
+  color: #242323;
+}
+.archive-app .reader-loading-shell {
+  background: var(--edition-surface);
+  color: var(--edition-ink);
+}
+.reader-theme-options button {
+  flex: 1;
+}
+.reader-theme-options button::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+  border: 1px solid #85817b;
+  border-radius: 50%;
+}
+.reader-theme-options button:first-of-type::before {
+  background: #faf9f6;
+}
+.reader-theme-options button:last-of-type::before {
+  background: #242426;
+}
+@media (max-width: 760px) {
+  .archive-app .issue-splash .issue-reading-actions {
+    background: var(--edition-translucent);
+    border-color: var(--edition-rule);
+  }
+  .archive-app .splash-wordmark {
+    width: 124px;
+    top: 32px;
+  }
+  .splash-theme-toggle {
+    right: 12px;
+    top: 20px;
+  }
+  .archive-app .issue-splash .library-modal-close {
+    gap: 6px;
+  }
+  .archive-app .archive-fullscreen {
+    display: none;
+  }
+  .archive-app .archive-masthead-tools {
+    gap: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .archive-app .archive-masthead,
+  .archive-app .library-shell,
+  .archive-app .reader-header,
+  .archive-app .reader-toolbar {
+    transition:
+      background-color 180ms ease,
+      color 180ms ease,
+      border-color 180ms ease;
+  }
+}

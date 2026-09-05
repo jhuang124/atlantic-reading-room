@@ -16,6 +16,8 @@ import {
   Maximize2,
   Minimize2,
   Search,
+  Sun,
+  Moon,
   X,
 } from 'lucide-react';
 import { flushSync } from 'react-dom';
@@ -54,6 +56,30 @@ const title = (issue: Issue) =>
     `The ${issue.issue} issue`
   ).replace(/<[^>]*>/g, '');
 export default function Home() {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  useLayoutEffect(() => {
+    try {
+      if (localStorage.getItem('atlantic:theme') === 'dark') setTheme('dark');
+    } catch {}
+  }, []);
+  const chooseTheme = (next: 'light' | 'dark') => {
+    setTheme(next);
+    try {
+      localStorage.setItem('atlantic:theme', next);
+    } catch {}
+  };
+  const themeButton = (className: string) => (
+    <button
+      className={className}
+      onClick={() => chooseTheme(theme === 'light' ? 'dark' : 'light')}
+      aria-label={
+        theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'
+      }
+      title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+    >
+      {theme === 'light' ? <Moon size={19} /> : <Sun size={19} />}
+    </button>
+  );
   const [year, setYear] = useState('all');
   const [query, setQuery] = useState('');
   const [readableOnly, setReadableOnly] = useState(false);
@@ -231,7 +257,7 @@ export default function Home() {
     return /^\d+$/.test(label) ? `Page ${label}` : label;
   };
   return (
-    <main className="archive-app">
+    <main className="archive-app" data-theme={theme}>
       <div className="library-shell" ref={library}>
         <header className="archive-masthead">
           <a
@@ -249,8 +275,9 @@ export default function Home() {
             />
           </a>
           <div className="archive-masthead-tools">
+            {themeButton('archive-icon theme-toggle')}
             <button
-              className="archive-icon"
+              className="archive-icon archive-fullscreen"
               onClick={toggleFullscreen}
               aria-label={full ? 'Exit fullscreen' : 'Enter fullscreen'}
             >
@@ -421,6 +448,8 @@ export default function Home() {
           <Reader
             key={readingIssue.id}
             issue={readingIssue}
+            theme={theme}
+            onTheme={chooseTheme}
             onClose={returnToLibrary}
             initialPanel={readerEntry.contents}
             initialPage={readerEntry.page}
@@ -445,8 +474,10 @@ export default function Home() {
               onClick={closeOverlay}
               aria-label="Back to covers"
             >
-              <ArrowLeft size={18} /> Back to covers <kbd>Esc</kbd>
+              <ArrowLeft size={18} />{' '}
+              <span className="splash-back-label">Archive</span> <kbd>Esc</kbd>
             </button>
+            {themeButton('splash-theme-toggle')}
             <img
               className="splash-wordmark"
               src="brand/atlantic-logo.svg"

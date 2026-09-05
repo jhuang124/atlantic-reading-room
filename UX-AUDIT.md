@@ -9,7 +9,7 @@ The core loop is choose an issue → find something worth reading → read comfo
 3. **Two unlabeled arrow pairs mixed story and page navigation.** Label the story controls and keep the current story tappable. Contents remains a named action in the header; printed page navigation lives in the lower row.
 4. **A fitted print page is not comfortable phone-sized text.** Put Enlarge beside page navigation. It uses existing print-column detection; visible column controls make the next column accessible without reopening settings. Pinch adjusts magnification and horizontal swipes at Fit turn pages. The publication retains its original layout; this is not a claim of full text reflow for every story.
 5. **Small targets and inputs made the mobile interface fragile.** Use 44px primary targets, 16px search/page input text, safe-area padding, and a bottom reading-settings sheet. Keep search and story lists vertically scrollable inside their own bounded surface.
-6. **The user's place is more valuable than a flourish.** Retain resume, saved pages, preview, detour return, search, direct story destinations, and classic page curl. Do not add new collections, recommendation rails, slogans, or tutorial panels.
+6. **The user's place is more valuable than a flourish.** Retain resume, saved pages, detour return, search, direct story destinations, and classic page curl. Page thumbnails now open immediately; remove the intermediate preview confirmation. Do not add new collections, recommendation rails, slogans, or tutorial panels.
 
 ## Research basis
 
@@ -22,3 +22,10 @@ The core loop is choose an issue → find something worth reading → read comfo
 ## Verification boundary
 
 Archive integrity, story destinations, folio exceptions, saved places, pinch math, and curl geometry are covered by 23 targeted tests. TypeScript and the static build are checked. The in-app browser verified 320px and 390px layouts, search-to-story navigation, column enlargement, and the splash action placement. Physical touch/trackpad feel is not established by automated tests. Safari is excluded at the user's request.
+
+
+## Light/dark and navigation follow-up
+
+Light is the default, with warm white surfaces, ink typography, red actions, and a pale neutral reading desk. Dark uses charcoal surfaces and softer white text throughout, including Contents and settings. A shared, persisted preference controls the archive, issue splash, and reader; PDF artwork keeps its printed colors.
+
+Contents now opens from the left at 336px on desktop, or full width on a phone. A small issue cover reinforces location. One search field returns matching stories and matching page text; three tabs distinguish Stories, Pages, and Saved. Previous/next story controls live in this panel, leaving the main reader with a single pair of page-turn arrows. The current story remains a direct Contents entry point. Pages jump immediately, with the original place retained by the existing Return control.
