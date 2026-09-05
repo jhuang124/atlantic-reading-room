@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  BookOpen,
   Maximize2,
   Minimize2,
   Search,
@@ -37,8 +36,17 @@ function transition(update: () => void) {
 }
 type Issue = (typeof data)[number];
 const issues: Issue[] = data;
-const years = [...new Set(issues.map((issue) => issue.year))].sort((a, b) => b - a);
-const storySearch = new Map(readerIssues.map((issue) => [issue.id, issue.contents.map((story) => `${story.title} ${story.author || ''}`).join(' ')]));
+const years = [...new Set(issues.map((issue) => issue.year))].sort(
+  (a, b) => b - a,
+);
+const storySearch = new Map(
+  readerIssues.map((issue) => [
+    issue.id,
+    issue.contents
+      .map((story) => `${story.title} ${story.author || ''}`)
+      .join(' '),
+  ]),
+);
 const title = (issue: Issue) =>
   (
     issue.coverStories[0]?.title ||
@@ -214,7 +222,12 @@ export default function Home() {
     const entry = readerIssues.find((i) => i.id === id),
       place = places[id];
     if (!entry || !place) return '';
-    const label = pageLabel(place.page, entry.pageCount, entry.printOffset, entry.backMatterPages);
+    const label = pageLabel(
+      place.page,
+      entry.pageCount,
+      entry.printOffset,
+      entry.backMatterPages,
+    );
     return /^\d+$/.test(label) ? `Page ${label}` : label;
   };
   return (
@@ -434,6 +447,11 @@ export default function Home() {
             >
               <ArrowLeft size={18} /> Back to covers <kbd>Esc</kbd>
             </button>
+            <img
+              className="splash-wordmark"
+              src="brand/atlantic-logo.svg"
+              alt="The Atlantic"
+            />
             <div className="issue-splash-art" key={`cover-${issue.id}`}>
               <img
                 className="library-detail-cover"
@@ -452,7 +470,7 @@ export default function Home() {
               )}
               {issue.coverStories[0]?.dek && (
                 <p className="library-detail-dek">
-                  {issue.coverStories[0].dek}
+                  {issue.coverStories[0].dek.replace(/<[^>]*>/g, '')}
                 </p>
               )}
               {available.includes(issue.id) ? (
@@ -462,7 +480,6 @@ export default function Home() {
                     disabled={opening}
                     onClick={() => startReading(issue.id)}
                   >
-                    <BookOpen size={18} />
                     {opening
                       ? 'Opening…'
                       : places[issue.id]
@@ -489,7 +506,7 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                View issue at The Atlantic <ArrowUpRight size={16} />
+                On TheAtlantic.com <ArrowUpRight size={16} />
               </a>
               <nav
                 className="issue-splash-navigation"

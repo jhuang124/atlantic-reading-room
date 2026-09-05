@@ -410,7 +410,10 @@ export default function Reader({
   ]);
   useLayoutEffect(() => {
     if (mode !== 'column' || pendingPlace.current) return;
-    viewport.current?.scrollTo({ left: activeColumn.x * leafWidth, top: 0 });
+    viewport.current?.scrollTo({
+      left: activeColumn.x * leafWidth,
+      top: activeColumn.y * leafWidth * baseRatio,
+    });
   }, [mode, column, page]);
   function chooseMode(next: ReadingMode) {
     setMode(next);
@@ -448,6 +451,7 @@ export default function Reader({
         };
       }
       const value = clampPage(n, issue.pageCount);
+      if (n !== page) setColumn(0);
       turningRef.current = false;
       setTurning(null);
       setPage(value);
@@ -687,10 +691,74 @@ export default function Reader({
       );
     };
     el.addEventListener('wheel', wheel, { passive: false });
+    let touchStart: {
+      x: number;
+      y: number;
+      distance: number;
+      zoom: number;
+      pinched: boolean;
+    } | null = null;
+    const touchDistance = (touches: TouchList) =>
+      Math.hypot(
+        touches[1].clientX - touches[0].clientX,
+        touches[1].clientY - touches[0].clientY,
+      );
+    const touchBegin = (e: TouchEvent) => {
+      if ((e.target as HTMLElement).closest('button')) return;
+      const two = e.touches.length === 2;
+      touchStart = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        distance: two ? touchDistance(e.touches) : 0,
+        zoom: zoomRef.current,
+        pinched: two,
+      };
+    };
+    const touchMove = (e: TouchEvent) => {
+      if (!touchStart || e.touches.length !== 2) return;
+      e.preventDefault();
+      if (!touchStart.distance) {
+        touchStart.distance = touchDistance(e.touches);
+        touchStart.zoom = zoomRef.current;
+      }
+      touchStart.pinched = true;
+      changeZoom(
+        (touchStart.zoom * touchDistance(e.touches)) /
+          Math.max(1, touchStart.distance),
+        (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      );
+    };
+    const touchEnd = (e: TouchEvent) => {
+      if (!touchStart || e.touches.length) return;
+      const t = touchStart;
+      touchStart = null;
+      const dx = e.changedTouches[0].clientX - t.x,
+        dy = e.changedTouches[0].clientY - t.y;
+      if (
+        !t.pinched &&
+        zoomRef.current <= 1.01 &&
+        mode === 'spread' &&
+        Math.abs(dx) > 60 &&
+        Math.abs(dx) > Math.abs(dy) * 1.5
+      )
+        turn(dx < 0 ? 1 : -1);
+    };
+    const touchCancel = () => {
+      touchStart = null;
+    };
+    el.addEventListener('touchstart', touchBegin, { passive: true });
+    el.addEventListener('touchmove', touchMove, { passive: false });
+    el.addEventListener('touchend', touchEnd, { passive: true });
+    el.addEventListener('touchcancel', touchCancel, { passive: true });
     el.addEventListener('gesturestart', gestureStart, { passive: false });
     el.addEventListener('gesturechange', gestureChange, { passive: false });
     return () => {
       el.removeEventListener('wheel', wheel);
+      el.removeEventListener('touchstart', touchBegin);
+      el.removeEventListener('touchmove', touchMove);
+      el.removeEventListener('touchend', touchEnd);
+      el.removeEventListener('touchcancel', touchCancel);
       el.removeEventListener('gesturestart', gestureStart);
       el.removeEventListener('gesturechange', gestureChange);
     };
@@ -797,15 +865,24 @@ export default function Reader({
         if (!disposed)
           setError('This issue couldn’t be opened. Please try again.');
       });
-    fetch(asset(issue.id, issue.indexEncoding === 'gzip' ? 'index.json.gz' : 'index.json'), { signal: abort.signal })
+    fetch(
+      asset(
+        issue.id,
+        issue.indexEncoding === 'gzip' ? 'index.json.gz' : 'index.json',
+      ),
+      { signal: abort.signal },
+    )
       .then(async (r) => {
         if (!r.ok) throw Error('Missing index');
         if (issue.indexEncoding === 'gzip') {
           const bytes = new Uint8Array(await r.arrayBuffer());
           // Hosts may transparently decode Content-Encoding before fetch.
-          if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return JSON.parse(new TextDecoder().decode(bytes));
+          if (bytes[0] !== 0x1f || bytes[1] !== 0x8b)
+            return JSON.parse(new TextDecoder().decode(bytes));
           const compressed = new Response(bytes).body!;
-          return new Response(compressed.pipeThrough(new DecompressionStream('gzip'))).json();
+          return new Response(
+            compressed.pipeThrough(new DecompressionStream('gzip')),
+          ).json();
         }
         return r.json();
       })
@@ -879,7 +956,9 @@ export default function Reader({
     setArticleId(currentEdition.id);
   }
   function goToStory(n: number) {
-    const entry = issue.contents.find((c) => physicalPage(c.printedPage, issue) === n);
+    const entry = issue.contents.find(
+      (c) => physicalPage(c.printedPage, issue) === n,
+    );
     const edition = entry && articleForStory(issue, entry.printedPage);
     const stayInArticle = !!articleId && !!edition;
     navigate(n);
@@ -1032,7 +1111,12 @@ export default function Reader({
     returnToPrint,
   ]);
   function submitJump() {
-    const n = parsePrintedPage(jump ?? '', issue.pageCount, issue.printOffset, issue.backMatterPages);
+    const n = parsePrintedPage(
+      jump ?? '',
+      issue.pageCount,
+      issue.printOffset,
+      issue.backMatterPages,
+    );
     if (n !== null) navigate(n);
     else {
       announce(
@@ -1041,7 +1125,8 @@ export default function Reader({
       setJump(null);
     }
   }
-  const label = (n: number) => pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages);
+  const label = (n: number) =>
+    pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages);
   return (
     <div
       ref={dialog}
@@ -1260,6 +1345,34 @@ export default function Reader({
               }}
             />
           )}
+          {!articleId && mode === 'column' && columns.length > 1 && (
+            <div
+              className="column-navigation"
+              role="group"
+              aria-label="Read print columns"
+            >
+              <button
+                aria-label="Previous column"
+                disabled={column === 0}
+                onClick={() => setColumn((n) => Math.max(0, n - 1))}
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <span>
+                Column {Math.min(column + 1, columns.length)} of{' '}
+                {columns.length}
+              </span>
+              <button
+                aria-label="Next column"
+                disabled={column >= columns.length - 1}
+                onClick={() =>
+                  setColumn((n) => Math.min(columns.length - 1, n + 1))
+                }
+              >
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          )}
           {historyPage !== null && (
             <div className="reading-return">
               <button onClick={restoreHistory}>
@@ -1283,7 +1396,7 @@ export default function Reader({
         </section>
       </div>
       <footer
-        className="reader-toolbar"
+        className={`reader-toolbar ${currentEdition || articleId ? 'has-article' : ''}`}
         inert={!!panel || appearance || preview !== null}
       >
         <div className="story-controls">
@@ -1297,13 +1410,14 @@ export default function Reader({
             }
           >
             <ArrowLeft size={18} />
+            <span className="story-direction-label">Story</span>
           </button>
           <button
             className="current-story"
             onClick={() => setPanel('contents')}
             aria-label={`Current story: ${locationTitle(issue, page)}. Open contents`}
           >
-            <span>{currentArticle?.section || issue.issue}</span>
+            <span>In this issue</span>
             <strong>{locationTitle(issue, page)}</strong>
           </button>
           <button
@@ -1315,29 +1429,32 @@ export default function Reader({
             }
           >
             <ArrowRight size={18} />
+            <span className="story-direction-label">Story</span>
           </button>
         </div>
-        <div
-          className="presentation-control"
-          role="group"
-          aria-label="Reading presentation"
-        >
-          <button aria-pressed={!articleId} onClick={returnToPrint}>
-            Print
-          </button>
-          <button
-            aria-pressed={!!articleId}
-            disabled={!currentEdition}
-            title={
-              currentEdition
-                ? 'Read with adjustable text'
-                : 'Article view is not available for this story'
-            }
-            onClick={openArticle}
+        {(currentEdition || articleId) && (
+          <div
+            className="presentation-control"
+            role="group"
+            aria-label="Reading presentation"
           >
-            Article
-          </button>
-        </div>
+            <button aria-pressed={!articleId} onClick={returnToPrint}>
+              Print
+            </button>
+            <button
+              aria-pressed={!!articleId}
+              disabled={!currentEdition}
+              title={
+                currentEdition
+                  ? 'Read with adjustable text'
+                  : 'Article view is not available for this story'
+              }
+              onClick={openArticle}
+            >
+              Article
+            </button>
+          </div>
+        )}
         <div className="reader-utilities">
           {!articleId && (
             <>
@@ -1374,6 +1491,19 @@ export default function Reader({
                   <ArrowRight size={16} />
                 </button>
               </div>
+              {mobile && (
+                <button
+                  className="mobile-reading-view"
+                  aria-label={
+                    mode === 'column' ? 'Fit page to screen' : 'Read by column'
+                  }
+                  onClick={() =>
+                    chooseMode(mode === 'column' ? 'spread' : 'column')
+                  }
+                >
+                  {mode === 'column' ? 'Fit page' : 'Enlarge'}
+                </button>
+              )}
               <button
                 className="fit-button"
                 aria-label="Fit page to screen"
@@ -1455,6 +1585,25 @@ export default function Reader({
                 <X size={18} />
               </button>
             </div>
+            {mobile && (currentEdition || articleId) && (
+              <fieldset>
+                <legend>Read as</legend>
+                <button aria-pressed={!articleId} onClick={returnToPrint}>
+                  Print
+                </button>
+                <button aria-pressed={!!articleId} onClick={openArticle}>
+                  Article
+                </button>
+              </fieldset>
+            )}
+            {mobile && (
+              <fieldset>
+                <legend>Focus</legend>
+                <button aria-pressed={quiet} onClick={() => setFocus(!quiet)}>
+                  {quiet ? 'Show full interface' : 'Hide controls'}
+                </button>
+              </fieldset>
+            )}
             {articleId ? (
               <fieldset>
                 <legend>Text size</legend>
@@ -1550,11 +1699,17 @@ export default function Reader({
               Keep controls visible
             </label>
             <p className="settings-help">
-              C · Contents &nbsp; F · Focus
-              <br />
-              Arrow keys · Turn pages
-              <br />
-              Pinch · Zoom &nbsp; Two fingers · Pan
+              {mobile ? (
+                'Double-tap a page to zoom. Enlarge follows the print columns.'
+              ) : (
+                <>
+                  C · Contents &nbsp; F · Focus
+                  <br />
+                  Arrow keys · Turn pages
+                  <br />
+                  Pinch · Zoom &nbsp; Two fingers · Pan
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -1580,8 +1735,8 @@ export default function Reader({
               <div className="preview-page">
                 <Leaf
                   pdf={pdf}
-                        printOffset={issue.printOffset}
-                        backMatterPages={issue.backMatterPages}
+                  printOffset={issue.printOffset}
+                  backMatterPages={issue.backMatterPages}
                   number={preview}
                   width={Math.max(
                     120,

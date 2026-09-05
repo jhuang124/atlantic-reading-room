@@ -1018,7 +1018,7 @@ p {
 /* Restore the immersive issue entrance without the former 3D room. */
 .issue-splash-backdrop {
   padding: 0;
-  background: #101e14;
+  background: #171719;
   animation: splash-reveal 300ms ease both;
 }
 .issue-splash {
@@ -1026,12 +1026,17 @@ p {
   max-width: none;
   height: 100dvh;
   max-height: none;
-  padding: 100px 7vw 64px;
+  padding: 112px 7vw 72px;
   gap: 8vw;
   grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
   align-items: center;
-  background: radial-gradient(ellipse at 27% 42%, #354b32, #101e14 72%);
-  color: #f0ecdc;
+  background: radial-gradient(
+    ellipse at 24% 42%,
+    #343436 0%,
+    #1c1c1e 44%,
+    #141416 82%
+  );
+  color: #faf9f6;
   box-shadow: none;
   overscroll-behavior: contain;
 }
@@ -1048,7 +1053,7 @@ p {
   font:
     12px Graphik,
     sans-serif;
-  color: #e4e8dd;
+  color: #faf9f6;
   z-index: 2;
 }
 .issue-splash .library-modal-close kbd {
@@ -1069,13 +1074,13 @@ p {
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: calc(100dvh - 164px);
+  max-height: calc(100dvh - 184px);
   object-fit: contain;
   margin: 0;
-  transform: rotate(-2deg);
+  transform: rotate(-1.5deg);
   box-shadow:
-    5px 7px 0 #b6ad9026,
-    15px 35px 70px #0006;
+    2px 3px 0 #e1ded347,
+    10px 28px 60px #0009;
 }
 .issue-splash .library-detail-copy {
   width: 100%;
@@ -1084,7 +1089,7 @@ p {
   animation: splash-copy-in 650ms 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .issue-splash .archive-kicker {
-  color: #d2d8c8;
+  color: #ef3942;
   font-size: 12px;
   letter-spacing: 0.12em;
 }
@@ -1094,11 +1099,11 @@ p {
     Georgia,
     serif;
   margin: 22px 0;
-  color: #f0ecdc;
+  color: #faf9f6;
   text-wrap: pretty;
 }
 .issue-splash .archive-byline {
-  color: #c3caba;
+  color: #c7c5c1;
   font-size: 11px;
 }
 .issue-splash .library-detail-dek {
@@ -1106,20 +1111,20 @@ p {
     400 clamp(18px, 1.5vw, 24px)/1.4 'AGaramondPro',
     Georgia,
     serif;
-  color: #bcc9b4;
+  color: #bcbab6;
   margin: 28px 0;
 }
 .issue-splash .archive-external {
-  color: #e3d1a8;
+  color: #faf9f6;
   font-size: 12px;
   padding: 12px 0;
-  border-bottom: 1px solid #cfb78980;
+  border-bottom: 1px solid #ffffff35;
   text-decoration: none;
 }
 .issue-splash .archive-primary {
   width: auto;
-  background: #e3d1a8;
-  color: #152319;
+  background: #d71920;
+  color: #ffffff;
   border: 0;
   margin: 24px 0 8px;
   padding: 16px 20px;
@@ -1131,7 +1136,7 @@ p {
   margin-top: 32px;
 }
 .issue-splash-navigation span {
-  color: #a8b5a1;
+  color: #bcbab6;
   font:
     11px 'Logic Monospace',
     monospace;
@@ -1142,7 +1147,7 @@ p {
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid #c3caba55;
+  border: 1px solid #c7c5c155;
   border-radius: 50%;
   transition:
     background 180ms,
@@ -1152,13 +1157,13 @@ p {
   background-color: #ffffff12;
 }
 .issue-splash .archive-primary:hover {
-  background: #efe0bd;
+  background: #b90d16;
 }
 .issue-splash-navigation button:disabled {
   opacity: 0.25;
 }
 .issue-splash :focus-visible {
-  outline-color: #e3d1a8;
+  outline-color: #faf9f6;
 }
 @keyframes splash-reveal {
   from {
@@ -1288,13 +1293,13 @@ p {
     13px Graphik,
     sans-serif;
   padding: 14px 2px;
-  border-bottom: 1px solid #a9b1a1;
+  border-bottom: 1px solid #ffffff55;
 }
 .splash-availability {
   font:
     12px/1.5 Graphik,
     sans-serif;
-  color: #b9c5b3;
+  color: #bcbab6;
   margin: 28px 0 8px;
 }
 .issue-splash .archive-external {
@@ -1321,5 +1326,161 @@ p {
   }
   .archive-search input {
     font-size: 13px;
+  }
+}
+
+/* Editorial entrance: the cover is the artwork; red marks the way into it. */
+.splash-wordmark {
+  position: absolute;
+  top: 35px;
+  right: 7vw;
+  width: 174px;
+  filter: invert(1);
+  opacity: 0.94;
+}
+.issue-splash .archive-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: Graphik, sans-serif;
+  font-size: 13px;
+}
+.issue-splash .archive-kicker::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: #ed1c24;
+}
+.issue-splash .archive-primary {
+  min-height: 52px;
+  font-size: 14px;
+  gap: 24px;
+}
+.issue-splash .archive-primary:hover {
+  background: #b90d16;
+}
+.issue-splash .archive-byline {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.issue-splash .archive-external {
+  color: #bcbab6;
+  border: 0;
+  font-size: 12px;
+}
+.issue-splash-navigation {
+  border-top: 1px solid #ffffff25;
+  padding-top: 22px;
+  max-width: 230px;
+  margin-top: 26px;
+}
+.issue-splash-navigation button {
+  border-radius: 0;
+  border-color: #ffffff35;
+}
+.archive-read-link {
+  min-height: 44px;
+  font-size: 13px;
+}
+.archive-search {
+  min-height: 44px;
+}
+.archive-search input {
+  font-size: 14px;
+}
+.archive-compact-filters select {
+  min-height: 44px;
+  font-size: 13px;
+}
+.archive-icon {
+  min-width: 44px;
+  min-height: 44px;
+}
+@media (max-width: 760px) {
+  .issue-splash {
+    padding: 86px 24px calc(120px + env(safe-area-inset-bottom));
+    gap: 28px;
+    overflow-y: auto;
+  }
+  .splash-wordmark {
+    width: 124px;
+    top: 32px;
+    right: 24px;
+  }
+  .issue-splash .library-modal-close {
+    left: 12px;
+    top: 20px;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .issue-splash .library-modal-close kbd {
+    display: none;
+  }
+  .issue-splash .library-detail-cover {
+    max-height: 43svh;
+    max-width: 85%;
+  }
+  .issue-splash .library-detail-copy {
+    max-width: 520px;
+  }
+  .issue-splash .library-detail-copy h2 {
+    font-size: clamp(32px, 8.5vw, 46px);
+    margin: 16px 0;
+    line-height: 1.04;
+  }
+  .issue-splash .library-detail-dek {
+    font-size: 21px;
+    line-height: 1.35;
+    margin: 20px 0;
+  }
+  .issue-splash .issue-reading-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    margin: 0;
+    padding: 16px 24px calc(16px + env(safe-area-inset-bottom));
+    background: #171719f5;
+    border-top: 1px solid #ffffff25;
+    gap: 20px;
+  }
+  .issue-splash .issue-reading-actions .archive-primary {
+    flex: 1;
+    justify-content: space-between;
+    padding: 14px 16px;
+  }
+  .splash-contents {
+    min-height: 48px;
+    padding: 14px 4px;
+  }
+  .issue-splash-navigation {
+    margin-top: 20px;
+  }
+  .archive-search input {
+    font-size: 16px;
+  }
+  .archive-grid {
+    gap: 26px 16px;
+  }
+  .archive-card h2 {
+    font-size: 24px;
+  }
+}
+@media (max-width: 360px) {
+  .splash-wordmark {
+    width: 100px;
+  }
+  .issue-splash .issue-reading-actions {
+    padding-left: 16px;
+    padding-right: 16px;
+    gap: 12px;
+  }
+}
+@media (max-width: 760px) {
+  /* A translated ancestor would contain the fixed reading actions. */
+  .issue-splash .library-detail-copy {
+    animation: splash-reveal 450ms ease both;
+    translate: none;
   }
 }

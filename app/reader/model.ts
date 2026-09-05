@@ -30,14 +30,24 @@ export function turnPage(
     count,
   );
 }
-export function pageLabel(page: number, count: number, offset = 2, backMatterPages = 2) {
+export function pageLabel(
+  page: number,
+  count: number,
+  offset = 2,
+  backMatterPages = 2,
+) {
   if (page === 1) return 'Cover';
   if (page === 2) return 'Inside cover';
   if (backMatterPages > 0 && page === count) return 'Back cover';
   if (backMatterPages > 1 && page === count - 1) return 'Inside back';
   return page <= offset ? 'Front matter' : String(page - offset);
 }
-export function parsePrintedPage(value: string, count: number, offset = 2, backMatterPages = 2): number | null {
+export function parsePrintedPage(
+  value: string,
+  count: number,
+  offset = 2,
+  backMatterPages = 2,
+): number | null {
   const v = value.trim().toLowerCase();
   if (v === 'cover') return 1;
   if (v === 'back') return count;

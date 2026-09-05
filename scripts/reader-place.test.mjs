@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {gunzipSync} from 'node:zlib';
+import { gunzipSync } from 'node:zlib';
 import { registerHooks } from 'node:module';
 import { pageColumns } from '../app/reader/columns.ts';
 registerHooks({
@@ -69,9 +69,14 @@ test('A complete print and article place round-trips with 26px text preference',
 });
 test('Actual print page 12 has four usable columns; sparse artwork stays one region', () => {
   const pages = JSON.parse(
-    gunzipSync(fs.readFileSync(
-      new URL('../public/reader-assets/202609/index.json.gz', import.meta.url),
-    )),
+    gunzipSync(
+      fs.readFileSync(
+        new URL(
+          '../public/reader-assets/202609/index.json.gz',
+          import.meta.url,
+        ),
+      ),
+    ),
   );
   const columns = pageColumns(pages[13].words);
   assert.equal(columns.length, 4);
@@ -110,5 +115,24 @@ test('Selected article editions preserve source pages and remove opener extracti
           .endsWith('All they have to do is write it.'),
       );
     }
+  }
+});
+
+test('An illustrated opener enlarges actual prose without treating its headline as a column', () => {
+  const pages = JSON.parse(
+    gunzipSync(
+      fs.readFileSync(
+        new URL(
+          '../public/reader-assets/202511/index.json.gz',
+          import.meta.url,
+        ),
+      ),
+    ),
+  );
+  const columns = pageColumns(pages[27].words);
+  assert.equal(columns.length, 3);
+  for (const c of columns) {
+    assert.ok(c.width < 0.36);
+    assert.ok(c.y > 0.6);
   }
 });

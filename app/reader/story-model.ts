@@ -1,7 +1,10 @@
 import type { ReadableIssue } from './catalog';
 import { articleEditions } from './articles';
 // Special editions can have extra covers before printed folio 1.
-export const physicalPage = (printed: number, issue?: Pick<ReadableIssue, 'printOffset'>) => printed + (issue?.printOffset ?? 2);
+export const physicalPage = (
+  printed: number,
+  issue?: Pick<ReadableIssue, 'printOffset'>,
+) => printed + (issue?.printOffset ?? 2);
 export function storyIndex(issue: ReadableIssue, page: number) {
   if (page > issue.pageCount - (issue.backMatterPages ?? 2)) return -1;
   return issue.contents.findLastIndex(
@@ -27,7 +30,8 @@ export function adjacentStory(
 }
 export function articleForStory(issue: ReadableIssue, printedPage: number) {
   return articleEditions.find(
-    (a) => a.issueId === issue.id && a.pages[0] === physicalPage(printedPage, issue),
+    (a) =>
+      a.issueId === issue.id && a.pages[0] === physicalPage(printedPage, issue),
   );
 }
 export function locationTitle(issue: ReadableIssue, page: number) {
