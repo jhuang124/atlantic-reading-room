@@ -3,7 +3,8 @@
   position: fixed;
   inset: 0;
   height: 100dvh;
-  background: #ecebe7;
+  --reader-backdrop: #26282b;
+  background: var(--reader-backdrop);
   color: #2c2825;
   transition: opacity 300ms ease;
   --reader-rule: #dedbd6;
@@ -80,7 +81,7 @@
 .reader-v2 .reading-desk {
   position: absolute;
   inset: 0;
-  background: #ecebe7;
+  background: var(--reader-backdrop);
 }
 .reader-v2 .reading-desk::before {
   display: none;
@@ -88,15 +89,15 @@
 .reader-v2 .page-viewport {
   inset: 0;
   padding: 12px 32px;
-  scrollbar-color: #b0adaa transparent;
+  scrollbar-color: #75777a transparent;
 }
 .reader-v2 .leaf-number {
   display: none;
 }
 .reader-v2 .open-magazine {
   box-shadow:
-    0 1px 3px #0002,
-    0 12px 32px #0002;
+    0 2px 4px #0005,
+    0 18px 44px #0006;
 }
 .reader-v2 .open-magazine::after {
   box-shadow: 0 1px #e1dccb;
@@ -647,15 +648,19 @@
   font:
     16px Graphik,
     sans-serif;
-  color: #2c2825;
+  color: #e6e5e2;
 }
 .reader-v2 .reader-loading button {
-  background: #2c2825;
-  color: white;
+  background: #f8f7f4;
+  color: #2c2825;
+  border: 0;
   padding: 12px 20px;
 }
+.reader-v2 .reader-load-line {
+  background: #ffffff26;
+}
 .reader-v2 .reader-load-line > span {
-  background: #2c2825;
+  background: #e6e5e2;
 }
 .reader-v2.quiet .reader-workspace {
   inset: 0;
