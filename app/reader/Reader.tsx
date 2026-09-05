@@ -20,7 +20,7 @@ import {
   Plus,
   X,
 } from 'lucide-react';
-import type { PDFDocumentProxy, RenderTask, TextLayer } from 'pdfjs-dist';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { ReadableIssue } from './catalog';
 import {
   clampPage,
@@ -28,18 +28,12 @@ import {
   turnPage,
   pageLabel,
   parsePrintedPage,
-  matchWords,
   readSaved,
   saveLocal,
   type IndexedPage,
 } from './model';
-import PageTurn, {
-  warmTurnPages,
-  cachedPageImage,
-  type TurnControl,
-  type TurnRenderer,
-} from './PageTurn';
-import { clampZoom, pinchZoom, rasterScale } from './motion';
+import PageTurn, { type TurnControl, type TurnRenderer } from './PageTurn';
+import { clampZoom, pinchZoom } from './motion';
 import {
   loadPlace,
   storePlace,
@@ -57,171 +51,13 @@ import {
   storyIndex,
   physicalPage,
 } from './story-model';
+import Leaf from './Leaf';
+import { loadPDF, type PDFModule } from './pdf';
+import { pageRasters, warmTurnPages } from './page-raster';
 import './reader.css';
 import './v2.css';
 
-type PDFModule = typeof import('pdfjs-dist');
-let pdfModule: Promise<PDFModule> | undefined;
-function loadPDF() {
-  return (pdfModule ??= (async () => {
-    const [pdf, worker] = await Promise.all([
-      import('pdfjs-dist'),
-      import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
-    ]);
-    pdf.GlobalWorkerOptions.workerSrc = worker.default;
-    return pdf;
-  })());
-}
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
-
-function Leaf({
-  pdf,
-  number,
-  width,
-  id,
-  index,
-  query,
-  onDoubleClick,
-  onPaint,
-  printOffset,
-  backMatterPages,
-}: {
-  pdf: PDFDocumentProxy;
-  number: number;
-  width: number;
-  id: string;
-  index?: IndexedPage;
-  query: string;
-  onDoubleClick: (x: number, y: number) => void;
-  onPaint?: () => void;
-  printOffset?: number;
-  backMatterPages?: number;
-}) {
-  const painted = useRef(onPaint);
-  painted.current = onPaint;
-  const surface = useRef<HTMLDivElement>(null),
-    text = useRef<HTMLDivElement>(null);
-  const [error, setError] = useState(false);
-  const [renderWidth, setRenderWidth] = useState(width);
-  const [paintedWidth, setPaintedWidth] = useState(width);
-  useEffect(() => {
-    const timer = setTimeout(() => setRenderWidth(width), 160);
-    return () => clearTimeout(timer);
-  }, [width]);
-  useLayoutEffect(() => {
-    const ready = cachedPageImage(pdf, number);
-    if (!ready) return;
-    const canvas = document.createElement('canvas');
-    canvas.width = ready.width;
-    canvas.height = ready.height;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.getContext('2d')?.drawImage(ready, 0, 0);
-    surface.current?.replaceChildren(canvas);
-  }, [pdf, number]);
-  const ratio = index ? index.height / index.width : 4 / 3;
-  const hits = useMemo(
-    () => matchWords(index?.words || [], query),
-    [index, query],
-  );
-  useEffect(() => {
-    let stopped = false,
-      task: RenderTask | undefined,
-      layer: TextLayer | undefined;
-    const canvas = document.createElement('canvas');
-    const layerNode = document.createElement('div');
-    layerNode.className = 'textLayer';
-    (async () => {
-      try {
-        setError(false);
-        const [page, lib] = await Promise.all([pdf.getPage(number), loadPDF()]);
-        if (stopped) return;
-        const base = page.getViewport({ scale: 1 }),
-          viewport = page.getViewport({ scale: renderWidth / base.width });
-        const dpr = rasterScale(
-          viewport.width,
-          base.height / base.width,
-          devicePixelRatio,
-        );
-        canvas.width = Math.ceil(viewport.width * dpr);
-        canvas.height = Math.ceil(viewport.height * dpr);
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        task = page.render({
-          canvas,
-          viewport,
-          transform: [dpr, 0, 0, dpr, 0, 0],
-        });
-        await task.promise;
-        if (stopped) return;
-        surface.current?.replaceChildren(canvas);
-        painted.current?.();
-        layerNode.style.setProperty(
-          '--total-scale-factor',
-          String(viewport.scale),
-        );
-        layer = new lib.TextLayer({
-          textContentSource: await page.getTextContent(),
-          container: layerNode,
-          viewport,
-        });
-        await layer.render();
-        if (stopped) return;
-        text.current?.replaceChildren(layerNode);
-        setPaintedWidth(renderWidth);
-      } catch (e) {
-        if (!stopped && (e as Error).name !== 'RenderingCancelledException')
-          setError(true);
-      }
-    })();
-    return () => {
-      stopped = true;
-      task?.cancel();
-      layer?.cancel();
-    };
-  }, [pdf, number, renderWidth]);
-  return (
-    <div
-      className="reader-leaf"
-      style={{ width, height: width * ratio }}
-      aria-label={pageLabel(number, pdf.numPages, printOffset, backMatterPages)}
-      onDoubleClick={(e) => {
-        if (!(e.target as HTMLElement).closest('.textLayer span'))
-          onDoubleClick(e.clientX, e.clientY);
-      }}
-    >
-      <img className="leaf-preview" src={asset(id, `${number}.jpg`)} alt="" />
-      <div ref={surface} className="leaf-canvas" />
-      <div
-        ref={text}
-        className="leaf-text"
-        style={{
-          transform: `scale(${width / paintedWidth})`,
-          transformOrigin: '0 0',
-        }}
-      />
-      {hits.map((hit, i) => (
-        <span
-          key={i}
-          className="word-highlight"
-          style={{
-            left: `${hit.x * 100}%`,
-            top: `${hit.y * 100}%`,
-            width: `${hit.w * 100}%`,
-            height: `${hit.h * 100}%`,
-          }}
-        />
-      ))}
-      <div className="leaf-edge" aria-hidden="true" />
-      {error && (
-        <div className="page-render-error">
-          This page couldn’t render at full resolution. Turn the page and return
-          to retry.
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function Reader({
   issue,
@@ -257,7 +93,6 @@ export default function Reader({
     ),
     [query, setQuery] = useState(''),
     [quiet, setQuiet] = useState(false),
-    [chooser, setChooser] = useState(false),
     [bookmarkPages, setBookmarkPages] = useState<number[]>([]),
     [toast, setToast] = useState(''),
     [jump, setJump] = useState<string | null>(null),
@@ -619,16 +454,21 @@ export default function Reader({
   }, [page, zoom]);
   useEffect(() => {
     if (!pdf || turning) return;
+    const abort = new AbortController();
     const timer = setTimeout(
       () =>
         warmTurnPages(
           pdf,
-          [start - 2, start - 1, start, end, end + 1, end + 2],
+          [start, end, end + 1, end + 2, start - 2, start - 1],
           leafWidth,
+          abort.signal,
         ),
       220,
     );
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      abort.abort();
+    };
   }, [pdf, start, end, leafWidth, turning]);
   useEffect(() => {
     if (error) onReady?.();
@@ -823,6 +663,7 @@ export default function Reader({
 
   useEffect(() => {
     let disposed = false;
+    let document: PDFDocumentProxy | undefined;
     let task: ReturnType<PDFModule['getDocument']> | undefined;
     const abort = new AbortController();
     setPDF(null);
@@ -858,6 +699,7 @@ export default function Reader({
         if (!doc || disposed) return;
         if (doc.numPages !== issue.pageCount)
           throw new Error('The issue’s page count does not match the catalog.');
+        document = doc;
         setPDF(doc);
         setLoading(100);
       })
@@ -895,6 +737,7 @@ export default function Reader({
     return () => {
       disposed = true;
       abort.abort();
+      if (document) pageRasters(document).dispose();
       void task?.destroy();
     };
   }, [issue.id, issue.pageCount, retry]);
@@ -1037,8 +880,7 @@ export default function Reader({
           setAppearance(false);
           return;
         }
-        if (chooser) setChooser(false);
-        else if (panel) closeNavigation();
+        if (panel) closeNavigation();
         else if (quiet) setFocus(false);
         else if (articleId) returnToPrint();
         else onClose();
@@ -1090,7 +932,6 @@ export default function Reader({
     bookmark,
     onClose,
     quiet,
-    chooser,
     mobile,
     panel,
     issue.pageCount,

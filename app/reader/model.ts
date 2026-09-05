@@ -63,11 +63,19 @@ export function normalize(text: string) {
     .replace(/\s+/g, ' ')
     .toLowerCase();
 }
+// Issue indexes are immutable after loading; release their normalized text with
+// the document instead of rebuilding it on each keystroke or navigation render.
+const searchablePages = new WeakMap<IndexedPage[], string[]>();
 export function searchPages(index: IndexedPage[], query: string) {
   const q = normalize(query.trim());
   if (q.length < 2) return [];
-  return index.flatMap((p) => {
-    const pos = normalize(p.text).indexOf(q);
+  let texts = searchablePages.get(index);
+  if (!texts) {
+    texts = index.map((p) => normalize(p.text));
+    searchablePages.set(index, texts);
+  }
+  return index.flatMap((p, i) => {
+    const pos = texts[i].indexOf(q);
     if (pos < 0) return [];
     return [
       {

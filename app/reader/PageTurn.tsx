@@ -1,72 +1,16 @@
 'use client';
-import { useEffect, useRef, type MutableRefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type * as THREE from 'three';
-import { cornerCurl, curlSampleU, rasterScale, TURN_MS } from './motion';
+import {
+  curlFrame,
+  curlRow,
+  curlPoint,
+  sampleCurlRow,
+  TURN_MS,
+} from './motion';
 import { turnFaces } from './model';
-
-const resolvedPages = new WeakMap<
-  PDFDocumentProxy,
-  Map<number, HTMLCanvasElement>
->();
-export const cachedPageImage = (pdf: PDFDocumentProxy, page: number) =>
-  resolvedPages.get(pdf)?.get(page);
-
-const pageCache = new WeakMap<
-  PDFDocumentProxy,
-  Map<string, Promise<HTMLCanvasElement>>
->();
-function pageImage(pdf: PDFDocumentProxy, number: number, width: number) {
-  let cache = pageCache.get(pdf);
-  if (!cache) {
-    cache = new Map();
-    pageCache.set(pdf, cache);
-  }
-  const pixels = width;
-  const key = `${number}:${pixels}`;
-  let result = cache.get(key);
-  if (!result) {
-    result = (async () => {
-      const page = await pdf.getPage(number);
-      const base = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({ scale: width / base.width });
-      const dpr = rasterScale(
-        width,
-        base.height / base.width,
-        devicePixelRatio,
-      );
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.ceil(viewport.width * dpr);
-      canvas.height = Math.ceil(viewport.height * dpr);
-      await page.render({ canvas, viewport, transform: [dpr, 0, 0, dpr, 0, 0] })
-        .promise;
-      let ready = resolvedPages.get(pdf);
-      if (!ready) {
-        ready = new Map();
-        resolvedPages.set(pdf, ready);
-      }
-      ready.set(number, canvas);
-      if (ready.size > 12) ready.delete(ready.keys().next().value!);
-      return canvas;
-    })();
-    cache.set(key, result);
-    result.catch(() => cache!.delete(key));
-    // Keep a small working set; a long session must not retain every rasterized page.
-    if (cache.size > 12) cache.delete(cache.keys().next().value!);
-  }
-  return result;
-}
-export function warmTurnPages(
-  pdf: PDFDocumentProxy,
-  pages: number[],
-  width: number,
-) {
-  pages
-    .filter((n) => n > 0 && n <= pdf.numPages)
-    .forEach((n) => {
-      void pageImage(pdf, n, width).catch(() => {});
-    });
-}
+import { pageRasters } from './page-raster';
 
 export type TurnControl = {
   progress: number;
@@ -95,11 +39,13 @@ export default function PageTurn({
   spread: boolean;
   onComplete: (commit: boolean) => void;
   control: TurnControl;
-  rendererPool: MutableRefObject<TurnRenderer | null>;
+  rendererPool: RefObject<TurnRenderer | null>;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const finish = useRef(onComplete);
-  finish.current = onComplete;
+  useLayoutEffect(() => {
+    finish.current = onComplete;
+  }, [onComplete]);
   useEffect(() => {
     let disposed = false,
       frame = 0;
@@ -127,7 +73,7 @@ export default function PageTurn({
     const timeout = setTimeout(done, 5000);
     (async () => {
       const [images, THREE] = await Promise.all([
-        Promise.all(pages.map((n) => pageImage(pdf, n, width))),
+        Promise.all(pages.map((n) => pageRasters(pdf).get(n, width))),
         import('three'),
       ]);
       if (disposed || finished || !host.current) return;
@@ -385,12 +331,14 @@ export default function PageTurn({
         }
         const hinge = pair ? 0 : forward ? -0.5 : 0.5;
         let maxHeight = 0;
-        for (let row = 0; row <= 48; row++)
+        const fold = curlFrame(ratio, progress);
+        for (let row = 0; row <= 48; row++) {
+          const y = ratio * (0.5 - row / 48);
+          const samples = curlRow(y, fold);
           for (let col = 0; col <= 80; col++) {
             const i = row * 81 + col;
-            const y = ratio * (0.5 - row / 48);
-            const u = curlSampleU(col, 80, y, ratio, progress);
-            const c = cornerCurl(u, y, ratio, progress);
+            const u = sampleCurlRow(col, 80, samples);
+            const c = curlPoint(u, y, fold);
             const x = hinge + (forward ? c.x : -c.x),
               z = c.z + 0.008;
             maxHeight = Math.max(maxHeight, c.z);
@@ -407,6 +355,7 @@ export default function PageTurn({
               0,
             );
           }
+        }
         for (const name of ['position', 'color', 'uv', 'spineDistance'])
           geometry.attributes[name].needsUpdate = true;
         shadowGeometry.attributes.position.needsUpdate = true;

@@ -34,13 +34,13 @@ node --test scripts/reader-*.test.mjs
 npm run build:pages
 ```
 
-The 23 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
+The 32 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, and preservation of the original curl mesh. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
 The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
 
 ## Publishing
 
-Pushing `main` triggers `.github/workflows/pages.yml`, which builds the static Vite application to `dist-pages/` and publishes with GitHub Pages. All paths are relative so the reader works under `/atlantic-reading-room/`. No server or account is needed; reading state is saved in that browser's local storage.
+Pushing `main` triggers `.github/workflows/pages.yml`, which runs TypeScript and reader regression checks, builds the static Vite application to `dist-pages/` and publishes with GitHub Pages. All paths are relative so the reader works under `/atlantic-reading-room/`. No server or account is needed; reading state is saved in that browser's local storage.
 
 `python3 scripts/prepare-reader-assets.py` rebuilds thumbnails, word positions, and PDF.js assets (requires Poppler). `python3 scripts/prepare-articles.py` rebuilds selected article text. `node scripts/check-pdf-rendering.mjs` checks sample PDF rendering.
 
@@ -51,3 +51,5 @@ Original subscriber-library downloads remain untouched in ignored `work/archive-
 The mobile refinement and research rationale are recorded in [UX-AUDIT.md](UX-AUDIT.md). Phone reading includes directly accessible column enlargement, a bottom settings sheet, and safe-area-aware controls. Article presentation appears only where prepared text exists.
 
 Light mode is the default; the archive/splash theme button and reader Appearance settings share a persisted light/dark preference. Both themes preserve the original PDF artwork.
+
+Performance measurements, implementation boundaries, and reproduction steps are in [PERFORMANCE-AUDIT.md](PERFORMANCE-AUDIT.md).

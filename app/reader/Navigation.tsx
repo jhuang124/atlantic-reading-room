@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { ArrowLeft, ArrowRight, Bookmark, Search, X } from 'lucide-react';
 import type { ReadableIssue } from './catalog';
 import { pageLabel, searchPages, type IndexedPage } from './model';
@@ -42,13 +42,17 @@ export default function Navigation({
   const root = useRef<HTMLElement>(null),
     search = useRef<HTMLInputElement>(null);
   const current = storyIndex(issue, page),
-    results = searchPages(index, query);
+    results = useMemo(() => searchPages(index, query), [index, query]);
   const previous = adjacentStory(issue, page, -1),
     next = adjacentStory(issue, page, 1);
-  const matching = issue.contents.filter((e) =>
-    `${e.title} ${e.author || ''}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
+  const matching = useMemo(
+    () =>
+      issue.contents.filter((e) =>
+        `${e.title} ${e.author || ''}`
+          .toLowerCase()
+          .includes(query.trim().toLowerCase()),
+      ),
+    [issue.contents, query],
   );
   const label = (n: number) =>
     pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages);

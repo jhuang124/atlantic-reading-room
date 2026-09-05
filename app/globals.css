@@ -1,4 +1,6 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
+@source './';
+@source '../pages';
 /* Typography and colors from the Atlantic WWW kit, frontend @ 6bff7379.
    ArchiveSubNav's strong rule and condensed heading inform this archive adaptation. */
 @font-face {
