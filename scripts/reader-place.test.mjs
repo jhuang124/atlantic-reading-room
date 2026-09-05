@@ -60,6 +60,7 @@ test('A complete print and article place round-trips with 26px text preference',
     }),
   );
   assert.deepEqual(loadPreferences(), {
+    mobileControls: 'auto',
     fontSize: 26,
     motion: 'simple',
     pinned: false,

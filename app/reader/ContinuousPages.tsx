@@ -26,6 +26,7 @@ export default function ContinuousPages({
   viewport,
   target,
   initialPage,
+  mobile = false,
   query,
   onPosition,
   onPaint,
@@ -38,6 +39,7 @@ export default function ContinuousPages({
   viewport: RefObject<HTMLDivElement | null>;
   target: ScrollTarget | null;
   initialPage: number;
+  mobile?: boolean;
   query: string;
   onPosition: (page: number, offset: number) => void;
   onPaint: () => void;
@@ -49,8 +51,9 @@ export default function ContinuousPages({
         pdf.numPages,
         width,
         index.map((p) => p.height / p.width),
+        mobile ? 12 : undefined,
       ),
-    [pdf.numPages, width, index],
+    [pdf.numPages, width, index, mobile],
   );
   const position = useRef({ page: initialPage, offset: 0 });
   const lastTarget = useRef<ScrollTarget | null>(null);
@@ -106,7 +109,10 @@ export default function ContinuousPages({
     };
   }, [viewport, measure]);
   return (
-    <div className="continuous-pages" style={{ width, height: layout.height }}>
+    <div
+      className="continuous-pages"
+      style={{ width, height: layout.height + (mobile ? 76 : 0) }}
+    >
       {layout.pages.slice(range.first, range.last + 1).map((row) => (
         <div
           className="continuous-page"

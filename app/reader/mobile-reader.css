@@ -1,0 +1,197 @@
+/* The reader viewport never depends on whether mobile controls are visible. */
+:root {
+  --reader-safe-top: env(safe-area-inset-top, 0px);
+  --reader-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --reader-safe-left: env(safe-area-inset-left, 0px);
+  --reader-safe-right: env(safe-area-inset-right, 0px);
+}
+/* Expo's native SafeAreaView already consumes each inset. */
+:root[data-native-reader='true'] {
+  --reader-safe-top: 0px;
+  --reader-safe-bottom: 0px;
+  --reader-safe-left: 0px;
+  --reader-safe-right: 0px;
+}
+.reader.reader-v2.mobile-reader {
+  top: var(--reader-viewport-top, 0px);
+  height: var(--reader-viewport-height, 100dvh);
+  bottom: auto;
+}
+.reader-v2.mobile-reader .reader-workspace {
+  inset: var(--reader-safe-top) var(--reader-safe-right)
+    var(--reader-safe-bottom) var(--reader-safe-left);
+}
+.reader-v2.mobile-reader .page-viewport {
+  padding: 8px;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
+}
+.reader-v2.mobile-reader.mobile-enlarged .page-viewport {
+  padding: 0;
+}
+.reader-v2.mobile-reader .open-magazine {
+  box-shadow: 0 1px 5px #0002;
+}
+.reader-v2.mobile-reader .continuous-page {
+  box-shadow: 0 1px 3px #0002;
+}
+.reader-v2.mobile-reader.mobile-enlarged .page-surface {
+  margin-top: 0;
+  margin-bottom: 76px;
+}
+/* Pinned controls keep their overlay geometry; the page can scroll clear of them. */
+.reader-v2.mobile-reader[data-mobile-controls='always'] .page-surface {
+  margin-bottom: 76px;
+}
+.reader-v2.mobile-reader .page-viewport.continuous-viewport {
+  padding: 0;
+}
+.mobile-reader-bar {
+  position: absolute;
+  z-index: 25;
+  left: calc(10px + var(--reader-safe-left));
+  right: calc(10px + var(--reader-safe-right));
+  bottom: calc(8px + var(--reader-safe-bottom));
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 5px 6px;
+  color: var(--edition-ink);
+  background: var(--edition-surface);
+  border: 1px solid var(--edition-rule);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px #0002;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    visibility 160ms;
+}
+.mobile-controls-visible .mobile-reader-bar {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.mobile-reader-bar button,
+.mobile-page-jump input {
+  min-width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-size: 13px;
+}
+.mobile-reader-bar button:active {
+  background: var(--edition-hover);
+}
+.mobile-reader-bar .mobile-contents {
+  gap: 7px;
+  padding: 0 8px;
+}
+.mobile-page-jump {
+  min-width: 0;
+}
+.mobile-page-jump input {
+  width: 52px;
+  padding: 0 3px;
+  text-align: center;
+  color: var(--edition-ink);
+  background: transparent;
+  border: 0;
+  font-variant-numeric: tabular-nums;
+}
+.mobile-page-jump input:focus {
+  font-size: 16px;
+  background: var(--edition-hover);
+}
+/* Keyboard and screen-reader users can always reveal the bar. */
+.mobile-controls-access {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.mobile-controls-access:focus-visible {
+  z-index: 40;
+  width: auto;
+  height: 44px;
+  clip-path: none;
+  bottom: calc(72px + var(--reader-safe-bottom));
+  right: calc(12px + var(--reader-safe-right));
+  padding: 0 12px;
+  background: var(--edition-surface);
+}
+.reader-v2.mobile-reader .reader-navigation {
+  inset: auto var(--reader-safe-right) var(--reader-safe-bottom)
+    var(--reader-safe-left);
+  width: auto;
+  height: min(84dvh, 760px);
+  max-height: calc(
+    var(--reader-viewport-height, 100dvh) - var(--reader-safe-top) -
+      var(--reader-safe-bottom) - 12px
+  );
+  border-radius: 16px 16px 0 0;
+  border: 1px solid var(--edition-rule);
+  box-shadow: 0 -8px 32px #0002;
+  animation: mobile-sheet-enter 180ms ease-out;
+}
+.reader-v2.mobile-reader .reader-navigation > header {
+  padding: 20px 20px 16px;
+}
+.reader-v2.mobile-reader .appearance-popover {
+  inset: auto var(--reader-safe-right) var(--reader-safe-bottom)
+    var(--reader-safe-left);
+  width: auto;
+  max-width: none;
+  max-height: calc(
+    var(--reader-viewport-height, 100dvh) - var(--reader-safe-top) -
+      var(--reader-safe-bottom) - 16px
+  );
+  border-radius: 16px 16px 0 0;
+  padding: 22px;
+  animation: mobile-sheet-enter 180ms ease-out;
+}
+.reader-v2.mobile-reader .column-navigation,
+.reader-v2.mobile-reader .reading-return {
+  bottom: 76px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.reader-v2.mobile-reader.mobile-controls-visible .column-navigation,
+.reader-v2.mobile-reader.mobile-controls-visible .reading-return {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.reader-v2.mobile-reader .reading-desk:has(.column-navigation) .reading-return {
+  bottom: 132px;
+}
+.reader-v2.mobile-reader .article-scroll article {
+  padding: 28px 22px 100px;
+}
+.reader-v2.mobile-reader .page-corner {
+  display: none;
+}
+@keyframes mobile-sheet-enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-reader-bar {
+    transition: none;
+  }
+  .reader-v2.mobile-reader .reader-navigation,
+  .reader-v2.mobile-reader .appearance-popover {
+    animation: none;
+  }
+}

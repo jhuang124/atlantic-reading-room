@@ -109,6 +109,7 @@ export default function Home() {
         ReactNativeWebView?: { postMessage: (message: string) => void };
       }
     ).ReactNativeWebView;
+    document.documentElement.dataset.nativeReader = native ? 'true' : 'false';
     native?.postMessage(
       JSON.stringify({
         type: 'reader-state',

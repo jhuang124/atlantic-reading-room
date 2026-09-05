@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Bookmark,
   Check,
+  ChevronDown,
   Maximize2,
   Minimize2,
   Minus,
@@ -58,6 +59,9 @@ import { loadPDF, type PDFModule } from './pdf';
 import { pageRasters, warmTurnPages } from './page-raster';
 import './reader.css';
 import './v2.css';
+import './mobile-reader.css';
+import useReadingControls from './useReadingControls';
+import useReaderViewport from './useReaderViewport';
 
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
 
@@ -121,14 +125,23 @@ export default function Reader({
     setPage(next);
   }, []);
   const [articleId, setArticleId] = useState<string | null>(null);
+  const settingsReturn = useRef<HTMLElement | null>(null);
   const articleTop = useRef(0),
     articlePrint = useRef<ReadingPlace | null>(null);
   const [appearance, setAppearance] = useState(false),
     [motion, setMotion] = useState<'curl' | 'simple'>('curl'),
     [pinned, setPinned] = useState(true),
+    [mobileControls, setMobileControls] = useState<'auto' | 'always'>('auto'),
     [column, setColumn] = useState(0),
     [revealed, setRevealed] = useState(false),
     [fontSize, setFontSize] = useState(20);
+  const controls = useReadingControls(
+    dialog,
+    mobile,
+    mobileControls === 'always',
+    !!panel || appearance,
+  );
+  useReaderViewport(dialog, mobile);
   const readySent = useRef(false),
     restored = useRef(false),
     pendingPlace = useRef<ReadingPlace | null>(null);
@@ -171,8 +184,14 @@ export default function Reader({
     [index, page],
   );
   const activeColumn = columns[Math.min(column, columns.length - 1)];
-  const horizontalSpace = quiet ? 24 : mobile ? 24 : 64;
-  const verticalSpace = 24;
+  const horizontalSpace = mobile
+    ? mode === 'spread' && zoom === 1
+      ? 16
+      : 0
+    : quiet
+      ? 24
+      : 64;
+  const verticalSpace = mobile ? 16 : 24;
   const fitWidth = Math.max(
     120,
     Math.min(
@@ -236,9 +255,10 @@ export default function Reader({
       saveLocal('atlantic:reader-preferences', {
         motion,
         pinned,
+        mobileControls,
         fontSize,
       });
-  }, [motion, pinned, fontSize]);
+  }, [motion, pinned, mobileControls, fontSize]);
   useLayoutEffect(() => {
     const place = pendingPlace.current;
     if (!place || !pdf || (!index.length && !indexError) || !area.width) return;
@@ -263,7 +283,7 @@ export default function Reader({
       left: activeColumn.x * leafWidth,
       top: activeColumn.y * leafWidth * baseRatio,
     });
-  }, [mode, column, page]);
+  }, [mode, column, page, area.width, index.length]);
   function chooseMode(next: ReadingMode) {
     if (next === 'scroll') setScrollTarget({ page, offset: 0 });
     else viewport.current?.scrollTo({ left: 0, top: 0 });
@@ -665,10 +685,14 @@ export default function Reader({
         setArticleId(saved.article);
         articleTop.current = saved.articleTop || 0;
       }
-    } else restored.current = true;
+    } else {
+      if (matchMedia('(max-width:960px)').matches) setMode('scroll');
+      restored.current = true;
+    }
     const prefs = loadPreferences();
     setMotion(prefs.motion);
     setPinned(prefs.pinned);
+    setMobileControls(prefs.mobileControls);
     setFontSize(prefs.fontSize);
     const marks = readSaved(`atlantic:bookmarks:${issue.id}`, []) as unknown;
     setBookmarkPages(
@@ -795,6 +819,7 @@ export default function Reader({
   const contentsTrigger = useRef<HTMLButtonElement>(null);
   const closeNavigation = useCallback(() => {
     setPanel(null);
+    controls.reveal();
     requestAnimationFrame(() => contentsTrigger.current?.focus());
   }, []);
   useEffect(() => {
@@ -815,6 +840,20 @@ export default function Reader({
           ?.focus(),
       );
   }, [panel, appearance]);
+  useEffect(() => {
+    if (appearance) {
+      settingsReturn.current = document.activeElement as HTMLElement | null;
+      return;
+    }
+    const trigger = settingsReturn.current;
+    settingsReturn.current = null;
+    if (!trigger) return;
+    controls.reveal();
+    const frame = requestAnimationFrame(() => {
+      if (trigger.isConnected) trigger.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [appearance, controls.reveal]);
   const returnToPrint = useCallback(() => {
     if (!articleId) return;
     setArticleId(null);
@@ -932,6 +971,10 @@ export default function Reader({
         return;
       }
       if (e.key === 'f') {
+        if (mobile) {
+          controls.visible ? controls.hide() : controls.reveal();
+          return;
+        }
         setFocus(!quiet);
         return;
       }
@@ -979,6 +1022,9 @@ export default function Reader({
     setFocus,
     changeZoom,
     closeNavigation,
+    controls.visible,
+    controls.hide,
+    controls.reveal,
     returnToPrint,
   ]);
   function submitJump() {
@@ -1002,8 +1048,10 @@ export default function Reader({
     <div
       ref={dialog}
       tabIndex={-1}
-      className={`reader reader-v2 ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${!pinned ? 'auto-controls' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''}`}
+      data-mobile-controls={mobileControls}
+      className={`reader reader-v2 ${mobile ? `mobile-reader ${controls.visible ? 'mobile-controls-visible' : ''} ${mode !== 'spread' || zoom > 1 ? 'mobile-enlarged' : ''}` : ''} ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${!pinned ? 'auto-controls' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''}`}
       onPointerMove={(e) => {
+        if (mobile || e.pointerType !== 'mouse') return;
         const box = e.currentTarget.getBoundingClientRect();
         setRevealed(e.clientY < box.top + 75 || e.clientY > box.bottom - 80);
       }}
@@ -1011,49 +1059,51 @@ export default function Reader({
       aria-modal="true"
       aria-label={`${issue.issue} full issue reader`}
     >
-      <header className="reader-header" inert={!!panel || appearance}>
-        <div className="reader-header-left">
-          <button
-            ref={close}
-            onClick={onClose}
-            aria-label="Return to cover index"
-            className="back-to-library"
-          >
-            <ArrowLeft size={18} />
-            <span>Archive</span>
-          </button>
-          <button
-            ref={contentsTrigger}
-            aria-label="Contents"
-            aria-expanded={!!panel}
-            onClick={() => {
-              if (!panel) setQuery('');
-              setPanel(panel ? null : 'contents');
-              setAppearance(false);
-            }}
-          >
-            <PanelLeftOpen size={18} />
-            <span>Contents</span>
-          </button>
-        </div>
-        <img
-          className="reader-brand"
-          src="brand/atlantic-logo.svg"
-          alt="The Atlantic"
-        />
-        <div className="reader-header-tools">
-          <span className="reader-issue-date">{issue.issue}</span>
-          <button
-            className="reader-icon"
-            aria-label={quiet ? 'Leave focus mode' : 'Enter focus mode'}
-            title="Focus · F"
-            onClick={() => setFocus(!quiet)}
-          >
-            {quiet ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-          </button>
-        </div>
-      </header>
-      {quiet && (
+      {!mobile && (
+        <header className="reader-header" inert={!!panel || appearance}>
+          <div className="reader-header-left">
+            <button
+              ref={close}
+              onClick={onClose}
+              aria-label="Return to cover index"
+              className="back-to-library"
+            >
+              <ArrowLeft size={18} />
+              <span>Archive</span>
+            </button>
+            <button
+              ref={contentsTrigger}
+              aria-label="Contents"
+              aria-expanded={!!panel}
+              onClick={() => {
+                if (!panel) setQuery('');
+                setPanel(panel ? null : 'contents');
+                setAppearance(false);
+              }}
+            >
+              <PanelLeftOpen size={18} />
+              <span>Contents</span>
+            </button>
+          </div>
+          <img
+            className="reader-brand"
+            src="brand/atlantic-logo.svg"
+            alt="The Atlantic"
+          />
+          <div className="reader-header-tools">
+            <span className="reader-issue-date">{issue.issue}</span>
+            <button
+              className="reader-icon"
+              aria-label={quiet ? 'Leave focus mode' : 'Enter focus mode'}
+              title="Focus · F"
+              onClick={() => setFocus(!quiet)}
+            >
+              {quiet ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
+          </div>
+        </header>
+      )}
+      {!mobile && quiet && (
         <button
           className="focus-access"
           onClick={() => setRevealed((v) => !v)}
@@ -1128,6 +1178,7 @@ export default function Reader({
                 viewport={viewport}
                 target={scrollTarget}
                 initialPage={page}
+                mobile={mobile}
                 query={query}
                 onPosition={scrollPosition}
                 onPaint={paintedPage}
@@ -1279,131 +1330,191 @@ export default function Reader({
           )}
         </section>
       </div>
-      <footer
-        className={`reader-toolbar ${currentEdition || articleId ? 'has-article' : ''}`}
-        inert={!!panel || appearance}
-      >
-        <div className="story-controls">
-          <button
-            className="current-story"
-            onClick={() => {
-              setQuery('');
-              setPanel('contents');
-            }}
-            aria-label={`Current story: ${locationTitle(issue, page)}. Open contents`}
-          >
-            <span>Contents</span>
-            <strong>{locationTitle(issue, page)}</strong>
-          </button>
-        </div>
-        {(currentEdition || articleId) && (
-          <div
-            className="presentation-control"
-            role="group"
-            aria-label="Reading presentation"
-          >
-            <button aria-pressed={!articleId} onClick={returnToPrint}>
-              Print
-            </button>
+      {!mobile && (
+        <footer
+          className={`reader-toolbar ${currentEdition || articleId ? 'has-article' : ''}`}
+          inert={!!panel || appearance}
+        >
+          <div className="story-controls">
             <button
-              aria-pressed={!!articleId}
-              disabled={!currentEdition}
-              title={
-                currentEdition
-                  ? 'Read with adjustable text'
-                  : 'Article view is not available for this story'
-              }
-              onClick={openArticle}
+              className="current-story"
+              onClick={() => {
+                setQuery('');
+                setPanel('contents');
+              }}
+              aria-label={`Current story: ${locationTitle(issue, page)}. Open contents`}
             >
-              Article
+              <span>Contents</span>
+              <strong>{locationTitle(issue, page)}</strong>
             </button>
           </div>
-        )}
-        <div className="reader-utilities">
-          {!articleId && (
-            <>
-              <div className="page-controls">
-                <button
-                  aria-label="Previous page"
-                  disabled={start === 1}
-                  onClick={() => turn(-1)}
-                >
-                  <ArrowLeft size={16} />
-                </button>
-                <label className="page-jump">
-                  <input
-                    aria-label="Go to printed page number, or type cover"
-                    value={jump ?? label(page)}
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) => setJump(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        submitJump();
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    onBlur={() => {
-                      if (jump !== null) submitJump();
-                    }}
-                  />
-                </label>
-                <button
-                  aria-label="Next page"
-                  disabled={end === issue.pageCount}
-                  onClick={() => turn(1)}
-                >
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-              {mobile && (
-                <button
-                  className="mobile-reading-view"
-                  aria-label={
-                    mode === 'column' ? 'Fit page to screen' : 'Read by column'
-                  }
-                  onClick={() =>
-                    chooseMode(mode === 'column' ? 'spread' : 'column')
-                  }
-                >
-                  {mode === 'column' ? 'Fit page' : 'Enlarge'}
-                </button>
-              )}
-              <button
-                className="fit-button"
-                aria-label="Fit page to screen"
-                onClick={() => chooseMode('spread')}
-              >
-                {zoom === 1 && mode === 'spread'
-                  ? 'Fit'
-                  : `${Math.round(zoom * 100)}%`}
+          {(currentEdition || articleId) && (
+            <div
+              className="presentation-control"
+              role="group"
+              aria-label="Reading presentation"
+            >
+              <button aria-pressed={!articleId} onClick={returnToPrint}>
+                Print
               </button>
-            </>
+              <button
+                aria-pressed={!!articleId}
+                disabled={!currentEdition}
+                title={
+                  currentEdition
+                    ? 'Read with adjustable text'
+                    : 'Article view is not available for this story'
+                }
+                onClick={openArticle}
+              >
+                Article
+              </button>
+            </div>
           )}
+          <div className="reader-utilities">
+            {!articleId && (
+              <>
+                <div className="page-controls">
+                  <button
+                    aria-label="Previous page"
+                    disabled={start === 1}
+                    onClick={() => turn(-1)}
+                  >
+                    <ArrowLeft size={16} />
+                  </button>
+                  <label className="page-jump">
+                    <input
+                      aria-label="Go to printed page number, or type cover"
+                      value={jump ?? label(page)}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => setJump(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          submitJump();
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      onBlur={() => {
+                        if (jump !== null) submitJump();
+                      }}
+                    />
+                  </label>
+                  <button
+                    aria-label="Next page"
+                    disabled={end === issue.pageCount}
+                    onClick={() => turn(1)}
+                  >
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+                <button
+                  className="fit-button"
+                  aria-label="Fit page to screen"
+                  onClick={() => chooseMode('spread')}
+                >
+                  {zoom === 1 && mode === 'spread'
+                    ? 'Fit'
+                    : `${Math.round(zoom * 100)}%`}
+                </button>
+              </>
+            )}
+            <button
+              aria-label={
+                bookmarkPages.includes(page) ? 'Remove bookmark' : 'Save page'
+              }
+              aria-pressed={bookmarkPages.includes(page)}
+              title="Save page · B"
+              onClick={bookmark}
+            >
+              <Bookmark
+                size={18}
+                fill={bookmarkPages.includes(page) ? 'currentColor' : 'none'}
+              />
+            </button>
+            <button
+              aria-label="Reading settings"
+              aria-expanded={appearance}
+              onClick={() => {
+                setAppearance((v) => !v);
+                setPanel(null);
+              }}
+            >
+              <Settings2 size={18} />
+            </button>
+          </div>
+        </footer>
+      )}
+      {mobile && (
+        <>
           <button
-            aria-label={
-              bookmarkPages.includes(page) ? 'Remove bookmark' : 'Save page'
-            }
-            aria-pressed={bookmarkPages.includes(page)}
-            title="Save page · B"
-            onClick={bookmark}
+            className="mobile-controls-access"
+            inert={!!panel || appearance}
+            aria-hidden={!!panel || appearance}
+            onClick={controls.reveal}
+            aria-label="Show reading controls"
           >
-            <Bookmark
-              size={18}
-              fill={bookmarkPages.includes(page) ? 'currentColor' : 'none'}
-            />
+            Show reading controls
           </button>
-          <button
-            aria-label="Reading settings"
-            aria-expanded={appearance}
-            onClick={() => {
-              setAppearance((v) => !v);
-              setPanel(null);
-            }}
+          <nav
+            className="mobile-reader-bar"
+            aria-label="Reading controls"
+            inert={!controls.visible || !!panel || appearance}
+            aria-hidden={!controls.visible}
           >
-            <Settings2 size={18} />
-          </button>
-        </div>
-      </footer>
+            <button
+              ref={close}
+              onClick={onClose}
+              aria-label="Return to cover index"
+            >
+              <ArrowLeft size={19} />
+            </button>
+            <button
+              ref={contentsTrigger}
+              className="mobile-contents"
+              onClick={() => {
+                setQuery('');
+                setPanel('contents');
+              }}
+              aria-expanded={!!panel}
+            >
+              <PanelLeftOpen size={18} />
+              <span>Contents</span>
+            </button>
+            <label className="mobile-page-jump">
+              <input
+                aria-label="Go to printed page number, or type cover"
+                value={jump ?? label(page)}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setJump(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    submitJump();
+                    e.currentTarget.blur();
+                  }
+                }}
+                onBlur={() => {
+                  if (jump !== null) submitJump();
+                }}
+              />
+            </label>
+            <button
+              aria-label="Reading settings"
+              aria-expanded={appearance}
+              onClick={() => setAppearance(true)}
+            >
+              <Settings2 size={19} />
+            </button>
+            {mobileControls === 'auto' && (
+              <button
+                aria-label="Hide reading controls"
+                onClick={controls.hide}
+              >
+                <ChevronDown size={19} />
+              </button>
+            )}
+          </nav>
+        </>
+      )}
       {panel && (
         <Navigation
           issue={issue}
@@ -1475,9 +1586,30 @@ export default function Reader({
             )}
             {mobile && (
               <fieldset>
-                <legend>Focus</legend>
-                <button aria-pressed={quiet} onClick={() => setFocus(!quiet)}>
-                  {quiet ? 'Show full interface' : 'Hide controls'}
+                <legend>This page</legend>
+                <button
+                  aria-pressed={bookmarkPages.includes(page)}
+                  onClick={bookmark}
+                >
+                  {bookmarkPages.includes(page) ? 'Saved' : 'Save page'}
+                </button>
+                <button
+                  disabled={start === 1}
+                  onClick={() => {
+                    turn(-1);
+                    setAppearance(false);
+                  }}
+                >
+                  Previous page
+                </button>
+                <button
+                  disabled={end === issue.pageCount}
+                  onClick={() => {
+                    turn(1);
+                    setAppearance(false);
+                  }}
+                >
+                  Next page
                 </button>
               </fieldset>
             )}
@@ -1576,14 +1708,18 @@ export default function Reader({
             <label>
               <input
                 type="checkbox"
-                checked={pinned}
-                onChange={(e) => setPinned(e.target.checked)}
+                checked={mobile ? mobileControls === 'always' : pinned}
+                onChange={(e) =>
+                  mobile
+                    ? setMobileControls(e.target.checked ? 'always' : 'auto')
+                    : setPinned(e.target.checked)
+                }
               />
-              Keep controls visible
+              Always show controls
             </label>
             <p className="settings-help">
               {mobile ? (
-                'Double-tap a page to zoom. Enlarge follows the print columns.'
+                'Tap the page to show controls. Double-tap to zoom. Column view follows the print text.'
               ) : (
                 <>
                   C · Contents &nbsp; F · Focus

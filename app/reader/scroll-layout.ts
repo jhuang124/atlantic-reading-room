@@ -1,15 +1,20 @@
 export type ScrollPage = { page: number; top: number; height: number };
 export const SCROLL_GAP = 24;
 export const SCROLL_PADDING = 12;
-export function scrollLayout(count: number, width: number, ratios: number[]) {
+export function scrollLayout(
+  count: number,
+  width: number,
+  ratios: number[],
+  gap = SCROLL_GAP,
+) {
   let top = SCROLL_PADDING;
   const pages: ScrollPage[] = Array.from({ length: count }, (_, i) => {
     const height = width * (ratios[i] || 4 / 3);
     const page = { page: i + 1, top, height };
-    top += height + SCROLL_GAP;
+    top += height + gap;
     return page;
   });
-  return { pages, height: top - SCROLL_GAP + SCROLL_PADDING };
+  return { pages, height: top - gap + SCROLL_PADDING };
 }
 export function pageAtOffset(pages: ScrollPage[], top: number) {
   let low = 0,

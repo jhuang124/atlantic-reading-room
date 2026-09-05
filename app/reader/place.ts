@@ -16,12 +16,14 @@ export type ReaderPreferences = {
   warm: boolean;
   motion: 'curl' | 'simple';
   pinned: boolean;
+  mobileControls: 'auto' | 'always';
   fontSize: number;
 };
 export const defaultPreferences: ReaderPreferences = {
   warm: true,
   motion: 'curl',
   pinned: true,
+  mobileControls: 'auto',
   fontSize: 20,
 };
 export function normalizePlace(
@@ -70,6 +72,7 @@ export function loadPreferences(): ReaderPreferences {
     warm: typeof p.warm === 'boolean' ? p.warm : true,
     motion: p.motion === 'simple' ? 'simple' : 'curl',
     pinned: p.pinned !== false,
+    mobileControls: p.mobileControls === 'always' ? 'always' : 'auto',
     fontSize: [18, 20, 22, 24, 26, 28].includes(p.fontSize || 0)
       ? p.fontSize!
       : 20,
