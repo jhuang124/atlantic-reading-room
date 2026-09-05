@@ -195,3 +195,101 @@
     animation: none;
   }
 }
+
+/* Let Safari/Chrome own the scrolling gesture, including their toolbar collapse.
+   Fixed-reader modes and the Expo WebView retain their element scrollport. */
+html:has(.document-reader),
+body:has(.document-reader) {
+  overflow: visible !important;
+  height: auto;
+  overscroll-behavior-y: auto;
+  overflow-anchor: none;
+}
+.archive-app:has(.document-reader) {
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
+}
+.archive-app:has(.document-reader) > .library-shell {
+  position: fixed;
+  inset: 0;
+  visibility: hidden;
+}
+.reader.reader-v2.mobile-reader.document-reader {
+  position: relative;
+  inset: auto;
+  height: auto;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: visible;
+  transform: none;
+}
+.reader-v2.document-reader .reader-workspace {
+  position: relative;
+  inset: auto;
+  padding: var(--reader-safe-top) var(--reader-safe-right)
+    var(--reader-safe-bottom) var(--reader-safe-left);
+  min-height: 100dvh;
+}
+.reader-v2.document-reader .reading-desk,
+.reader-v2.document-reader .page-viewport,
+.reader-v2.document-reader .article-scroll {
+  position: relative;
+  inset: auto;
+  height: auto;
+  overflow: visible;
+}
+.reader-v2.document-reader .page-viewport {
+  display: block;
+  overscroll-behavior: auto;
+}
+.reader-v2.document-reader .mobile-reader-bar {
+  position: fixed;
+  top: calc(
+    var(--reader-viewport-top, 0px) + var(--reader-viewport-height, 100dvh) -
+      64px - var(--reader-safe-bottom)
+  );
+  bottom: auto;
+}
+.reader-v2.document-reader .reader-navigation-layer,
+.reader-v2.document-reader .settings-layer {
+  position: fixed;
+  inset: var(--reader-viewport-top, 0px) 0 auto;
+  height: var(--reader-viewport-height, 100dvh);
+  z-index: 60;
+}
+.reader-v2.document-reader .reading-return {
+  position: fixed;
+  top: calc(
+    var(--reader-viewport-top, 0px) + var(--reader-viewport-height, 100dvh) -
+      124px - var(--reader-safe-bottom)
+  );
+  bottom: auto;
+}
+.reader-v2.document-reader .mobile-controls-access:focus-visible {
+  position: fixed;
+}
+html:has(.document-reader[data-modal-open='true']),
+body:has(.document-reader[data-modal-open='true']) {
+  overflow: hidden !important;
+}
+.browser-reading-options p,
+.browser-reading-options output {
+  display: block;
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--edition-muted);
+}
+.reader-v2 .browser-reading-options details {
+  margin-top: 8px;
+}
+.reader-v2 .browser-reading-options summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+  font-size: 13px;
+}
+.reader-v2.document-reader .article-scroll {
+  padding: 0;
+}

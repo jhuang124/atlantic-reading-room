@@ -1,10 +1,12 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import type { ArticleEdition } from './articles';
+import { scrollPort } from './scroll-port';
 export default function ArticleView({
   id,
   fontSize,
   initialTop = 0,
+  documentScroll = false,
   onScroll,
   onPrint,
   onReady,
@@ -12,6 +14,7 @@ export default function ArticleView({
   id: string;
   fontSize: number;
   initialTop?: number;
+  documentScroll?: boolean;
   onScroll: (top: number) => void;
   onPrint: (page?: number) => void;
   onReady?: () => void;
@@ -47,15 +50,27 @@ export default function ArticleView({
   }, [id, retry]);
   useEffect(() => {
     if (article && root.current) {
-      root.current.scrollTop = initialTop;
+      scrollPort(root.current, documentScroll).to({ top: initialTop });
       ready.current?.();
     }
   }, [article]);
+  const report = useRef(onScroll);
+  report.current = onScroll;
+  useEffect(() => {
+    const el = root.current;
+    if (!el || !documentScroll) return;
+    const port = scrollPort(el, true);
+    const update = () => report.current(port.read().top);
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [documentScroll]);
   return (
     <div
       className="article-scroll"
       ref={root}
-      onScroll={(e) => onScroll(e.currentTarget.scrollTop)}
+      onScroll={(e) => {
+        if (!documentScroll) onScroll(e.currentTarget.scrollTop);
+      }}
       tabIndex={0}
       aria-label="Article text"
     >

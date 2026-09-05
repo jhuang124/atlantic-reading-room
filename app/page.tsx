@@ -118,6 +118,17 @@ export default function Home() {
       }),
     );
   }, [theme, selected, readingId]);
+  useEffect(() => {
+    const surface = document.querySelector('.archive-app');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (surface && meta)
+      meta.setAttribute(
+        'content',
+        getComputedStyle(surface)
+          .getPropertyValue(readingId ? '--edition-desk' : '--edition-surface')
+          .trim(),
+      );
+  }, [theme, readingId]);
   // One owner controls background interactivity for both details and the reader.
   useLayoutEffect(() => {
     if (library.current) library.current.inert = !!(selected || readingId);

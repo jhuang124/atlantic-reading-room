@@ -16,6 +16,7 @@ import {
   scrollDestination,
 } from './scroll-layout';
 import Leaf from './Leaf';
+import { scrollPort } from './scroll-port';
 
 export type ScrollTarget = { page: number; offset?: number };
 export default function ContinuousPages({
@@ -27,6 +28,7 @@ export default function ContinuousPages({
   target,
   initialPage,
   mobile = false,
+  documentScroll = false,
   query,
   onPosition,
   onPaint,
@@ -40,6 +42,7 @@ export default function ContinuousPages({
   target: ScrollTarget | null;
   initialPage: number;
   mobile?: boolean;
+  documentScroll?: boolean;
   query: string;
   onPosition: (page: number, offset: number) => void;
   onPaint: () => void;
@@ -64,30 +67,33 @@ export default function ContinuousPages({
   const measure = useCallback(() => {
     const el = viewport.current;
     if (!el) return;
-    const row = layout.pages[pageAtOffset(layout.pages, el.scrollTop + 12)];
+    const view = scrollPort(el, documentScroll).read();
+    const row = layout.pages[pageAtOffset(layout.pages, view.top + 12)];
     position.current = {
       page: row.page,
-      offset: Math.max(0, Math.min(1, (el.scrollTop - row.top) / row.height)),
+      offset: Math.max(0, Math.min(1, (view.top - row.top) / row.height)),
     };
     onPosition(position.current.page, position.current.offset);
-    const next = scrollWindow(layout.pages, el.scrollTop, el.clientHeight);
+    const next = scrollWindow(layout.pages, view.top, view.height);
     setRange((old) =>
       old.first === next.first && old.last === next.last ? old : next,
     );
-  }, [layout, viewport, onPosition]);
+  }, [layout, viewport, onPosition, documentScroll]);
   useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
     const destination =
       target && target !== lastTarget.current ? target : position.current;
     lastTarget.current = target;
-    el.scrollTop = scrollDestination(
-      layout.pages,
-      destination.page,
-      destination.offset,
-    );
+    scrollPort(el, documentScroll).to({
+      top: scrollDestination(
+        layout.pages,
+        destination.page,
+        destination.offset,
+      ),
+    });
     measure();
-  }, [layout, target, viewport, measure]);
+  }, [layout, target, viewport, measure, documentScroll]);
   useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
@@ -99,15 +105,18 @@ export default function ContinuousPages({
           measure();
         });
     };
-    el.addEventListener('scroll', update, { passive: true });
+    const target = scrollPort(el, documentScroll).target;
+    target.addEventListener('scroll', update, { passive: true });
+    window.visualViewport?.addEventListener('resize', update);
     const resize = new ResizeObserver(update);
     resize.observe(el);
     return () => {
-      el.removeEventListener('scroll', update);
+      target.removeEventListener('scroll', update);
+      window.visualViewport?.removeEventListener('resize', update);
       resize.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [viewport, measure]);
+  }, [viewport, measure, documentScroll]);
   return (
     <div
       className="continuous-pages"

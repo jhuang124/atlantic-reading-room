@@ -62,6 +62,8 @@ import './v2.css';
 import './mobile-reader.css';
 import useReadingControls from './useReadingControls';
 import useReaderViewport from './useReaderViewport';
+import { scrollPort } from './scroll-port';
+import BrowserReadingOptions from './BrowserReadingOptions';
 
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
 
@@ -141,6 +143,11 @@ export default function Reader({
     mobileControls === 'always',
     !!panel || appearance,
   );
+  const browserReader =
+    mobile &&
+    typeof document !== 'undefined' &&
+    document.documentElement.dataset.nativeReader !== 'true';
+  const documentReading = browserReader && (mode === 'scroll' || !!articleId);
   useReaderViewport(dialog, mobile);
   const readySent = useRef(false),
     restored = useRef(false),
@@ -213,14 +220,18 @@ export default function Reader({
       zoom: zoomRef.current,
       mode,
       column,
-      left: viewport.current?.scrollLeft || 0,
-      top: viewport.current?.scrollTop || 0,
+      left: viewport.current
+        ? scrollPort(viewport.current, documentReading).read().left
+        : 0,
+      top: viewport.current
+        ? scrollPort(viewport.current, documentReading).read().top
+        : 0,
       updated: Date.now(),
       article: articleId || undefined,
       articleTop: articleTop.current,
       ...(mode === 'scroll' ? { pageOffset: scrollOffset.current } : {}),
     }),
-    [page, mode, column, articleId],
+    [page, mode, column, articleId, documentReading],
   );
   const latestPlace = useRef(capturePlace);
   latestPlace.current = capturePlace;
@@ -239,6 +250,15 @@ export default function Reader({
     saveTimer.current = setTimeout(persist, 250);
     return () => clearTimeout(saveTimer.current);
   }, [page, zoom, mode, column, articleId, persist]);
+  useEffect(() => {
+    if (!documentReading) return;
+    const save = () => {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(persist, 250);
+    };
+    window.addEventListener('scroll', save, { passive: true });
+    return () => window.removeEventListener('scroll', save);
+  }, [documentReading, persist]);
   useEffect(() => {
     window.addEventListener('pagehide', persist);
     return () => {
@@ -468,7 +488,14 @@ export default function Reader({
           el?.querySelector<HTMLElement>('.open-magazine, .continuous-page');
       const next = clampZoom(value);
       if (el && paper) {
-        const box = el.getBoundingClientRect(),
+        const box = el.closest('.document-reader')
+            ? {
+                left: 0,
+                top: 0,
+                width: window.innerWidth,
+                height: window.visualViewport?.height || window.innerHeight,
+              }
+            : el.getBoundingClientRect(),
           book = paper.getBoundingClientRect();
         const cx = clientX ?? box.left + box.width / 2,
           cy = clientY ?? box.top + box.height / 2;
@@ -494,14 +521,18 @@ export default function Reader({
       ?.querySelector<HTMLElement>(anchor?.selector || '.open-magazine')
       ?.getBoundingClientRect();
     if (el && anchor && book) {
-      el.scrollLeft += book.left + anchor.x * book.width - anchor.clientX;
-      el.scrollTop += book.top + anchor.y * book.height - anchor.clientY;
+      const port = scrollPort(el, documentReading);
+      const current = port.read();
+      port.to({
+        left: current.left + book.left + anchor.x * book.width - anchor.clientX,
+        top: current.top + book.top + anchor.y * book.height - anchor.clientY,
+      });
       zoomAnchor.current = null;
     }
   }, [zoom]);
   useLayoutEffect(() => {
     if (!restoreView.current || !viewport.current) return;
-    viewport.current.scrollTo(restoreView.current);
+    scrollPort(viewport.current, documentReading).to(restoreView.current);
     restoreView.current = null;
   }, [page, zoom]);
   useEffect(() => {
@@ -806,12 +837,24 @@ export default function Reader({
   useEffect(() => {
     const el = viewport.current;
     if (!el) return;
-    const observer = new ResizeObserver(() =>
-      setArea({ width: el.clientWidth, height: el.clientHeight }),
-    );
+    const update = () => {
+      const view = scrollPort(el, documentReading).read();
+      const width = el.clientWidth || dialog.current?.clientWidth || 0;
+      setArea((old) =>
+        old.width === width && old.height === view.height
+          ? old
+          : { width, height: view.height },
+      );
+    };
+    const observer = new ResizeObserver(update);
     observer.observe(el);
-    return () => observer.disconnect();
-  }, [pdf, panel, quiet]);
+    window.visualViewport?.addEventListener('resize', update);
+    update();
+    return () => {
+      observer.disconnect();
+      window.visualViewport?.removeEventListener('resize', update);
+    };
+  }, [pdf, panel, quiet, documentReading, articleId]);
   useEffect(() => {
     if (quiet) dialog.current?.focus({ preventScroll: true });
     else close.current?.focus();
@@ -820,7 +863,9 @@ export default function Reader({
   const closeNavigation = useCallback(() => {
     setPanel(null);
     controls.reveal();
-    requestAnimationFrame(() => contentsTrigger.current?.focus());
+    requestAnimationFrame(() =>
+      contentsTrigger.current?.focus({ preventScroll: true }),
+    );
   }, []);
   useEffect(() => {
     if (panel)
@@ -1049,7 +1094,8 @@ export default function Reader({
       ref={dialog}
       tabIndex={-1}
       data-mobile-controls={mobileControls}
-      className={`reader reader-v2 ${mobile ? `mobile-reader ${controls.visible ? 'mobile-controls-visible' : ''} ${mode !== 'spread' || zoom > 1 ? 'mobile-enlarged' : ''}` : ''} ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${!pinned ? 'auto-controls' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''}`}
+      data-modal-open={!!panel || appearance}
+      className={`reader reader-v2 ${mobile ? `mobile-reader ${documentReading ? 'document-reader' : ''} ${controls.visible ? 'mobile-controls-visible' : ''} ${mode !== 'spread' || zoom > 1 ? 'mobile-enlarged' : ''}` : ''} ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${!pinned ? 'auto-controls' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''}`}
       onPointerMove={(e) => {
         if (mobile || e.pointerType !== 'mouse') return;
         const box = e.currentTarget.getBoundingClientRect();
@@ -1138,7 +1184,11 @@ export default function Reader({
             className={`page-viewport ${zoom > 1 ? 'zoomed' : ''} ${mode === 'scroll' ? 'continuous-viewport' : ''}`}
             style={
               articleId
-                ? { visibility: 'hidden', pointerEvents: 'none' }
+                ? {
+                    visibility: 'hidden',
+                    pointerEvents: 'none',
+                    ...(documentReading ? { display: 'none' } : {}),
+                  }
                 : undefined
             }
             aria-hidden={!!articleId}
@@ -1152,24 +1202,27 @@ export default function Reader({
               )
                 return;
               const el = viewport.current!;
+              const position = scrollPort(el, documentReading).read();
               drag.current = {
                 x: e.clientX,
                 y: e.clientY,
-                left: el.scrollLeft,
-                top: el.scrollTop,
+                left: position.left,
+                top: position.top,
               };
               el.setPointerCapture(e.pointerId);
             }}
             onPointerMove={(e) => {
               if (!drag.current) return;
               const d = drag.current;
-              viewport.current!.scrollLeft = d.left - (e.clientX - d.x);
-              viewport.current!.scrollTop = d.top - (e.clientY - d.y);
+              scrollPort(viewport.current!, documentReading).to({
+                left: d.left - (e.clientX - d.x),
+                top: d.top - (e.clientY - d.y),
+              });
             }}
             onPointerUp={() => (drag.current = null)}
             onPointerCancel={() => (drag.current = null)}
           >
-            {pdf && mode === 'scroll' && (
+            {pdf && mode === 'scroll' && !articleId && (
               <ContinuousPages
                 pdf={pdf}
                 issue={issue}
@@ -1179,6 +1232,7 @@ export default function Reader({
                 target={scrollTarget}
                 initialPage={page}
                 mobile={mobile}
+                documentScroll={documentReading && !articleId}
                 query={query}
                 onPosition={scrollPosition}
                 onPaint={paintedPage}
@@ -1270,6 +1324,7 @@ export default function Reader({
               key={articleId}
               id={articleId}
               fontSize={fontSize}
+              documentScroll={documentReading}
               initialTop={articleTop.current}
               onPrint={returnToPrint}
               onReady={paintedPage}
@@ -1516,25 +1571,27 @@ export default function Reader({
         </>
       )}
       {panel && (
-        <Navigation
-          issue={issue}
-          tab={panel}
-          onTab={setPanel}
-          page={page}
-          index={index}
-          indexError={indexError}
-          query={query}
-          onQuery={setQuery}
-          marks={bookmarkPages}
-          onRemoveMark={(n) => {
-            const next = bookmarkPages.filter((p) => p !== n);
-            setBookmarkPages(next);
-            saveLocal(`atlantic:bookmarks:${issue.id}`, next);
-          }}
-          onNavigate={navigate}
-          onStory={goToStory}
-          onClose={closeNavigation}
-        />
+        <div className="reader-navigation-layer">
+          <Navigation
+            issue={issue}
+            tab={panel}
+            onTab={setPanel}
+            page={page}
+            index={index}
+            indexError={indexError}
+            query={query}
+            onQuery={setQuery}
+            marks={bookmarkPages}
+            onRemoveMark={(n) => {
+              const next = bookmarkPages.filter((p) => p !== n);
+              setBookmarkPages(next);
+              saveLocal(`atlantic:bookmarks:${issue.id}`, next);
+            }}
+            onNavigate={navigate}
+            onStory={goToStory}
+            onClose={closeNavigation}
+          />
+        </div>
       )}
       {appearance && (
         <div className="settings-layer">
@@ -1704,6 +1761,9 @@ export default function Reader({
                   </fieldset>
                 )}
               </>
+            )}
+            {browserReader && (
+              <BrowserReadingOptions onEnter={() => setAppearance(false)} />
             )}
             <label>
               <input
