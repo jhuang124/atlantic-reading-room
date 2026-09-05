@@ -507,9 +507,12 @@ export default function Reader({
   }, [turning, page, turn]);
   function finishTurn(commit: boolean) {
     const next = turning?.target;
+    const queued = queuedTurn.current;
     turningRef.current = false;
     setTurning(null);
     if (commit && next) navigate(next, false);
+    // navigate clears abandoned input; a completed curl must retain its next turn.
+    queuedTurn.current = commit ? queued : 0;
   }
   function beginCorner(e: React.PointerEvent<HTMLButtonElement>, dir: number) {
     e.preventDefault();
