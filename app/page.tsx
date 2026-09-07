@@ -30,8 +30,11 @@ import { parseRoute, routeHash, type Route } from './routes';
 const loadReader = () => import('./reader/Reader');
 const Reader = lazy(loadReader);
 function transition(update: () => void) {
+  // A hidden page has no rendering opportunities, so startViewTransition
+  // would hold the update until the tab is fronted; apply it directly.
   if (
     document.startViewTransition &&
+    !document.hidden &&
     !matchMedia('(prefers-reduced-motion:reduce)').matches
   ) {
     const t = document.startViewTransition(() => flushSync(update));
