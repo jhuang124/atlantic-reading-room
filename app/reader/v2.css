@@ -192,8 +192,9 @@
   margin-right: 8px;
 }
 .reader-v2 .page-jump input {
-  width: 48px;
-  max-width: 90px;
+  width: auto;
+  min-width: 48px;
+  max-width: 118px;
   text-align: center;
   padding: 8px 0;
   font-size: 12px;
@@ -791,7 +792,9 @@
     margin-right: 0;
   }
   .reader-v2 .page-jump input {
-    width: 38px;
+    width: auto;
+    min-width: 38px;
+    max-width: 92px;
     font-size: 11px;
   }
   .reader-v2 .fit-button {
@@ -888,7 +891,9 @@
   border: 1px solid var(--edition-rule);
 }
 .reader-v2 .page-jump input {
-  width: 56px;
+  width: auto;
+  min-width: 48px;
+  max-width: 118px;
   min-height: 44px;
 }
 .navigation-search input {
@@ -984,7 +989,9 @@
     margin: 0;
   }
   .reader-v2 .page-jump input {
-    width: 48px;
+    width: auto;
+    min-width: 44px;
+    max-width: 104px;
     font-size: 16px;
   }
   .reader-v2 .mobile-reading-view {
@@ -1359,4 +1366,26 @@
   margin-top: 12px;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* A quiet wayfinding hairline: how far the open spread sits in the issue. */
+.reader-v2 .reader-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 80;
+  pointer-events: none;
+}
+.reader-v2 .reader-progress span {
+  display: block;
+  height: 100%;
+  background: var(--edition-accent);
+  transition: width 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reader-v2 .reader-progress span {
+    transition: none;
+  }
 }

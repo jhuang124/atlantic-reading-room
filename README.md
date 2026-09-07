@@ -6,12 +6,13 @@ An Atlantic magazine archive and reader: 71 complete issues from January/Februar
 
 ## Experience
 
-- A cover index with dates, story/author search, and year/sort controls. Every issue is readable; Continue restores the last reading place.
+- A cover index with dates, story/author search, and year/sort controls. Every issue is readable; Continue restores the last reading place, and a resume band above the grid returns to the most recently read issue in one step.
+- Hash routes make every surface shareable and honest to the browser: `#/202609` opens an issue's splash, `#/202609/read/p28` opens the reader at that physical page, and Back retraces reader → splash → archive instead of leaving the site. The document title follows the open issue.
 - Charcoal, white, and Atlantic-red issue splashes with an animated cover transition. Read and Contents remain within reach on phones. Returning preserves archive filters and scroll.
 - One reader for Print and selected Article views, with previous/next story navigation and a compact left-hand Contents panel for Stories, Pages, and Saved, with unified story/page search.
 - Page thumbnails and search results jump directly to the requested print page. Multiple detours retain the original return destination.
 - Responsive fitted spreads and single pages, page-width and column reading, pointer-anchored pinch zoom, panning, and a classic page curl with the correct reverse face.
-- Focus fills the viewport without cropping a fitted page. Controls overlay the reading surface without changing its geometry.
+- Focus fills the viewport without cropping a fitted page. Controls overlay the reading surface without changing its geometry. A two-pixel hairline along the top shows the position within the issue; hovering the page previews the corner fold that starts a drag turn.
 - Saved page, zoom, print offsets, article scroll, and text preferences. Reduced motion and Instant mode skip the curl.
 
 Article view is available for three prepared pieces: **The Blue Book Is Back**, **Look Closer: September 2026**, and **Look Closer: August 2026**. Other stories remain available in their original print layouts. The 3D room has been removed; Three.js is used only for the reader's page curl.
@@ -34,7 +35,7 @@ node --test scripts/reader-*.test.mjs
 npm run build:pages
 ```
 
-The 35 targeted tests cover physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, and preservation of the original curl mesh. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
+The 50 targeted tests cover hash-route parsing and formatting round-trips, physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, and preservation of the original curl mesh. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
 The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
 

@@ -26,6 +26,7 @@ import availableIssues from '../public/reader-assets/available.json';
 import { readerIssues } from './reader/catalog';
 import { loadPlace, type ReadingPlace } from './reader/place';
 import { pageLabel } from './reader/model';
+import { parseRoute, routeHash, type Route } from './routes';
 const loadReader = () => import('./reader/Reader');
 const Reader = lazy(loadReader);
 function transition(update: () => void) {
@@ -141,11 +142,88 @@ export default function Home() {
     });
     setPlaces(next);
   }, [readingId]);
+  useEffect(() => {
+    const base = 'The Print Edition — The Atlantic';
+    const current = readingIssue?.issue || issue?.issue;
+    document.title = current ? `${current} · ${base}` : base;
+  }, [issue, readingIssue]);
+  const lastRead = useMemo(() => {
+    let best: { id: string; place: ReadingPlace } | null = null;
+    for (const [id, place] of Object.entries(places))
+      if (
+        available.includes(id) &&
+        place.page > 1 &&
+        (!best || place.updated > best.place.updated)
+      )
+        best = { id, place };
+    return best;
+  }, [places]);
+  const lastReadIssue = lastRead
+    ? issues.find((i) => i.id === lastRead.id)
+    : undefined;
+  const lastReadCount = lastRead
+    ? readerIssues.find((i) => i.id === lastRead.id)?.pageCount
+    : undefined;
+  // The hash mirrors the open surface so places are shareable and the
+  // browser's Back button retraces archive → splash → reader. `room` counts
+  // the history entries this app pushed above the archive.
+  const routeDepth = () =>
+    typeof history.state?.room === 'number' ? history.state.room : 0;
+  const setHash = (route: Route, push: boolean) => {
+    const url = routeHash(route);
+    if (push) history.pushState({ room: routeDepth() + 1 }, '', url);
+    else history.replaceState(history.state ?? { room: 0 }, '', url);
+  };
+  const applyRoute = useCallback((route: Route) => {
+    if (route.surface === 'reader' && available.includes(route.id)) {
+      setReaderEntry({ contents: false, page: route.page });
+      void loadReader();
+      transition(() => {
+        setSelected(null);
+        setOpening(false);
+        setReadingId(route.id);
+      });
+    } else if (
+      route.surface === 'issue' &&
+      issues.some((item) => item.id === route.id)
+    ) {
+      void loadReader();
+      transition(() => {
+        setReadingId(null);
+        setOpening(false);
+        setSelected(route.id);
+      });
+    } else {
+      transition(() => {
+        setSelected(null);
+        setOpening(false);
+        setReadingId(null);
+      });
+      requestAnimationFrame(() =>
+        previousFocus.current?.focus({ preventScroll: true }),
+      );
+    }
+  }, []);
+  useEffect(() => {
+    const route = parseRoute(location.hash);
+    history.replaceState({ room: routeDepth() }, '', routeHash(route));
+    if (route.surface !== 'archive') applyRoute(route);
+    const onPop = () => applyRoute(parseRoute(location.hash));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [applyRoute]);
   const openIssue = (id: string) => {
     previousFocus.current = document.activeElement as HTMLElement;
     flushSync(() => setTransitionCover(id));
     transition(() => setSelected(id));
+    setHash({ surface: 'issue', id }, true);
     void loadReader();
+  };
+  // Browsing covers from the splash replaces the entry, so Back still returns
+  // to the archive instead of retracing every viewed cover.
+  const showIssue = (id: string) => {
+    transition(() => setSelected(id));
+    setHash({ surface: 'issue', id }, false);
   };
   const startReading = (id: string, contents = false) => {
     if (!available.includes(id) || opening) return;
@@ -154,7 +232,19 @@ export default function Home() {
     setReaderEntry({ contents });
     setOpening(!!selected);
     setReadingId(id);
+    setHash({ surface: 'reader', id }, true);
   };
+  const readerPage = useCallback(
+    (page: number) => {
+      if (!readingId) return;
+      history.replaceState(
+        history.state,
+        '',
+        routeHash({ surface: 'reader', id: readingId, page }),
+      );
+    },
+    [readingId],
+  );
   const readerReady = useCallback(() => {
     transition(() => {
       setSelected(null);
@@ -163,25 +253,14 @@ export default function Home() {
   }, []);
   const closeOverlay = useCallback(() => {
     if (selected) flushSync(() => setTransitionCover(selected));
-    transition(() => {
-      setSelected(null);
-      setOpening(false);
-      setReadingId(null);
-    });
-    requestAnimationFrame(() =>
-      previousFocus.current?.focus({ preventScroll: true }),
-    );
-  }, [selected]);
-  const returnToLibrary = useCallback(() => {
-    transition(() => {
-      setReadingId(null);
-      setSelected(null);
-      setOpening(false);
-    });
-    requestAnimationFrame(() =>
-      previousFocus.current?.focus({ preventScroll: true }),
-    );
-  }, []);
+    const depth = routeDepth();
+    if (depth > 0) history.go(-depth);
+    else {
+      history.replaceState({ room: 0 }, '', routeHash({ surface: 'archive' }));
+      applyRoute({ surface: 'archive' });
+    }
+  }, [selected, applyRoute]);
+  const returnToLibrary = closeOverlay;
   useEffect(() => {
     if (issue) modalClose.current?.focus({ preventScroll: true });
     const handler = (event: KeyboardEvent) => {
@@ -195,7 +274,7 @@ export default function Home() {
         event.preventDefault();
         const index = issues.findIndex((item) => item.id === issue.id);
         const next = issues[index + (event.key === 'ArrowRight' ? 1 : -1)];
-        if (next) transition(() => setSelected(next.id));
+        if (next) showIssue(next.id);
       }
       if (event.key === 'Tab') {
         const nodes = Array.from(
@@ -361,6 +440,36 @@ export default function Home() {
                 {filtered.length} issues
               </output>
             </div>
+            {lastRead && lastReadIssue && !query && (
+              <button
+                className="archive-continue"
+                onClick={() => startReading(lastRead.id)}
+              >
+                <img
+                  src={lastReadIssue.cover}
+                  alt=""
+                  width="34"
+                  height="45"
+                  loading="lazy"
+                />
+                <span className="archive-continue-copy">
+                  <small>Continue reading</small>
+                  <strong>
+                    {lastReadIssue.issue} · {placeText(lastRead.id)}
+                  </strong>
+                  {lastReadCount && (
+                    <span className="archive-continue-bar" aria-hidden="true">
+                      <span
+                        style={{
+                          width: `${Math.min(100, Math.round((lastRead.place.page / lastReadCount) * 100))}%`,
+                        }}
+                      />
+                    </span>
+                  )}
+                </span>
+                <ArrowRight size={16} />
+              </button>
+            )}
             <div className="archive-grid">
               {filtered.map((i, index) => {
                 const canRead = available.includes(i.id),
@@ -470,6 +579,7 @@ export default function Home() {
             initialPage={readerEntry.page}
             arriving={opening}
             onReady={readerReady}
+            onPage={readerPage}
           />
         </Suspense>
       )}
@@ -561,11 +671,7 @@ export default function Home() {
                 <button
                   aria-label="Previous issue"
                   disabled={opening || issues[0].id === issue.id}
-                  onClick={() =>
-                    transition(() =>
-                      setSelected(issues[issues.indexOf(issue) - 1].id),
-                    )
-                  }
+                  onClick={() => showIssue(issues[issues.indexOf(issue) - 1].id)}
                 >
                   <ArrowLeft size={18} />
                 </button>
@@ -575,11 +681,7 @@ export default function Home() {
                 <button
                   aria-label="Next issue"
                   disabled={opening || issues.at(-1)?.id === issue.id}
-                  onClick={() =>
-                    transition(() =>
-                      setSelected(issues[issues.indexOf(issue) + 1].id),
-                    )
-                  }
+                  onClick={() => showIssue(issues[issues.indexOf(issue) + 1].id)}
                 >
                   <ArrowRight size={18} />
                 </button>

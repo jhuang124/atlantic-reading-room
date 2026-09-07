@@ -1203,7 +1203,9 @@ p {
     flex-direction: column;
     justify-content: flex-start;
     gap: 38px;
-    padding: 92px 28px 40px;
+    /* The reading actions are a fixed bottom strip here; keep the external
+       link and issue navigation reachable above it. */
+    padding: 92px 28px calc(128px + env(safe-area-inset-bottom));
   }
   .issue-splash .library-modal-close {
     top: 18px;
@@ -1484,5 +1486,82 @@ p {
   .issue-splash .library-detail-copy {
     animation: splash-reveal 450ms ease both;
     translate: none;
+  }
+}
+/* Resume band: one step back into the most recent issue, wherever its card
+   sits in the grid. */
+.archive-continue {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  margin: 0 0 26px;
+  padding: 14px 4px;
+  border-top: 1px solid var(--edition-ink);
+  border-bottom: 1px solid var(--edition-rule);
+  color: var(--edition-ink);
+  text-align: left;
+}
+.archive-continue img {
+  width: 34px;
+  height: 45px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px #00000026;
+}
+.archive-continue-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  margin-right: auto;
+}
+.archive-continue-copy small {
+  font:
+    10px Graphik,
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--edition-accent);
+}
+.archive-continue-copy strong {
+  font:
+    17px/1.2 'AGaramondPro',
+    Georgia,
+    serif;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.archive-continue-bar {
+  display: block;
+  width: min(220px, 100%);
+  height: 2px;
+  margin-top: 3px;
+  background: var(--edition-rule);
+}
+.archive-continue-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--edition-accent);
+}
+.archive-continue svg {
+  flex-shrink: 0;
+  transition: transform 200ms ease;
+}
+.archive-continue:hover svg {
+  transform: translateX(4px);
+}
+.archive-continue:hover .archive-continue-copy strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 640px) {
+  .archive-continue {
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .archive-continue-copy strong {
+    font-size: 15px;
   }
 }

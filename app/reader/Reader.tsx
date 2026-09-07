@@ -76,6 +76,7 @@ export default function Reader({
   initialPage,
   theme,
   onTheme,
+  onPage,
 }: {
   issue: ReadableIssue;
   theme: 'light' | 'dark';
@@ -85,6 +86,7 @@ export default function Reader({
   initialPage?: number;
   arriving?: boolean;
   onReady?: () => void;
+  onPage?: (page: number) => void;
 }) {
   const [pdf, setPDF] = useState<PDFDocumentProxy | null>(null),
     [index, setIndex] = useState<IndexedPage[]>([]),
@@ -250,6 +252,9 @@ export default function Reader({
     saveTimer.current = setTimeout(persist, 250);
     return () => clearTimeout(saveTimer.current);
   }, [page, zoom, mode, column, articleId, persist]);
+  useEffect(() => {
+    onPage?.(page);
+  }, [page, onPage]);
   useEffect(() => {
     if (!documentReading) return;
     const save = () => {
@@ -1385,6 +1390,13 @@ export default function Reader({
           )}
         </section>
       </div>
+      {!articleId && pdf && (
+        <div className="reader-progress" aria-hidden="true">
+          <span
+            style={{ width: `${Math.min(100, (end / issue.pageCount) * 100)}%` }}
+          />
+        </div>
+      )}
       {!mobile && (
         <footer
           className={`reader-toolbar ${currentEdition || articleId ? 'has-article' : ''}`}
@@ -1440,6 +1452,7 @@ export default function Reader({
                   <label className="page-jump">
                     <input
                       aria-label="Go to printed page number, or type cover"
+                      size={Math.max(4, (jump ?? label(page)).length)}
                       value={jump ?? label(page)}
                       onFocus={(e) => e.target.select()}
                       onChange={(e) => setJump(e.target.value)}
@@ -1538,6 +1551,7 @@ export default function Reader({
             <label className="mobile-page-jump">
               <input
                 aria-label="Go to printed page number, or type cover"
+                size={Math.max(3, (jump ?? label(page)).length)}
                 value={jump ?? label(page)}
                 onFocus={(e) => e.target.select()}
                 onChange={(e) => setJump(e.target.value)}

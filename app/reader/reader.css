@@ -560,8 +560,9 @@
   white-space: nowrap;
 }
 .page-jump input {
-  width: 66px;
-  max-width: 110px;
+  width: auto;
+  min-width: 52px;
+  max-width: 118px;
   background: transparent;
   border: 0;
   border-bottom: 1px solid #b4b8a256;
@@ -1169,7 +1170,9 @@
     font-size: 10px;
   }
   .page-jump input {
-    width: 47px;
+    width: auto;
+    min-width: 40px;
+    max-width: 96px;
     font-size: 11px;
   }
   .page-total {
@@ -1443,7 +1446,19 @@
 .page-corner:focus-visible::after {
   opacity: 1;
 }
-.is-turning .page-corner::after {
+/* Invite the corner turn: a faint fold appears whenever the pointer is over
+   the page, and commits to full strength on the corner itself. */
+@media (hover: hover) {
+  .page-surface:hover .page-corner::after {
+    opacity: 0.35;
+  }
+  .page-surface .page-corner:hover::after,
+  .page-surface .page-corner:focus-visible::after {
+    opacity: 1;
+  }
+}
+.is-turning .page-corner::after,
+.page-surface.is-turning:hover .page-corner::after {
   opacity: 0;
 }
 .appearance-popover {
