@@ -67,6 +67,12 @@ import BrowserReadingOptions from './BrowserReadingOptions';
 
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
 
+// The touch layout is for touch devices, not for any narrow window: a
+// half-screen desktop browser keeps mouse-scaled chrome. Truly phone-narrow
+// windows fall back to the touch layout, where desktop chrome cannot fit.
+const MOBILE_QUERY =
+  '(max-width: 960px) and (pointer: coarse), (max-width: 640px)';
+
 export default function Reader({
   issue,
   onClose,
@@ -727,7 +733,7 @@ export default function Reader({
         articleTop.current = saved.articleTop || 0;
       }
     } else {
-      if (matchMedia('(max-width:960px)').matches) setMode('scroll');
+      if (matchMedia(MOBILE_QUERY).matches) setMode('scroll');
       restored.current = true;
     }
     const prefs = loadPreferences();
@@ -744,7 +750,7 @@ export default function Reader({
         : [],
     );
     savedReady.current = true;
-    const mq = matchMedia('(max-width:960px)');
+    const mq = matchMedia(MOBILE_QUERY);
     setMobile(mq.matches);
     const change = () => {
       setMobile(mq.matches);
