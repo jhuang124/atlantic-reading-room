@@ -119,6 +119,8 @@ export default function Reader({
     close = useRef<HTMLButtonElement>(null),
     savedReady = useRef(false),
     toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
+    revealTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
+    revealArmed = useRef(false),
     drag = useRef<{ x: number; y: number; left: number; top: number } | null>(
       null,
     );
@@ -445,6 +447,9 @@ export default function Reader({
       control,
     };
     e.currentTarget.setPointerCapture(e.pointerId);
+    revealArmed.current = false;
+    clearTimeout(revealTimer.current);
+    setRevealed(false);
     turningRef.current = true;
     setTurning({ from: visible, to: next, target, direction: dir, control });
   }
@@ -749,6 +754,7 @@ export default function Reader({
     return () => {
       mq.removeEventListener('change', change);
       clearTimeout(toastTimer.current);
+      clearTimeout(revealTimer.current);
     };
   }, [issue.id, issue.pageCount, announce]);
 
@@ -1103,8 +1109,27 @@ export default function Reader({
       className={`reader reader-v2 ${mobile ? `mobile-reader ${documentReading ? 'document-reader' : ''} ${controls.visible ? 'mobile-controls-visible' : ''} ${mode !== 'spread' || zoom > 1 ? 'mobile-enlarged' : ''}` : ''} ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${!pinned ? 'auto-controls' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''}`}
       onPointerMove={(e) => {
         if (mobile || e.pointerType !== 'mouse') return;
+        // Revealing hidden chrome takes intent: a thin edge band plus a short
+        // dwell, and never while the pointer is working the page — otherwise
+        // reaching for a page corner summons the toolbar over it.
         const box = e.currentTarget.getBoundingClientRect();
-        setRevealed(e.clientY < box.top + 75 || e.clientY > box.bottom - 80);
+        const working =
+          turningRef.current ||
+          !!cornerDrag.current ||
+          e.buttons !== 0 ||
+          !!(e.target as HTMLElement).closest?.('.page-corner');
+        const inZone =
+          !working &&
+          (e.clientY < box.top + 56 || e.clientY > box.bottom - 44);
+        if (!inZone) {
+          revealArmed.current = false;
+          clearTimeout(revealTimer.current);
+          setRevealed(false);
+          return;
+        }
+        if (revealed || revealArmed.current) return;
+        revealArmed.current = true;
+        revealTimer.current = setTimeout(() => setRevealed(true), 200);
       }}
       role="dialog"
       aria-modal="true"

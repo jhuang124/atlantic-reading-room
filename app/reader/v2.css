@@ -1389,3 +1389,24 @@
     transition: none;
   }
 }
+
+/* In Focus, revealed controls float as a compact centered bar instead of a
+   full-width strip, so the page corners stay reachable underneath. */
+.reader-v2.quiet .reader-toolbar {
+  inset: auto auto 18px 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(760px, calc(100% - 176px));
+  height: 56px;
+  min-height: 56px;
+  padding: 0 12px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid var(--edition-rule);
+  border-radius: 6px;
+  box-shadow: 0 12px 32px #00000030;
+}
+.reader-v2.quiet .reader-toolbar .current-story {
+  max-width: 250px;
+}
