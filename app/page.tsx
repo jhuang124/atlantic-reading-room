@@ -26,6 +26,7 @@ import availableIssues from '../public/reader-assets/available.json';
 import { readerIssues } from './reader/catalog';
 import { loadPlace, type ReadingPlace } from './reader/place';
 import { pageLabel } from './reader/model';
+import { locationTitle } from './reader/story-model';
 import { parseRoute, routeHash, type Route } from './routes';
 const loadReader = () => import('./reader/Reader');
 const Reader = lazy(loadReader);
@@ -107,6 +108,30 @@ export default function Home() {
   const modalClose = useRef<HTMLButtonElement>(null);
   const issue = issues.find((i) => i.id === selected);
   const readingIssue = readerIssues.find((i) => i.id === readingId);
+  // Focus rings follow the input method: programmatic focus after a click or
+  // on entry draws nothing; keyboard travel draws the ring.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.input = 'pointer';
+    const pointer = () => {
+      root.dataset.input = 'pointer';
+    };
+    const key = (event: KeyboardEvent) => {
+      if (
+        event.key === 'Tab' ||
+        event.key === 'Enter' ||
+        event.key === ' ' ||
+        event.key.startsWith('Arrow')
+      )
+        root.dataset.input = 'keyboard';
+    };
+    window.addEventListener('pointerdown', pointer, true);
+    window.addEventListener('keydown', key, true);
+    return () => {
+      window.removeEventListener('pointerdown', pointer, true);
+      window.removeEventListener('keydown', key, true);
+    };
+  }, []);
   useEffect(() => {
     const native = (
       window as Window & {
@@ -458,8 +483,18 @@ export default function Home() {
                 <span className="archive-continue-copy">
                   <small>Continue reading</small>
                   <strong>
-                    {lastReadIssue.issue} · {placeText(lastRead.id)}
+                    {(() => {
+                      const entry = readerIssues.find(
+                        (r) => r.id === lastRead.id,
+                      );
+                      return entry
+                        ? locationTitle(entry, lastRead.place.page)
+                        : lastReadIssue.issue;
+                    })()}
                   </strong>
+                  <span className="archive-continue-where">
+                    {lastReadIssue.issue} · {placeText(lastRead.id)}
+                  </span>
                   {lastReadCount && (
                     <span className="archive-continue-bar" aria-hidden="true">
                       <span

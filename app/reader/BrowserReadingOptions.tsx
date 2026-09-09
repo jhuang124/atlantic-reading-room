@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 
 export default function BrowserReadingOptions({
   onEnter,
+  installHelp = true,
 }: {
   onEnter: () => void;
+  /** Phones get the Add to Home Screen note; desktops only need full screen. */
+  installHelp?: boolean;
 }) {
   const [full, setFull] = useState(!!document.fullscreenElement);
   const [error, setError] = useState('');
@@ -15,7 +18,7 @@ export default function BrowserReadingOptions({
     document.addEventListener('fullscreenchange', update);
     return () => document.removeEventListener('fullscreenchange', update);
   }, []);
-  if (standalone) return null;
+  if (standalone || (!installHelp && !document.fullscreenEnabled)) return null;
   const toggle = async () => {
     setError('');
     try {
@@ -30,21 +33,22 @@ export default function BrowserReadingOptions({
   };
   return (
     <fieldset className="browser-reading-options">
-      <legend>Screen space</legend>
+      <legend>Screen</legend>
       {document.fullscreenEnabled && (
         <button onClick={toggle}>
-          {full ? 'Exit full screen' : 'Use full screen'}
+          {full ? 'Exit full screen' : 'Full screen'}
         </button>
       )}
-      <details>
-        <summary>Read without browser bars</summary>
-        <p>
-          In Safari, open Share, then Add to Home Screen. Keep Open as Web App
-          on if shown. In Chrome, use the browser menu and choose Add to Home
-          Screen or Install app. Open the new icon to read without the browser
-          bars.
-        </p>
-      </details>
+      {installHelp && (
+        <details>
+          <summary>Read without browser bars</summary>
+          <p>
+            In Safari, open Share, then Add to Home Screen. In Chrome, use the
+            browser menu and choose Add to Home Screen or Install app. Open the
+            new icon to read without the browser bars.
+          </p>
+        </details>
+      )}
       {error && <output>{error}</output>}
     </fieldset>
   );

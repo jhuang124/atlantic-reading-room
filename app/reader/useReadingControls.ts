@@ -5,16 +5,31 @@ import {
   useState,
   type RefObject,
 } from 'react';
-import { createReadingTap } from './reading-controls';
+import { createReadingTap, tapZone } from './reading-controls';
 
+export type ReadingGestureActions = {
+  /** Turn a page from an edge tap. */
+  turn: (direction: number) => void;
+  /** Zoom from a double-tap at a point. */
+  doubleTap: (x: number, y: number) => void;
+  /** Whether edge taps may turn pages right now (Fit, not zoomed, print). */
+  edgeTurns: () => boolean;
+};
+
+/** Phone chrome visibility plus the shared tap decision layer. Controls start
+ * visible on entry and hide on the first reading gesture; explicit button use
+ * never hides them. */
 export default function useReadingControls(
   root: RefObject<HTMLDivElement | null>,
   enabled: boolean,
   always: boolean,
   blocked: boolean,
+  actions: ReadingGestureActions,
 ) {
   const [revealed, setRevealed] = useState(true);
   const keyboard = useRef(false);
+  const latest = useRef(actions);
+  latest.current = actions;
   const reveal = useCallback(() => setRevealed(true), []);
   const hide = useCallback(() => {
     if (!always && !blocked && !keyboard.current) setRevealed(false);
@@ -25,6 +40,8 @@ export default function useReadingControls(
     const taps = createReadingTap({
       toggle: () => setRevealed((v) => !v),
       hide,
+      turn: (d) => latest.current.turn(d),
+      doubleTap: (x, y) => latest.current.doubleTap(x, y),
     });
     const withinPage = (target: EventTarget | null) =>
       target instanceof Element &&
@@ -32,6 +49,7 @@ export default function useReadingControls(
       !target.closest(
         'button, a, input, select, textarea, [contenteditable], .page-corner',
       );
+    let lastX = 0;
     const down = (e: PointerEvent) => {
       keyboard.current = false;
       if (!withinPage(e.target) || blocked) {
@@ -42,11 +60,21 @@ export default function useReadingControls(
         taps.reading();
         return;
       }
+      lastX = e.clientX;
       taps.down(e.clientX, e.clientY, e.timeStamp);
     };
     const move = (e: PointerEvent) => taps.move(e.clientX, e.clientY);
-    const up = (e: PointerEvent) =>
-      taps.up(e.timeStamp, !!window.getSelection()?.toString());
+    const up = (e: PointerEvent) => {
+      const box = el.getBoundingClientRect();
+      const inArticle =
+        e.target instanceof Element && !!e.target.closest('.article-scroll');
+      taps.up(
+        e.timeStamp,
+        !!window.getSelection()?.toString(),
+        tapZone(lastX - box.left, box.width),
+        !inArticle && latest.current.edgeTurns(),
+      );
+    };
     const scroll = (e: Event) => {
       if (withinPage(e.target)) taps.reading();
     };
@@ -59,12 +87,11 @@ export default function useReadingControls(
     const multi = (e: TouchEvent) => {
       if (withinPage(e.target) && e.touches.length > 1) taps.reading();
     };
-    const double = () => taps.cancel();
+    const cancel = () => taps.cancel();
     el.addEventListener('pointerdown', down);
     el.addEventListener('pointermove', move);
     el.addEventListener('pointerup', up);
-    el.addEventListener('pointercancel', double);
-    el.addEventListener('dblclick', double);
+    el.addEventListener('pointercancel', cancel);
     el.addEventListener('touchstart', multi, { passive: true });
     el.addEventListener('touchmove', scroll, { passive: true });
     el.addEventListener('wheel', scroll, { passive: true });
@@ -74,8 +101,7 @@ export default function useReadingControls(
       el.removeEventListener('pointerdown', down);
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerup', up);
-      el.removeEventListener('pointercancel', double);
-      el.removeEventListener('dblclick', double);
+      el.removeEventListener('pointercancel', cancel);
       el.removeEventListener('touchstart', multi);
       el.removeEventListener('touchmove', scroll);
       el.removeEventListener('wheel', scroll);

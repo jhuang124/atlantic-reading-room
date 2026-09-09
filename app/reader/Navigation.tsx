@@ -101,6 +101,7 @@ export default function Navigation({
         aria-labelledby="contents-heading"
         ref={root}
       >
+        <div className="sheet-handle" aria-hidden="true" />
         <header>
           <img
             className="contents-cover"

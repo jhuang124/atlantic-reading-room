@@ -1,8 +1,38 @@
-# The Print Edition — V2
+# The Print Edition — V3
 
 An Atlantic magazine archive and reader: 71 complete issues from January/February 2020 through September 2026.
 
 [Open the demo](https://jhuang124.github.io/atlantic-reading-room/)
+
+## V3 (September 2026)
+
+V3 is an interaction and visual redesign on the V2 engine. See
+[V3-DESIGN.md](V3-DESIGN.md) for the reasoning, the Codex review, and what
+changed.
+
+- **One token system** (`app/themes.css`) and one reader stylesheet
+  (`app/reader/reader-v3.css`). The V1 palette and its 44 dead selectors are
+  gone; radii, type sizes, shadows and hit targets come from tokens.
+- **Desktop:** a single 52px bar (Archive, Contents, wordmark, issue and page
+  folio with inline page jump, a Fit chip whenever the view is not fitted,
+  Save, Settings, Focus). No footer. The current story sits in a caption
+  under the spread with "Read as article" where an edition exists. Large
+  edge arrows appear on hover, on keyboard focus, and whenever the page is
+  zoomed, and they live outside the scrolling surface so a zoom can never
+  hide them.
+- **Phone:** opens paged at Fit, one page per screen. Tap the left or right
+  22% to turn at Fit; tap the center to toggle the chrome; double-tap or
+  pinch to zoom. When zoomed, a swipe that *starts* with the page resting
+  against its edge turns the page (a pan that merely reaches the edge never
+  does); forward lands top-left, backward top-right, zoom preserved, no
+  curl. Chrome is two translucent bars (Archive · date · Contents; prev ·
+  page · next · Article · Save · Settings) that stay after button use and
+  hide on the next reading gesture. Contents and Settings are bottom
+  sheets. Scroll view remains an option.
+- **Kept on purpose after review:** Column view, "Always show controls" on
+  phones, Add to Home Screen help (now under Settings → Screen), Return
+  after a detour, all routes, saved places, tests and the Expo Escape
+  contract.
 
 ## Experience
 
@@ -35,7 +65,7 @@ node --test scripts/reader-*.test.mjs
 npm run build:pages
 ```
 
-The 50 targeted tests cover hash-route parsing and formatting round-trips, physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, and preservation of the original curl mesh. Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
+The 56 targeted tests cover hash-route parsing and formatting round-trips, physical-page sequence, printed folios, curl reverse faces, geometry, and tight-fold resolution, pinch bounds, saved-place migration, columns, article extraction, every curated story destination, and completeness of published assets, plus shared-raster lifecycle, PDF pixel equivalence, cached search equivalence, preservation of the original curl mesh, and the V3 phone gesture layer (tap zones, double-tap cancellation of a pending edge turn, boundary-only swipes when zoomed). Desktop and narrow layouts are checked in Chromium/in-app browsing. Safari verification is omitted at the user's request. Synthetic input does not establish subjective physical trackpad feel.
 
 The repository-wide linter still flags inherited prototype/template patterns, including Next image rules and imperative renderer hook rules; it is not a passing gate.
 

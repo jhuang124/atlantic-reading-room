@@ -87,6 +87,12 @@ select:focus-visible {
   outline: 2px solid #2c2825;
   outline-offset: 4px;
 }
+/* Programmatic focus after pointer input draws no ring; keyboard travel does. */
+html[data-input='pointer'] button:focus-visible,
+html[data-input='pointer'] a:focus-visible,
+html[data-input='pointer'] [tabindex]:focus-visible {
+  outline: none;
+}
 button {
   padding: 0;
 }
@@ -1529,6 +1535,15 @@ p {
     Georgia,
     serif;
   font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.archive-continue-where {
+  font:
+    12px Graphik,
+    sans-serif;
+  color: var(--edition-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
