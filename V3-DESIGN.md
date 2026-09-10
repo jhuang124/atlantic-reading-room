@@ -276,6 +276,22 @@ matching sections above.
 - **Tests change on purpose**: delayed-tap tests are rewritten for the new
   gesture layer; Column persistence tests stay.
 
+## Post-ship revisions (John, September 10 2026)
+
+- **Column view is removed** after all. John's call after using V3: the
+  heuristic column reader was part of what felt janky on a phone. The
+  detector (`columns.ts`) stays for search and tests; saved Column places
+  migrate to Fit with zoom and offsets reset.
+- **Zoomed turns keep their framing and their animation.** The first V3
+  build made every zoomed turn instant and landed it at a hard-coded
+  corner, which read as a jump. Now desktops curl at any zoom and keep the
+  same scroll offsets across the turn, so the reader sees the same region
+  of the next spread. Phones slide the visible region out and the next page
+  in (a View Transition on the scroll port, 280ms), landing top-left going
+  forward and bottom-right going back.
+- **Phone bars are opaque.** The blurred glass bars sat over a canvas-heavy
+  scroll and cost frames in Scroll view.
+
 ## Risks
 
 - Reader.tsx is 1,850 lines with mode logic threaded through. Column

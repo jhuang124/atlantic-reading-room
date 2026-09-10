@@ -40,7 +40,7 @@ test('A complete print and article place round-trips with 26px text preference',
   const place = {
     page: 14,
     zoom: 1.7,
-    mode: 'column',
+    mode: 'page',
     left: 1516,
     top: 630,
     column: 1,
@@ -50,6 +50,16 @@ test('A complete print and article place round-trips with 26px text preference',
   };
   storePlace('202609', place);
   assert.deepEqual(loadPlace('202609', 112), place);
+  // A place saved in the retired Column view lands at Fit with a clean frame.
+  storePlace('202609', { ...place, mode: 'column' });
+  const migrated = loadPlace('202609', 112);
+  assert.equal(migrated.mode, 'spread');
+  assert.equal(migrated.zoom, 1);
+  assert.equal(migrated.left, 0);
+  assert.equal(migrated.top, 0);
+  assert.equal(migrated.page, 14);
+  assert.equal(migrated.article, 'blue-book');
+  storePlace('202609', place);
   data.set(
     'atlantic:reader-preferences',
     JSON.stringify({

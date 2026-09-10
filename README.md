@@ -24,15 +24,18 @@ changed.
   22% to turn at Fit; tap the center to toggle the chrome; double-tap or
   pinch to zoom. When zoomed, a swipe that *starts* with the page resting
   against its edge turns the page (a pan that merely reaches the edge never
-  does); forward lands top-left, backward top-right, zoom preserved, no
-  curl. Chrome is two translucent bars (Archive · date · Contents; prev ·
-  page · next · Article · Save · Settings) that stay after button use and
-  hide on the next reading gesture. Contents and Settings are bottom
-  sheets. Scroll view remains an option.
-- **Kept on purpose after review:** Column view, "Always show controls" on
-  phones, Add to Home Screen help (now under Settings → Screen), Return
-  after a detour, all routes, saved places, tests and the Expo Escape
-  contract.
+  does); the visible region slides out and the next page slides in, landing
+  top-left going forward and bottom-right going back, zoom preserved.
+  Desktops curl at any zoom and keep their framing across the turn. Chrome
+  is two opaque bars (Archive · date · Contents; prev · page · next ·
+  Article · Save · Settings) that stay after button use and hide on the
+  next reading gesture. Contents and Settings are bottom sheets. Scroll view
+  remains an option.
+- **Kept on purpose after review:** "Always show controls" on phones, Add to
+  Home Screen help (now under Settings → Screen), Return after a detour, all
+  routes, saved places, tests and the Expo Escape contract. Column view was
+  removed on September 10 at John's direction; saved Column places open at
+  Fit.
 
 ## Experience
 

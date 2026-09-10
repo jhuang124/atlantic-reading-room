@@ -2,7 +2,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   useLayoutEffect,
@@ -44,7 +43,7 @@ import {
   type ReadingPlace,
   type ReadingMode,
 } from './place';
-import { pageColumns } from './columns';
+import { flushSync } from 'react-dom';
 import ArticleView from './ArticleView';
 import { articleEditions } from './articles';
 import Navigation, { type NavigationTab } from './Navigation';
@@ -145,9 +144,10 @@ export default function Reader({
   const [appearance, setAppearance] = useState(false),
     [motion, setMotion] = useState<'curl' | 'simple'>('curl'),
     [mobileControls, setMobileControls] = useState<'auto' | 'always'>('auto'),
-    [column, setColumn] = useState(0),
     [revealed, setRevealed] = useState(false),
     [fontSize, setFontSize] = useState(20);
+  // Column view was retired in V3; saved places keep the field for shape.
+  const column = 0;
   // Phone gestures resolve through one decision layer; the callbacks are
   // filled in below once turn and changeZoom exist.
   const gestureActions = useRef<ReadingGestureActions>({
@@ -205,11 +205,6 @@ export default function Reader({
     ? articleForStory(issue, currentArticle.printedPage)
     : undefined;
   const baseRatio = index[0] ? index[0].height / index[0].width : 4 / 3;
-  const columns = useMemo(
-    () => pageColumns(index[page - 1]?.words || []),
-    [index, page],
-  );
-  const activeColumn = columns[Math.min(column, columns.length - 1)];
   // Desk padding must match reader-v3.css: phones keep 8px around a fitted
   // page; desktops reserve room for the edge arrows and the caption row, and
   // Focus gives almost all of it back to the page.
@@ -239,9 +234,7 @@ export default function Reader({
       ? Math.max(120, Math.min(900, area.width - horizontalSpace))
       : mode === 'page'
         ? Math.max(120, area.width - horizontalSpace)
-        : mode === 'column'
-          ? Math.max(120, area.width - horizontalSpace) / activeColumn.width
-          : fitWidth) * zoom;
+        : fitWidth) * zoom;
   const capturePlace = useCallback(
     (): ReadingPlace => ({
       page,
@@ -327,18 +320,10 @@ export default function Reader({
     zoom,
     articleId,
   ]);
-  useLayoutEffect(() => {
-    if (mode !== 'column' || pendingPlace.current) return;
-    viewport.current?.scrollTo({
-      left: activeColumn.x * leafWidth,
-      top: activeColumn.y * leafWidth * baseRatio,
-    });
-  }, [mode, column, page, area.width, index.length]);
   function chooseMode(next: ReadingMode) {
     if (next === 'scroll') setScrollTarget({ page, offset: 0 });
     else viewport.current?.scrollTo({ left: 0, top: 0 });
     setMode(next);
-    setColumn(0);
     zoomRef.current = 1;
     setZoom(1);
     setTurning(null);
@@ -372,24 +357,58 @@ export default function Reader({
         };
       }
       const value = clampPage(n, issue.pageCount);
-      if (n !== page) setColumn(0);
       turningRef.current = false;
       setTurning(null);
       setPage(value);
       setJump(null);
       if (mode === 'scroll') setScrollTarget({ page: value, offset: 0 });
-      else viewport.current?.scrollTo({ left: 0, top: 0 });
+      else if (
+        !remember &&
+        value !== page &&
+        zoomRef.current > 1.01 &&
+        viewport.current
+      ) {
+        // A zoomed turn keeps its framing unless the caller chose a landing.
+        if (!restoreView.current) {
+          const view = scrollPort(viewport.current, documentReading).read();
+          restoreView.current = { left: view.left, top: view.top };
+        }
+      } else viewport.current?.scrollTo({ left: 0, top: 0 });
       setPanel(null);
       setArticleId(null);
       if (remember) {
         zoomRef.current = 1;
         setZoom(1);
-        setColumn(0);
       }
       queuedTurn.current = 0;
     },
-    [issue.pageCount, page, articleId, capturePlace, mode],
+    [issue.pageCount, page, articleId, capturePlace, mode, documentReading],
   );
+  /** Slide the visible page out and the next one in. Used where a curl would
+   * be wrong: zoomed turns on phones. Falls back to an instant swap. */
+  const slideTurn = useCallback((dir: number, apply: () => void) => {
+    const doc = document as Document & {
+      startViewTransition?: (update: () => void) => {
+        finished: Promise<void>;
+      };
+    };
+    const port = viewport.current;
+    if (
+      !doc.startViewTransition ||
+      !port ||
+      matchMedia('(prefers-reduced-motion:reduce)').matches
+    ) {
+      apply();
+      return;
+    }
+    document.documentElement.dataset.turn = dir > 0 ? 'forward' : 'back';
+    port.style.viewTransitionName = 'page-viewport';
+    const transition = doc.startViewTransition(() => flushSync(apply));
+    transition.finished.finally(() => {
+      delete document.documentElement.dataset.turn;
+      port.style.removeProperty('view-transition-name');
+    });
+  }, []);
   const turn = useCallback(
     (dir: number) => {
       if (turningRef.current) {
@@ -400,18 +419,22 @@ export default function Reader({
       const target = turnPage(page, issue.pageCount, actualSpread, dir);
       const next = spreadPages(target, issue.pageCount, actualSpread);
       if (next.join() === visible.join()) return;
-      // Zoomed turns are instant: the curl would rasterize enlarged pages and
-      // the reader lands the next page at its edge anyway.
+      // Phones land a zoomed turn at the start (forward) or the end (back) of
+      // the next page and slide instead of curling. Desktops keep the curl
+      // and keep their framing, so nothing jumps.
+      const zoomedPhone = mobile && zoomRef.current > 1.01 && mode !== 'scroll';
+      if (zoomedPhone)
+        restoreView.current =
+          dir > 0 ? { left: 0, top: 0 } : { left: 1e7, top: 1e7 };
       if (
         !pdf ||
         motion === 'simple' ||
         mode === 'scroll' ||
-        zoomRef.current > 1.01 ||
+        zoomedPhone ||
         matchMedia('(prefers-reduced-motion:reduce)').matches
       ) {
-        if (zoomRef.current > 1.01)
-          restoreView.current = { left: dir > 0 ? 0 : 1e7, top: 0 };
-        navigate(target, false);
+        if (zoomedPhone) slideTurn(dir, () => navigate(target, false));
+        else navigate(target, false);
         return;
       }
       turningRef.current = true;
@@ -433,6 +456,8 @@ export default function Reader({
       turning,
       motion,
       mode,
+      mobile,
+      slideTurn,
     ],
   );
   useEffect(() => {
@@ -758,7 +783,6 @@ export default function Reader({
     if (saved) {
       setPage(saved.page);
       setMode(saved.mode);
-      setColumn(saved.column);
       setZoom(saved.zoom);
       zoomRef.current = saved.zoom;
       pendingPlace.current = saved;
@@ -960,7 +984,6 @@ export default function Reader({
       const place = articlePrint.current;
       setPage(place.page);
       setMode(place.mode);
-      setColumn(place.column);
       zoomRef.current = place.zoom;
       setZoom(place.zoom);
       pendingPlace.current = place;
@@ -997,7 +1020,6 @@ export default function Reader({
     if (!place) return;
     navigate(place.page, false);
     setMode(place.mode);
-    setColumn(place.column);
     zoomRef.current = place.zoom;
     setZoom(place.zoom);
     articleTop.current = place.articleTop || 0;
@@ -1534,34 +1556,6 @@ export default function Reader({
               }}
             />
           )}
-          {!articleId && mode === 'column' && columns.length > 1 && (
-            <div
-              className="column-navigation"
-              role="group"
-              aria-label="Read print columns"
-            >
-              <button
-                aria-label="Previous column"
-                disabled={column === 0}
-                onClick={() => setColumn((n) => Math.max(0, n - 1))}
-              >
-                <ArrowLeft size={16} />
-              </button>
-              <span>
-                Column {Math.min(column + 1, columns.length)} of{' '}
-                {columns.length}
-              </span>
-              <button
-                aria-label="Next column"
-                disabled={column >= columns.length - 1}
-                onClick={() =>
-                  setColumn((n) => Math.min(columns.length - 1, n + 1))
-                }
-              >
-                <ArrowRight size={16} />
-              </button>
-            </div>
-          )}
           {historyPage !== null && (
             <div className="reading-return">
               <button onClick={restoreHistory}>
@@ -1791,38 +1785,20 @@ export default function Reader({
               <>
                 <fieldset className="segmented">
                   <legend>View</legend>
-                  {(['spread', 'page', 'column', 'scroll'] as const).map(
-                    (v) => (
-                      <button
-                        key={v}
-                        aria-pressed={mode === v}
-                        onClick={() => chooseMode(v)}
-                      >
-                        {v === 'spread'
-                          ? 'Fit'
-                          : v === 'page'
-                            ? 'Page width'
-                            : v === 'column'
-                              ? 'Column'
-                              : 'Scroll'}
-                      </button>
-                    ),
-                  )}
+                  {(['spread', 'page', 'scroll'] as const).map((v) => (
+                    <button
+                      key={v}
+                      aria-pressed={mode === v}
+                      onClick={() => chooseMode(v)}
+                    >
+                      {v === 'spread'
+                        ? 'Fit'
+                        : v === 'page'
+                          ? 'Page width'
+                          : 'Scroll'}
+                    </button>
+                  ))}
                 </fieldset>
-                {mode === 'column' && (
-                  <fieldset className="segmented">
-                    <legend>Column</legend>
-                    {columns.map((_, i) => (
-                      <button
-                        key={i}
-                        aria-pressed={column === i}
-                        onClick={() => setColumn(i)}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                  </fieldset>
-                )}
                 <fieldset className="stepper">
                   <legend>Zoom</legend>
                   <button

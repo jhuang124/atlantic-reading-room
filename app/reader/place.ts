@@ -33,15 +33,18 @@ export function normalizePlace(
   if (!value || typeof value !== 'object') return null;
   const p = value as Partial<ReadingPlace>;
   if (!Number.isInteger(p.page)) return null;
+  // Column view was retired in V3. Its magnification and offsets only made
+  // sense against a detected column, so a saved Column place lands at Fit.
+  const retired = p.mode === 'column';
   return {
     page: clampPage(p.page!, count),
-    zoom: Number.isFinite(p.zoom) ? Math.max(1, Math.min(4, p.zoom!)) : 1,
-    mode:
-      p.mode === 'column' || p.mode === 'page' || p.mode === 'scroll'
-        ? p.mode
-        : 'spread',
-    left: Number.isFinite(p.left) ? Math.max(0, p.left!) : 0,
-    top: Number.isFinite(p.top) ? Math.max(0, p.top!) : 0,
+    zoom:
+      !retired && Number.isFinite(p.zoom)
+        ? Math.max(1, Math.min(4, p.zoom!))
+        : 1,
+    mode: p.mode === 'page' || p.mode === 'scroll' ? p.mode : 'spread',
+    left: !retired && Number.isFinite(p.left) ? Math.max(0, p.left!) : 0,
+    top: !retired && Number.isFinite(p.top) ? Math.max(0, p.top!) : 0,
     column: Number.isInteger(p.column)
       ? Math.max(0, Math.min(3, p.column!))
       : 0,

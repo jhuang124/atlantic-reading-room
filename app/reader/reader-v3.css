@@ -730,9 +730,8 @@
   }
 }
 
-/* ---------- Return and column controls ---------- */
-.reading-return,
-.column-navigation {
+/* ---------- Return control ---------- */
+.reading-return {
   position: absolute;
   bottom: 56px;
   left: 50%;
@@ -747,8 +746,7 @@
   box-shadow: var(--shadow-float);
   white-space: nowrap;
 }
-.reading-return button,
-.column-navigation button {
+.reading-return button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -759,28 +757,15 @@
   font-size: var(--ui-13);
   border-radius: var(--radius-2);
 }
-.reading-return button:hover,
-.column-navigation button:hover:not(:disabled) {
+.reading-return button:hover {
   background: var(--surface-2);
 }
 .reading-return span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.column-navigation span {
-  padding: 0 6px;
-  font-size: var(--ui-13);
-  color: var(--ink-2);
-}
-.reading-desk:has(.column-navigation) .reading-return {
-  bottom: 104px;
-}
-.desktop-reader.quiet .reading-return,
-.desktop-reader.quiet .column-navigation {
+.desktop-reader.quiet .reading-return {
   bottom: 24px;
-}
-.desktop-reader.quiet .reading-desk:has(.column-navigation) .reading-return {
-  bottom: 72px;
 }
 
 /* ---------- Article view ---------- */
@@ -1413,9 +1398,8 @@
   display: flex;
   align-items: center;
   color: var(--ink);
-  background: var(--surface-glass);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  /* Opaque on purpose: a blurred bar over a canvas-heavy scroll costs frames. */
+  background: var(--surface);
   opacity: 0;
   visibility: hidden;
   transition:
@@ -1508,8 +1492,7 @@
   color: var(--surface);
   border-color: var(--ink);
 }
-.mobile-reader .reading-return,
-.mobile-reader .column-navigation {
+.mobile-reader .reading-return {
   bottom: calc(68px + var(--safe-bottom));
   opacity: 0;
   visibility: hidden;
@@ -1518,14 +1501,10 @@
     opacity 140ms ease,
     visibility 140ms;
 }
-.mobile-reader.mobile-controls-visible .reading-return,
-.mobile-reader.mobile-controls-visible .column-navigation {
+.mobile-reader.mobile-controls-visible .reading-return {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-}
-.mobile-reader .reading-desk:has(.column-navigation) .reading-return {
-  bottom: calc(120px + var(--safe-bottom));
 }
 .mobile-reader .reader-status {
   bottom: calc(72px + var(--safe-bottom));
@@ -1729,5 +1708,59 @@ body:has(.document-reader[data-modal-open='true']) {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Zoomed phone turns: slide, not curl ----------
+   The scroll port is snapshotted (fixed box, clipped content), so the visible
+   region of the old page slides out and the new one slides in. */
+html[data-turn]::view-transition-old(root),
+html[data-turn]::view-transition-new(root) {
+  animation: none;
+}
+html[data-turn]::view-transition-group(page-viewport) {
+  animation-duration: 0s;
+}
+html[data-turn]::view-transition-old(page-viewport),
+html[data-turn]::view-transition-new(page-viewport) {
+  animation-duration: 280ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+  mix-blend-mode: normal;
+}
+html[data-turn='forward']::view-transition-old(page-viewport) {
+  animation-name: turn-out-left;
+}
+html[data-turn='forward']::view-transition-new(page-viewport) {
+  animation-name: turn-in-right;
+}
+html[data-turn='back']::view-transition-old(page-viewport) {
+  animation-name: turn-out-right;
+}
+html[data-turn='back']::view-transition-new(page-viewport) {
+  animation-name: turn-in-left;
+}
+@keyframes turn-out-left {
+  to {
+    transform: translateX(-18%);
+    opacity: 0;
+  }
+}
+@keyframes turn-in-right {
+  from {
+    transform: translateX(18%);
+    opacity: 0;
+  }
+}
+@keyframes turn-out-right {
+  to {
+    transform: translateX(18%);
+    opacity: 0;
+  }
+}
+@keyframes turn-in-left {
+  from {
+    transform: translateX(-18%);
+    opacity: 0;
   }
 }
