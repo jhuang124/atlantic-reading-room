@@ -1580,3 +1580,383 @@ p {
     font-size: 15px;
   }
 }
+
+/* V4 front door: the shelf opens on the current issue. */
+.archive-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+  gap: 64px;
+  align-items: center;
+  padding: 48px 0 56px;
+  border-bottom: 1px solid var(--rule);
+}
+.archive-hero-cover {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  justify-self: start;
+}
+.archive-hero-cover img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  box-shadow: var(--shadow-page);
+  transition:
+    transform 240ms ease,
+    box-shadow 240ms ease;
+}
+.archive-hero-cover:hover img {
+  transform: translateY(-4px);
+}
+.archive-hero-copy {
+  min-width: 0;
+  max-width: 620px;
+}
+.archive-hero-kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font:
+    12px Graphik,
+    sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.archive-hero-kicker::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+}
+.archive-hero h2 {
+  font:
+    400 clamp(38px, 4vw, 60px) / 1.02 'AGaramondPro',
+    Georgia,
+    serif;
+  margin: 20px 0 16px;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.archive-hero-byline {
+  font:
+    12px Graphik,
+    sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.archive-hero-dek {
+  font:
+    400 clamp(19px, 1.5vw, 23px) / 1.35 'AGaramondPro',
+    Georgia,
+    serif;
+  color: var(--ink-2);
+  margin: 20px 0 0;
+  max-width: 34em;
+  text-wrap: pretty;
+}
+.archive-hero-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  margin-top: 32px;
+}
+.archive-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 52px;
+  max-width: 100%;
+  padding: 0 22px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border-radius: var(--radius-1);
+  font:
+    14px Graphik,
+    sans-serif;
+  transition: background 180ms ease;
+}
+.archive-hero-primary:hover {
+  background: var(--accent-hover);
+}
+.archive-hero-primary > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.archive-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 2px;
+  font:
+    13px Graphik,
+    sans-serif;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--rule-soft);
+  transition:
+    color 180ms ease,
+    text-decoration-color 180ms ease;
+}
+.archive-hero-secondary:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+/* Card CTAs speak in stories; long titles trim rather than wrap. */
+.archive-read-link {
+  max-width: 100%;
+}
+.archive-read-link > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.archive-footer-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+}
+.archive-footer-links a,
+.archive-footer-links button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  font:
+    12px Graphik,
+    sans-serif;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.archive-footer-links a:hover,
+.archive-footer-links button:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 976px) {
+  .archive-hero {
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+    gap: 40px;
+    padding: 40px 0 44px;
+  }
+}
+@media (max-width: 640px) {
+  .archive-hero {
+    display: block;
+    padding: 24px 0 32px;
+  }
+  .archive-hero-cover {
+    max-width: 236px;
+    margin-bottom: 26px;
+  }
+  .archive-hero h2 {
+    font-size: clamp(32px, 9.5vw, 40px);
+    margin: 14px 0 12px;
+  }
+  .archive-hero-dek {
+    font-size: 19px;
+    margin-top: 14px;
+  }
+  .archive-hero-actions {
+    gap: 12px 22px;
+    margin-top: 24px;
+  }
+  .archive-hero-primary {
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 13px;
+  }
+  .archive-footer-links {
+    gap: 0 20px;
+  }
+}
+
+/* About: a quiet page in the archive shell, over the shelf so its scroll
+   position survives the visit. */
+.about-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  background: var(--surface);
+  color: var(--ink);
+}
+.about-shell .archive-masthead {
+  flex-shrink: 0;
+}
+.about-page {
+  width: 100%;
+  max-width: calc(640px + 48px);
+  margin: 0 auto;
+  padding: 28px 24px 96px;
+}
+.about-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  font:
+    13px Graphik,
+    sans-serif;
+  color: var(--ink-2);
+}
+.about-back:hover {
+  color: var(--ink);
+}
+.about-page header {
+  padding: 32px 0 28px;
+  border-bottom: 1px solid var(--rule);
+}
+.about-kicker {
+  font:
+    11px Graphik,
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.about-page h1 {
+  font:
+    400 46px / 1.04 'AGaramondPro',
+    Georgia,
+    serif;
+  margin-top: 14px;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.about-page section {
+  padding: 32px 0 4px;
+}
+.about-page section + section {
+  border-top: 1px solid var(--rule-soft);
+  margin-top: 28px;
+}
+.about-page h2 {
+  font:
+    11px Graphik,
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin-bottom: 18px;
+}
+.about-page p,
+.about-page li,
+.about-page dd {
+  font:
+    400 18px / 1.5 'AGaramondPro',
+    Georgia,
+    serif;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.about-page p + p {
+  margin-top: 14px;
+}
+.about-page ol,
+.about-page ul,
+.about-page dl {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.about-principles {
+  counter-reset: principle;
+  display: grid;
+  gap: 16px;
+}
+/* Each item is exactly two grid cells: the marker and one span of prose. */
+.about-principles li {
+  counter-increment: principle;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+.about-principles li::before {
+  content: counter(principle);
+  font:
+    12px Graphik,
+    sans-serif;
+  color: var(--accent);
+  padding-top: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.about-principles em {
+  font-style: italic;
+}
+.about-removed {
+  display: grid;
+  gap: 14px;
+}
+.about-removed li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+.about-removed li::before {
+  content: '—';
+  color: var(--ink-3);
+}
+.about-keys {
+  display: grid;
+  gap: 12px;
+}
+.about-keys > div {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+.about-keys dt {
+  display: flex;
+  gap: 6px;
+}
+.about-keys dd {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 17px;
+}
+.about-keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 7px;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-1);
+  background: var(--surface-2);
+  font:
+    12px Graphik,
+    sans-serif;
+  color: var(--ink);
+}
+@media (max-width: 640px) {
+  .about-page {
+    padding: 16px 20px 72px;
+  }
+  .about-page header {
+    padding: 24px 0 22px;
+  }
+  .about-page h1 {
+    font-size: 36px;
+  }
+  .about-page section {
+    padding-top: 26px;
+  }
+  .about-page section + section {
+    margin-top: 22px;
+  }
+  .about-keys > div {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+}

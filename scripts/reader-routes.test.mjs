@@ -31,9 +31,20 @@ test('Route parsing maps every surface and rejects malformed fragments', () => {
   });
 });
 
+test('The About page has its own route and tolerates trailing segments', () => {
+  assert.deepEqual(parseRoute('#/about'), { surface: 'about' });
+  assert.deepEqual(parseRoute('#about'), { surface: 'about' });
+  assert.deepEqual(parseRoute('#/about/'), { surface: 'about' });
+  assert.deepEqual(parseRoute('#/about/anything'), { surface: 'about' });
+  // Case matters: a shouted URL is not a surface we own.
+  assert.deepEqual(parseRoute('#/About'), { surface: 'archive' });
+  assert.equal(routeHash({ surface: 'about' }), '#/about');
+});
+
 test('Route formatting round-trips through parsing', () => {
   const routes = [
     { surface: 'archive' },
+    { surface: 'about' },
     { surface: 'issue', id: '202112' },
     { surface: 'reader', id: '202112' },
     { surface: 'reader', id: '202112', page: 47 },

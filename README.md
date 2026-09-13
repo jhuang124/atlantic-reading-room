@@ -4,6 +4,18 @@ An Atlantic magazine archive and reader: 71 complete issues from January/Februar
 
 [Open the demo](https://jhuang124.github.io/atlantic-reading-room/)
 
+## V4 (September 2026)
+
+V4 is a user-first revamp on the V3 engine; [V4-PLAN.md](V4-PLAN.md) has the
+reasoning. The archive is now a **shelf** whose first impression is the
+current issue: a hero with the cover, the cover story, and `Read the issue` /
+`Contents` / `On TheAtlantic.com`, which reads `Continue · {story}` once you
+have a place in it. Resume and card CTAs speak in story titles rather than
+page numbers, and the resume band steps aside when the hero already offers
+Continue. `#/about` is a quiet page (`About this edition` in the footer) with
+the thesis, the four principles, what was removed and why, provenance and
+rights, and the keyboard reference.
+
 ## V3 (September 2026)
 
 V3 is an interaction and visual redesign on the V2 engine. See
