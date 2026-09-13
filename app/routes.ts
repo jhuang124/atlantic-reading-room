@@ -3,6 +3,7 @@
 // file, so the fragment is the only path segment we own.
 export type Route =
   | { surface: 'archive' }
+  | { surface: 'about' }
   | { surface: 'issue'; id: string }
   | { surface: 'reader'; id: string; page?: number };
 
@@ -15,6 +16,9 @@ export function parseRoute(hash: string): Route {
     .split('/')
     .filter(Boolean);
   const id = parts[0] || '';
+  // The About page is the one non-issue surface; anything else unknown is
+  // the shelf, so a stale or mistyped link still lands somewhere useful.
+  if (id === 'about') return { surface: 'about' };
   if (!ISSUE_ID.test(id)) return { surface: 'archive' };
   if (parts[1] === 'read') {
     const match = PAGE.exec(parts[2] || '');
@@ -26,6 +30,7 @@ export function parseRoute(hash: string): Route {
 
 export function routeHash(route: Route): string {
   if (route.surface === 'archive') return '#/';
+  if (route.surface === 'about') return '#/about';
   if (route.surface === 'issue') return `#/${route.id}`;
   const page = route.page && route.page > 1 ? `/p${route.page}` : '';
   return `#/${route.id}/read${page}`;
