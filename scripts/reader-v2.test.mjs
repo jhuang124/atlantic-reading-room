@@ -54,7 +54,8 @@ test('Story URLs come from cover-story data, by web headline or by cover-story b
  assert.equal(storyUrl(issue,issue.contents[3],data),undefined);
  assert.equal(storyUrl(issue,{...issue.contents[3],url:'https://example.test/direct'},data),'https://example.test/direct');
  assert.equal(storyUrl(issue,{title:'why i quit the tenure track!',printedPage:1,section:'Features'},data),'https://example.test/tenure');
- assert.equal(storyUrl(issue,cover),undefined);
+ // Without explicit data, storyUrl consults the issue catalog itself.
+ assert.match(storyUrl(issue,cover)||'',/theatlantic\.com\/magazine\/2026\/09\//);
  const resume=resumeLabel(issue,physicalPage(26,issue)+2);
  assert.equal(resume.title,'Did al-Qaeda Succeed?');
  assert.equal(resume.author,'Graeme Wood');

@@ -1,151 +1,179 @@
 import type { ContentsEntry, ReadableIssue } from './catalog';
-import { pageLabel } from './model.ts';
+import { normalize, pageLabel } from './model.ts';
+import issuesJson from '../issues.json' with { type: 'json' };
+
+/** The web-side facts about an issue that the print catalog does not carry. */
+export type IssueData = {
+  coverStories: { title: string; url: string; authors?: string[] }[];
+};
+const issueDataById = new Map<string, IssueData>(
+  issuesJson.map((entry) => [entry.id, entry as IssueData]),
+);
+
 // Special editions can have extra covers before printed folio 1.
 export const physicalPage = (
   printed: number,
   issue?: Pick<ReadableIssue, 'printOffset'>,
 ) => printed + (issue?.printOffset ?? 2);
+
+/** First physical page of the back matter; pageCount + 1 when there is none. */
+const backStart = (issue: ReadableIssue) =>
+  issue.pageCount - (issue.backMatterPages ?? 2) + 1;
+const storyStart = (issue: ReadableIssue, index: number) =>
+  physicalPage(issue.contents[index].printedPage, issue);
+/** First physical page that belongs to a story (or the back matter). */
+const firstStoryStart = (issue: ReadableIssue) =>
+  issue.contents.length ? storyStart(issue, 0) : backStart(issue);
+
 export function storyIndex(issue: ReadableIssue, page: number) {
-  if (page > issue.pageCount - (issue.backMatterPages ?? 2)) return -1;
+  if (page >= backStart(issue)) return -1;
   return issue.contents.findLastIndex(
     (entry) => physicalPage(entry.printedPage, issue) <= page,
   );
 }
+
+/**
+ * Physical pages of the printed table of contents. `contentsPage` is the
+ * first; the import records which contents page each entry came from
+ * (`sourceContentsPage`), which cheaply reveals a second page when the
+ * listing continues. Anything at or past the first story is ignored.
+ */
+export function contentsPages(issue: ReadableIssue) {
+  const limit = firstStoryStart(issue);
+  const pages = new Set<number>();
+  for (const page of [
+    issue.contentsPage,
+    ...issue.contents.map((entry) => entry.sourceContentsPage),
+  ])
+    if (Number.isInteger(page) && page! > 1 && page! < limit) pages.add(page!);
+  return [...pages].sort((a, b) => a - b);
+}
+
+export type LocationKind = 'cover' | 'front' | 'contents' | 'story' | 'back';
+export type Location = {
+  kind: LocationKind;
+  /** "Kevin Dowdell’s Boys" | "Cover" | "Front matter" | "Contents" | "Back cover" */
+  label: string;
+  /** Index into issue.contents, or -1. */
+  index: number;
+  story?: ContentsEntry;
+  /** First physical page of this location. */
+  start: number;
+  /** Last physical page of this location. */
+  end: number;
+  /** 1-based. */
+  pageInLocation: number;
+  /** end - start + 1 */
+  pages: number;
+  /** Neighbor stories by reading order. */
+  previous?: ContentsEntry;
+  next?: ContentsEntry;
+};
+
+const kindLabels: Record<Exclude<LocationKind, 'story'>, string> = {
+  cover: 'Cover',
+  front: 'Front matter',
+  contents: 'Contents',
+  back: 'Back cover',
+};
+
+/**
+ * Where a physical page sits in the issue. A story runs from its start page
+ * to the page before the next story's start (or the last page before the
+ * back matter); ads inside that range belong to the story. Pages after the
+ * cover and before the first story are front matter, except the printed
+ * contents page(s).
+ */
+export function locate(issue: ReadableIssue, page: number): Location {
+  const count = issue.pageCount;
+  const back = backStart(issue);
+  const finish = (
+    kind: LocationKind,
+    start: number,
+    end: number,
+    index = -1,
+  ): Location => {
+    const story = index >= 0 ? issue.contents[index] : undefined;
+    const beforeStories = kind !== 'story' && kind !== 'back';
+    return {
+      kind,
+      label: story?.title ?? kindLabels[kind as Exclude<LocationKind, 'story'>],
+      index,
+      story,
+      start,
+      end,
+      pageInLocation: page - start + 1,
+      pages: end - start + 1,
+      previous: story
+        ? issue.contents[index - 1]
+        : beforeStories
+          ? undefined
+          : issue.contents.at(-1),
+      next: story
+        ? issue.contents[index + 1]
+        : beforeStories
+          ? issue.contents[0]
+          : undefined,
+    };
+  };
+  if (page <= 1) return finish('cover', 1, 1);
+  if (page >= back) return finish('back', Math.min(back, count), count);
+  const index = storyIndex(issue, page);
+  if (index >= 0) {
+    const start = storyStart(issue, index);
+    const end =
+      index + 1 < issue.contents.length
+        ? storyStart(issue, index + 1) - 1
+        : back - 1;
+    return finish('story', start, Math.max(start, end), index);
+  }
+  // Front matter and printed contents tile the pages between the cover and
+  // the first story; each location is a maximal run of one kind.
+  const contents = new Set(contentsPages(issue));
+  const kindAt = (n: number): LocationKind =>
+    contents.has(n) ? 'contents' : 'front';
+  const kind = kindAt(page);
+  let start = page,
+    end = page;
+  const limit = firstStoryStart(issue);
+  while (start > 2 && kindAt(start - 1) === kind) start--;
+  while (end + 1 < limit && kindAt(end + 1) === kind) end++;
+  return finish(kind, start, end);
+}
+
+/** Every location of the issue in reading order; they tile 1..pageCount. */
+export function locations(issue: ReadableIssue) {
+  const result: Location[] = [];
+  for (let page = 1; page <= issue.pageCount;) {
+    const at = locate(issue, page);
+    result.push(at);
+    page = at.end + 1;
+  }
+  return result;
+}
+
 export function adjacentStory(
   issue: ReadableIssue,
   page: number,
   direction: number,
 ) {
-  if (!issue.contents.length) return undefined;
-  const current = storyIndex(issue, page);
-  if (current < 0)
-    return page <= physicalPage(issue.contents[0].printedPage, issue)
-      ? direction > 0
-        ? issue.contents[0]
-        : undefined
-      : direction < 0
-        ? issue.contents.at(-1)
-        : undefined;
-  return issue.contents[current + direction];
+  return locate(issue, page)[direction > 0 ? 'next' : 'previous'];
 }
+
+
 export function locationTitle(issue: ReadableIssue, page: number) {
   return locate(issue, page).label;
 }
 
-/** Where a page sits in the issue, in the reader's terms: the story is the
- * unit, the page is the medium. A story runs from its opening page to the page
- * before the next story opens (ads inside that range belong to the story). */
-export type Location = {
-  kind: 'cover' | 'front' | 'contents' | 'story' | 'back';
-  label: string;
-  index: number;
-  story?: ContentsEntry;
-  start: number;
-  end: number;
-  pageInLocation: number;
-  pages: number;
-  previous?: ContentsEntry;
-  next?: ContentsEntry;
-};
-export function locate(issue: ReadableIssue, page: number): Location {
-  const count = issue.pageCount,
-    backStart = count - (issue.backMatterPages ?? 2) + 1,
-    stories = issue.contents,
-    firstStory = stories.length
-      ? physicalPage(stories[0].printedPage, issue)
-      : backStart;
-  const span = (
-    kind: Location['kind'],
-    label: string,
-    start: number,
-    end: number,
-    index = -1,
-  ): Location => ({
-    kind,
-    label,
-    index,
-    story: index >= 0 ? stories[index] : undefined,
-    start,
-    end,
-    pageInLocation: page - start + 1,
-    pages: end - start + 1,
-    previous: index >= 0 ? stories[index - 1] : undefined,
-    next: index >= 0 ? stories[index + 1] : undefined,
-  });
-  if (page <= 1) return { ...span('cover', 'Cover', 1, 1), next: stories[0] };
-  if (page >= backStart)
-    return {
-      ...span('back', 'Back cover', backStart, count),
-      previous: stories.at(-1),
-    };
-  if (page === issue.contentsPage)
-    return { ...span('contents', 'Contents', page, page), next: stories[0] };
-  const index = storyIndex(issue, page);
-  if (index < 0 || page < firstStory)
-    return {
-      ...span('front', 'Front matter', 2, Math.max(2, firstStory - 1)),
-      next: stories[0],
-    };
-  const start = physicalPage(stories[index].printedPage, issue),
-    following = stories[index + 1],
-    end = following
-      ? physicalPage(following.printedPage, issue) - 1
-      : backStart - 1;
-  return span('story', stories[index].title, start, Math.max(start, end), index);
-}
-
-const normalizeTitle = (title: string) =>
-  title
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/<[^>]*>/g, '')
-    .replace(/[’‘]/g, "'")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
-
-/** The theatlantic.com URL for a story, when one is known. Catalog entries may
- * carry a `url` (a later data job); otherwise the issue's cover stories are
- * matched by normalized title. */
-export function storyUrl(
-  issue: ReadableIssue,
-  entry: ContentsEntry,
-  issueData?: {
-    coverStories: { title: string; url: string; authors?: string[] }[];
-  },
-): string | undefined {
-  const direct = (entry as ContentsEntry & { url?: string }).url;
-  if (direct) return direct;
-  if (!issueData) return undefined;
-  const title = normalizeTitle(entry.title);
-  const byTitle = issueData.coverStories.find(
-    (story) => story.url && normalizeTitle(story.title) === title,
-  );
-  if (byTitle) return byTitle.url;
-  // Print headlines often differ from the web headline of the same cover
-  // story; the byline settles it when the catalog marks the entry as one.
-  if (entry.section === 'Cover story' && entry.author) {
-    const byAuthor = issueData.coverStories.find(
-      (story) =>
-        story.url &&
-        story.authors?.some(
-          (author) => normalizeTitle(author) === normalizeTitle(entry.author!),
-        ),
-    );
-    if (byAuthor) return byAuthor.url;
-  }
-  return undefined;
-}
-
-/** What the shelf says about a saved place: the story, not the page. */
+/** What "Continue reading" should say for a saved page. */
 export function resumeLabel(
   issue: ReadableIssue,
   page: number,
 ): { title: string; author?: string; pageLabel: string } {
-  const location = locate(issue, page);
+  const at = locate(issue, page);
   return {
-    title: location.label,
-    author: location.story?.author,
+    title: at.story?.title ?? at.label,
+    author: at.story?.author || undefined,
     pageLabel: pageLabel(
       page,
       issue.pageCount,
@@ -153,4 +181,80 @@ export function resumeLabel(
       issue.backMatterPages,
     ),
   };
+}
+
+// Web headlines carry markup ("Post-<em>Roe</em>") and print titles carry
+// typographic quotes; compare letters and digits only.
+const titleKey = (title: string) =>
+  normalize(title.replace(/<[^>]+>/g, ''))
+    .replace(/[^\p{L}\p{N} ]+/gu, '')
+    .trim();
+const sameTitle = (a: string, b: string) =>
+  titleKey(a).length > 0 && titleKey(a) === titleKey(b);
+const byline = (
+  cover: IssueData['coverStories'][number],
+  entry: ContentsEntry,
+) =>
+  Boolean(entry.author) &&
+  (cover.authors ?? []).some(
+    (author) =>
+      author.trim() && normalize(entry.author!).includes(normalize(author)),
+  );
+const sameEntry = (a: ContentsEntry, b: ContentsEntry) =>
+  a === b || a.printedPage === b.printedPage;
+
+/**
+ * The contents entry that is the issue's cover story, if we can say so with
+ * confidence. Order of trust:
+ *
+ * 1. an entry filed under the `Cover story` section (hand-curated issues);
+ * 2. an entry whose title matches one of the web `coverStories`;
+ * 3. the entry at `coverStoryPage`, but only when a web cover story shares
+ *    its byline. In every imported archive issue `coverStoryPage` points at
+ *    the first contents entry ("The Commons", "Editor’s Note"), so on its
+ *    own the field is not evidence.
+ */
+export function coverStoryEntry(
+  issue: ReadableIssue,
+  issueData: IssueData | undefined = issueDataById.get(issue.id),
+): ContentsEntry | undefined {
+  const flagged = issue.contents.find((e) => e.section === 'Cover story');
+  if (flagged) return flagged;
+  const covers = issueData?.coverStories ?? [];
+  for (const cover of covers) {
+    const hit = issue.contents.find((e) => sameTitle(e.title, cover.title));
+    if (hit) return hit;
+  }
+  const at = issue.contents.find(
+    (e) => physicalPage(e.printedPage, issue) === issue.coverStoryPage,
+  );
+  return at && covers.some((cover) => byline(cover, at)) ? at : undefined;
+}
+
+/**
+ * The theatlantic.com URL for a story, when known. A `url` on the catalog
+ * entry (a later data job) wins; otherwise the issue's web `coverStories`
+ * are matched by title. The printed title can differ from the web headline
+ * (September 2026 prints "Confessions of a Token Black Professor" for the
+ * story published as "Why I Quit the Tenure Track"), so for the issue's
+ * cover story we fall back to the web cover story with the same byline, or
+ * the only web cover story when the entry is filed as `Cover story`.
+ */
+export function storyUrl(
+  issue: ReadableIssue,
+  entry: ContentsEntry,
+  issueData: IssueData | undefined = issueDataById.get(issue.id),
+): string | undefined {
+  const own = (entry as ContentsEntry & { url?: unknown }).url;
+  if (typeof own === 'string' && own) return own;
+  const covers = issueData?.coverStories ?? [];
+  const byTitle = covers.find((cover) => sameTitle(cover.title, entry.title));
+  if (byTitle) return byTitle.url;
+  const cover = coverStoryEntry(issue, issueData);
+  if (!cover || !sameEntry(cover, entry)) return undefined;
+  const byByline = covers.find((c) => byline(c, entry));
+  if (byByline) return byByline.url;
+  return covers.length === 1 && entry.section === 'Cover story'
+    ? covers[0].url
+    : undefined;
 }

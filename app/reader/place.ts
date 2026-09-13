@@ -29,7 +29,8 @@ export const defaultPreferences: ReaderPreferences = {
 };
 /** Retired modes map onto the two that remain: Page width was page-width
  * reading, so it becomes Scroll; Column was a paged view, so it becomes
- * Spread at Fit with a clean frame. */
+ * Spread. Either way the saved magnification and offsets described a layout
+ * that no longer exists, so the place lands at Fit with a clean frame. */
 export function normalizeMode(value: unknown): ReadingMode {
   return value === 'scroll' || value === 'page' ? 'scroll' : 'spread';
 }
@@ -40,7 +41,7 @@ export function normalizePlace(
   if (!value || typeof value !== 'object') return null;
   const p = value as Omit<Partial<ReadingPlace>, 'mode'> & { mode?: unknown };
   if (!Number.isInteger(p.page)) return null;
-  const retired = p.mode === 'column';
+  const retired = p.mode === 'column' || p.mode === 'page';
   const mode = normalizeMode(p.mode);
   return {
     page: clampPage(p.page!, count),

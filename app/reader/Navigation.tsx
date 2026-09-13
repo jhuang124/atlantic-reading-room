@@ -3,11 +3,14 @@ import { ArrowLeft, ArrowRight, Bookmark, Search, X } from 'lucide-react';
 import type { ReadableIssue } from './catalog';
 import { pageLabel, searchPages, type IndexedPage } from './model';
 import {
-  adjacentStory,
-  physicalPage,
-  storyIndex,
+  coverStoryEntry,
+  locate,
   locationTitle,
+  physicalPage,
+  storyUrl,
 } from './story-model';
+/** Thumbnails this close to the current page load before the rest. */
+const eagerThumbnails = 12;
 export type NavigationTab = 'contents' | 'pages' | 'search' | 'saved';
 const tabs = ['contents', 'pages', 'saved'] as const;
 export default function Navigation({
@@ -41,10 +44,9 @@ export default function Navigation({
 }) {
   const root = useRef<HTMLElement>(null),
     search = useRef<HTMLInputElement>(null);
-  const current = storyIndex(issue, page),
+  const { index: current, previous, next } = locate(issue, page),
     results = useMemo(() => searchPages(index, query), [index, query]);
-  const previous = adjacentStory(issue, page, -1),
-    next = adjacentStory(issue, page, 1);
+  const coverStory = useMemo(() => coverStoryEntry(issue), [issue]);
   const matching = useMemo(
     () =>
       issue.contents.filter((e) =>
@@ -71,22 +73,43 @@ export default function Navigation({
     onQuery('');
     onTab(value);
   };
-  const storyButton = (entry: ReadableIssue['contents'][number]) => (
-    <button
-      className="story-destination"
-      key={entry.printedPage}
-      aria-current={
-        issue.contents.indexOf(entry) === current ? 'location' : undefined
-      }
-      onClick={() => onStory(physicalPage(entry.printedPage, issue))}
-    >
-      <span>
-        <strong>{entry.title}</strong>
-        {entry.author && <small>{entry.author}</small>}
-      </span>
-      <span className="story-folio">{entry.printedPage}</span>
-    </button>
-  );
+  // The row is a button plus, when the story is online, a real link beside
+  // it; a link cannot live inside a button, so the row wraps both.
+  const storyButton = (entry: ReadableIssue['contents'][number]) => {
+    const isCurrent = issue.contents.indexOf(entry) === current,
+      url = storyUrl(issue, entry);
+    return (
+      <div
+        className={`story-destination${isCurrent ? ' current' : ''}`}
+        key={entry.printedPage}
+      >
+        <button
+          aria-current={isCurrent ? 'location' : undefined}
+          onClick={() => onStory(physicalPage(entry.printedPage, issue))}
+        >
+          <span>
+            {entry === coverStory && entry.section !== 'Cover story' && (
+              <em className="story-kicker">Cover story</em>
+            )}
+            <strong>{entry.title}</strong>
+            {entry.author && <small>{entry.author}</small>}
+          </span>
+          <span className="story-folio">{entry.printedPage}</span>
+        </button>
+        {url && (
+          <a
+            className="story-link"
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Read online ↗
+          </a>
+        )}
+      </div>
+    );
+  };
   return (
     <>
       <button
@@ -215,7 +238,12 @@ export default function Navigation({
                     <img
                       src={`reader-assets/${issue.id}/${n}.jpg`}
                       alt=""
-                      loading="lazy"
+                      loading={
+                        Math.abs(n - page) <= eagerThumbnails ? 'eager' : 'lazy'
+                      }
+                      fetchPriority={
+                        Math.abs(n - page) <= eagerThumbnails ? 'high' : 'auto'
+                      }
                     />
                     <span>{label(n)}</span>
                     {marks.includes(n) && <Bookmark size={12} />}
