@@ -215,11 +215,15 @@ export default function Home() {
     if (push) history.pushState({ room: routeDepth() + 1 }, '', url);
     else history.replaceState(history.state ?? { room: 0 }, '', url);
   };
-  const applyRoute = useCallback((route: Route) => {
+  // The first route of a page load applies directly: there is nothing on
+  // screen to transition from, and a view transition would hold the update
+  // until the browser next paints.
+  const applyRoute = useCallback((route: Route, animate = true) => {
+    const apply = animate ? transition : (update: () => void) => update();
     if (route.surface === 'reader' && available.includes(route.id)) {
       setReaderEntry({ contents: false, page: route.page });
       void loadReader();
-      transition(() => {
+      apply(() => {
         setSelected(null);
         setOpening(false);
         setAbout(false);
@@ -230,21 +234,21 @@ export default function Home() {
       issues.some((item) => item.id === route.id)
     ) {
       void loadReader();
-      transition(() => {
+      apply(() => {
         setReadingId(null);
         setOpening(false);
         setAbout(false);
         setSelected(route.id);
       });
     } else if (route.surface === 'about') {
-      transition(() => {
+      apply(() => {
         setSelected(null);
         setOpening(false);
         setReadingId(null);
         setAbout(true);
       });
     } else {
-      transition(() => {
+      apply(() => {
         setSelected(null);
         setOpening(false);
         setReadingId(null);
@@ -258,7 +262,7 @@ export default function Home() {
   useEffect(() => {
     const route = parseRoute(location.hash);
     history.replaceState({ room: routeDepth() }, '', routeHash(route));
-    if (route.surface !== 'archive') applyRoute(route);
+    if (route.surface !== 'archive') applyRoute(route, false);
     const onPop = () => applyRoute(parseRoute(location.hash));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
