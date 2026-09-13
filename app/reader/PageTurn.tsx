@@ -293,6 +293,17 @@ export default function PageTurn({
         fastFrom = 0;
       const tick = (now: number) => {
         if (disposed || finished || !renderer) return;
+        // A released sheet that has not landed well past its duration means
+        // the loop is wedged (lost context, starved frames): land it rather
+        // than leave every later turn queued behind it.
+        if (
+          control.release !== null &&
+          lastRelease === control.release &&
+          now - releasedAt > TURN_MS * 4
+        ) {
+          done(control.release === 1);
+          return;
+        }
         if (control.release !== lastRelease) {
           releasedAt = now;
           releasedFrom = control.progress;
@@ -376,10 +387,18 @@ export default function PageTurn({
         renderer.render(scene, camera);
         host.current?.classList.add('ready');
         if (control.release === null || elapsed < 1)
-          frame = requestAnimationFrame(tick);
+          frame = requestAnimationFrame(safeTick);
         else done(control.release === 1);
       };
-      tick(initial);
+      const safeTick = (now: number) => {
+        try {
+          tick(now);
+        } catch {
+          // A render failure mid-turn must not strand navigation.
+          done(control.release !== 0);
+        }
+      };
+      safeTick(initial);
     })().catch(() => done());
     return () => {
       disposed = true;
