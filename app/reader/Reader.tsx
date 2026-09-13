@@ -8,7 +8,6 @@ import {
 } from 'react';
 import {
   ArrowLeft,
-  ArrowRight,
   Bookmark,
   Check,
   ChevronLeft,
@@ -23,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { ReadableIssue } from './catalog';
+import issueRecords from '../issues.json';
 import {
   clampPage,
   spreadPages,
@@ -40,21 +40,16 @@ import {
   loadPlace,
   storePlace,
   loadPreferences,
+  storePreferences,
   type ReadingPlace,
   type ReadingMode,
 } from './place';
 import { flushSync } from 'react-dom';
-import ArticleView from './ArticleView';
-import { articleEditions } from './articles';
 import Navigation, { type NavigationTab } from './Navigation';
-import {
-  articleForStory,
-  locationTitle,
-  storyIndex,
-  physicalPage,
-} from './story-model';
+import { locate, physicalPage, storyUrl } from './story-model';
 import Leaf from './Leaf';
 import ContinuousPages, { type ScrollTarget } from './ContinuousPages';
+import EndOfIssue from './EndOfIssue';
 import { loadPDF, type PDFModule } from './pdf';
 import { pageRasters, warmTurnPages } from './page-raster';
 import './reader-v3.css';
@@ -63,7 +58,7 @@ import useReadingControls, {
 } from './useReadingControls';
 import useReaderViewport from './useReaderViewport';
 import { scrollPort } from './scroll-port';
-import { swipeTurn, horizontalEdges } from './reading-controls';
+import { swipeTurn, horizontalEdges, stepZoom } from './reading-controls';
 import BrowserReadingOptions from './BrowserReadingOptions';
 
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
@@ -73,6 +68,9 @@ const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
 // windows fall back to the touch layout, where desktop chrome cannot fit.
 const MOBILE_QUERY =
   '(max-width: 960px) and (pointer: coarse), (max-width: 640px)';
+
+const truncate = (text: string, max: number) =>
+  text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
 
 export default function Reader({
   issue,
@@ -84,6 +82,8 @@ export default function Reader({
   theme,
   onTheme,
   onPage,
+  nextIssue,
+  onOpenIssue,
 }: {
   issue: ReadableIssue;
   theme: 'light' | 'dark';
@@ -94,6 +94,9 @@ export default function Reader({
   arriving?: boolean;
   onReady?: () => void;
   onPage?: (page: number) => void;
+  /** The issue after this one on the shelf, for the end-of-issue card. */
+  nextIssue?: { id: string; issue: string; cover: string };
+  onOpenIssue?: (id: string) => void;
 }) {
   const [pdf, setPDF] = useState<PDFDocumentProxy | null>(null),
     [index, setIndex] = useState<IndexedPage[]>([]),
@@ -102,7 +105,6 @@ export default function Reader({
     [loading, setLoading] = useState(0),
     [indexError, setIndexError] = useState(false);
   const [page, setPage] = useState(1),
-    [mode, setMode] = useState<ReadingMode>('spread'),
     [mobile, setMobile] = useState(false),
     [zoom, setZoom] = useState(1),
     [panel, setPanel] = useState<NavigationTab | null>(
@@ -114,6 +116,7 @@ export default function Reader({
     [toast, setToast] = useState(''),
     [jump, setJump] = useState<string | null>(null),
     [area, setArea] = useState({ width: 0, height: 0 }),
+    [endReached, setEndReached] = useState(false),
     [turning, setTurning] = useState<{
       from: number[];
       to: number[];
@@ -121,10 +124,14 @@ export default function Reader({
       direction: number;
       control: TurnControl;
     } | null>(null);
+  // The view is a preference per device class; the saved place per issue
+  // only supplies position.
+  const [viewDesktop, setViewDesktop] = useState<ReadingMode>('spread'),
+    [viewPhone, setViewPhone] = useState<ReadingMode>('scroll');
+  const mode: ReadingMode = mobile ? viewPhone : viewDesktop;
   const dialog = useRef<HTMLDivElement>(null),
     viewport = useRef<HTMLDivElement>(null),
     close = useRef<HTMLButtonElement>(null),
-    savedReady = useRef(false),
     toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     revealTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined),
     revealArmed = useRef(false),
@@ -137,36 +144,32 @@ export default function Reader({
     scrollOffset.current = offset;
     setPage(next);
   }, []);
-  const [articleId, setArticleId] = useState<string | null>(null);
   const settingsReturn = useRef<HTMLElement | null>(null);
-  const articleTop = useRef(0),
-    articlePrint = useRef<ReadingPlace | null>(null);
   const [appearance, setAppearance] = useState(false),
     [motion, setMotion] = useState<'curl' | 'simple'>('curl'),
-    [mobileControls, setMobileControls] = useState<'auto' | 'always'>('auto'),
-    [revealed, setRevealed] = useState(false),
-    [fontSize, setFontSize] = useState(20);
+    [revealed, setRevealed] = useState(false);
   // Column view was retired in V3; saved places keep the field for shape.
   const column = 0;
+  const browserReader =
+    mobile &&
+    typeof document !== 'undefined' &&
+    document.documentElement.dataset.nativeReader !== 'true';
+  const documentReading = browserReader && mode === 'scroll';
   // Phone gestures resolve through one decision layer; the callbacks are
   // filled in below once turn and changeZoom exist.
   const gestureActions = useRef<ReadingGestureActions>({
     turn: () => {},
     doubleTap: () => {},
     edgeTurns: () => false,
+    scrollTop: () => 0,
   });
   const controls = useReadingControls(
     dialog,
     mobile,
-    mobileControls === 'always',
     !!panel || appearance,
+    mode === 'scroll',
     gestureActions.current,
   );
-  const browserReader =
-    mobile &&
-    typeof document !== 'undefined' &&
-    document.documentElement.dataset.nativeReader !== 'true';
-  const documentReading = browserReader && (mode === 'scroll' || !!articleId);
   useReaderViewport(dialog, mobile);
   const readySent = useRef(false),
     restored = useRef(false),
@@ -181,14 +184,14 @@ export default function Reader({
       dir: number;
       control: TurnControl;
     } | null>(null);
-  const historySnapshot = useRef<ReadingPlace | null>(null),
-    saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [historyPage, setHistoryPage] = useState<number | null>(null);
-  const historyView = useRef({ left: 0, top: 0, zoom: 1 });
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const restoreView = useRef<{ left: number; top: number } | null>(null);
   const wheelState = useRef({ sum: 0, last: 0, latched: false, pinchAt: 0 });
   const turningRef = useRef(false);
   const zoomRef = useRef(zoom);
+  const endRef = useRef(false);
   const zoomAnchor = useRef<{
     x: number;
     y: number;
@@ -200,28 +203,25 @@ export default function Reader({
   const visible = spreadPages(page, issue.pageCount, actualSpread);
   const start = visible[0],
     end = visible[visible.length - 1];
-  const currentArticle = issue.contents[storyIndex(issue, page)];
-  const currentEdition = currentArticle
-    ? articleForStory(issue, currentArticle.printedPage)
+  const location = locate(issue, page);
+  const issueRecord = issueRecords.find((record) => record.id === issue.id);
+  const online = location.story
+    ? storyUrl(issue, location.story, issueRecord)
     : undefined;
+  const printedCount =
+    issue.pageCount - (issue.printOffset ?? 2) - (issue.backMatterPages ?? 2);
   const baseRatio = index[0] ? index[0].height / index[0].width : 4 / 3;
   // Desk padding must match reader-v3.css: phones keep 8px around a fitted
-  // page; desktops reserve room for the edge arrows and the caption row, and
-  // Focus gives almost all of it back to the page.
+  // page; desktops reserve 72px margins for the edge arrows (the story strip
+  // sits below the scroll port), and Focus gives most of it back.
   const horizontalSpace = mobile
     ? mode === 'spread' && zoom === 1
       ? 16
       : 0
     : quiet
-      ? 32
+      ? 64
       : 144;
-  const verticalSpace = mobile
-    ? mobileControls === 'always'
-      ? 120
-      : 16
-    : quiet
-      ? 32
-      : 68;
+  const verticalSpace = mobile ? 16 : quiet ? 32 : 40;
   const fitWidth = Math.max(
     120,
     Math.min(
@@ -232,9 +232,7 @@ export default function Reader({
   const leafWidth =
     (mode === 'scroll'
       ? Math.max(120, Math.min(900, area.width - horizontalSpace))
-      : mode === 'page'
-        ? Math.max(120, area.width - horizontalSpace)
-        : fitWidth) * zoom;
+      : fitWidth) * zoom;
   const capturePlace = useCallback(
     (): ReadingPlace => ({
       page,
@@ -248,11 +246,9 @@ export default function Reader({
         ? scrollPort(viewport.current, documentReading).read().top
         : 0,
       updated: Date.now(),
-      article: articleId || undefined,
-      articleTop: articleTop.current,
       ...(mode === 'scroll' ? { pageOffset: scrollOffset.current } : {}),
     }),
-    [page, mode, column, articleId, documentReading],
+    [page, mode, column, documentReading],
   );
   const latestPlace = useRef(capturePlace);
   latestPlace.current = capturePlace;
@@ -270,7 +266,7 @@ export default function Reader({
     clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(persist, 250);
     return () => clearTimeout(saveTimer.current);
-  }, [page, zoom, mode, column, articleId, persist]);
+  }, [page, zoom, mode, column, persist]);
   useEffect(() => {
     onPage?.(page);
   }, [page, onPage]);
@@ -295,39 +291,34 @@ export default function Reader({
   // Capture scroll offsets before React detaches the viewport ref on unmount.
   useLayoutEffect(() => () => persist(), [persist]);
   useEffect(() => {
-    if (restored.current)
-      saveLocal('atlantic:reader-preferences', {
-        motion,
-        mobileControls,
-        fontSize,
-      });
-  }, [motion, mobileControls, fontSize]);
+    if (restored.current) storePreferences({ motion, viewDesktop, viewPhone });
+  }, [motion, viewDesktop, viewPhone]);
   useLayoutEffect(() => {
     const place = pendingPlace.current;
     if (!place || !pdf || (!index.length && !indexError) || !area.width) return;
-    if (place.mode === 'scroll')
+    if (mode === 'scroll')
       setScrollTarget({ page: place.page, offset: place.pageOffset });
     else viewport.current?.scrollTo({ left: place.left, top: place.top });
     pendingPlace.current = null;
     restored.current = true;
-  }, [
-    pdf,
-    index.length,
-    indexError,
-    area.width,
-    area.height,
-    mode,
-    zoom,
-    articleId,
-  ]);
-  function chooseMode(next: ReadingMode) {
+  }, [pdf, index.length, indexError, area.width, area.height, mode, zoom]);
+  /** Switch views, keeping the page: Spread → Scroll puts the current page at
+   * the top; Scroll → Spread opens the spread holding the page nearest the
+   * top of the viewport (which is what `page` tracks in Scroll). */
+  function chooseView(next: ReadingMode) {
+    if (next === mode) return;
     if (next === 'scroll') setScrollTarget({ page, offset: 0 });
     else viewport.current?.scrollTo({ left: 0, top: 0 });
-    setMode(next);
+    if (mobile) setViewPhone(next);
+    else setViewDesktop(next);
     zoomRef.current = 1;
     setZoom(1);
     setTurning(null);
     turningRef.current = false;
+    queuedTurn.current = 0;
+    setEndReached(false);
+    endRef.current = false;
+    controls.hold();
   }
   const setFocus = useCallback((next: boolean) => {
     setQuiet(next);
@@ -342,20 +333,6 @@ export default function Reader({
   }, []);
   const navigate = useCallback(
     (n: number, remember = true) => {
-      if (
-        remember &&
-        page > 2 &&
-        (n !== page || articleId) &&
-        !historySnapshot.current
-      ) {
-        setHistoryPage(page);
-        historySnapshot.current = capturePlace();
-        historyView.current = {
-          left: viewport.current?.scrollLeft || 0,
-          top: viewport.current?.scrollTop || 0,
-          zoom: zoomRef.current,
-        };
-      }
       const value = clampPage(n, issue.pageCount);
       turningRef.current = false;
       setTurning(null);
@@ -375,15 +352,34 @@ export default function Reader({
         }
       } else viewport.current?.scrollTo({ left: 0, top: 0 });
       setPanel(null);
-      setArticleId(null);
       if (remember) {
         zoomRef.current = 1;
         setZoom(1);
       }
       queuedTurn.current = 0;
+      controls.hold();
+      // The end-of-issue card waits for a reader who turned onto the last
+      // page, not for a jump or a restored place.
+      if (mode !== 'scroll') {
+        const atEnd =
+          !remember &&
+          value > page &&
+          spreadPages(value, issue.pageCount, actualSpread).includes(
+            issue.pageCount,
+          );
+        endRef.current = atEnd;
+        setEndReached(atEnd);
+      }
     },
-    [issue.pageCount, page, articleId, capturePlace, mode, documentReading],
+    [issue.pageCount, page, mode, actualSpread, documentReading, controls.hold],
   );
+  const scrollEnd = useCallback((atEnd: boolean, direction: number) => {
+    const next = atEnd ? (direction > 0 ? true : endRef.current) : false;
+    if (next !== endRef.current) {
+      endRef.current = next;
+      setEndReached(next);
+    }
+  }, []);
   /** Slide the visible page out and the next one in. Used where a curl would
    * be wrong: zoomed turns on phones. Falls back to an instant swap. */
   const slideTurn = useCallback((dir: number, apply: () => void) => {
@@ -500,6 +496,11 @@ export default function Reader({
       control,
     };
     e.currentTarget.setPointerCapture(e.pointerId);
+    // If the pointer capture is lost (window blur, a re-render under the
+    // finger), the sheet must still land rather than hang mid-curl.
+    const settle = () => releaseCorner();
+    window.addEventListener('pointerup', settle, { once: true });
+    window.addEventListener('blur', settle, { once: true });
     revealArmed.current = false;
     clearTimeout(revealTimer.current);
     setRevealed(false);
@@ -763,7 +764,11 @@ export default function Reader({
   gestureActions.current.doubleTap = (x, y) =>
     changeZoom(zoomRef.current > 1.01 ? 1 : 2, x, y);
   gestureActions.current.edgeTurns = () =>
-    mode === 'spread' && zoomRef.current <= 1.01 && !articleId && !!pdf;
+    mode !== 'scroll' && zoomRef.current <= 1.01 && !!pdf;
+  gestureActions.current.scrollTop = () =>
+    viewport.current
+      ? scrollPort(viewport.current, documentReading).read().top
+      : 0;
   const bookmark = useCallback(() => {
     setBookmarkPages((old) => {
       const exists = old.includes(page),
@@ -776,32 +781,31 @@ export default function Reader({
     });
   }, [page, issue.id, announce]);
   useEffect(() => {
+    const mq = matchMedia(MOBILE_QUERY);
+    const phone = mq.matches;
+    setMobile(phone);
+    const prefs = loadPreferences();
+    setMotion(prefs.motion);
+    setViewDesktop(prefs.viewDesktop);
+    setViewPhone(prefs.viewPhone);
+    const view = phone ? prefs.viewPhone : prefs.viewDesktop;
     const saved =
       initialPage === undefined ? loadPlace(issue.id, issue.pageCount) : null;
     if (initialPage !== undefined)
       setPage(clampPage(initialPage, issue.pageCount));
     if (saved) {
       setPage(saved.page);
-      setMode(saved.mode);
-      setZoom(saved.zoom);
-      zoomRef.current = saved.zoom;
-      pendingPlace.current = saved;
-      if (
-        saved.article &&
-        articleEditions.some((a) => a.id === saved.article)
-      ) {
-        articlePrint.current = { ...saved, article: undefined };
-        setArticleId(saved.article);
-        articleTop.current = saved.articleTop || 0;
+      // Position only carries over into the view it was saved from; zoom and
+      // offsets mean different things in Spread and Scroll.
+      const sameView = saved.mode === view;
+      if (sameView) {
+        setZoom(saved.zoom);
+        zoomRef.current = saved.zoom;
       }
-    } else {
-      // Phones open paged at Fit, like a magazine; Scroll stays an option.
-      restored.current = true;
-    }
-    const prefs = loadPreferences();
-    setMotion(prefs.motion);
-    setMobileControls(prefs.mobileControls);
-    setFontSize(prefs.fontSize);
+      pendingPlace.current = sameView
+        ? saved
+        : { ...saved, zoom: 1, left: 0, top: 0, pageOffset: 0 };
+    } else restored.current = true;
     const marks = readSaved(`atlantic:bookmarks:${issue.id}`, []) as unknown;
     setBookmarkPages(
       Array.isArray(marks)
@@ -810,9 +814,6 @@ export default function Reader({
           )
         : [],
     );
-    savedReady.current = true;
-    const mq = matchMedia(MOBILE_QUERY);
-    setMobile(mq.matches);
     const change = () => {
       setMobile(mq.matches);
     };
@@ -932,7 +933,7 @@ export default function Reader({
       observer.disconnect();
       window.visualViewport?.removeEventListener('resize', update);
     };
-  }, [pdf, panel, quiet, documentReading, articleId]);
+  }, [pdf, panel, quiet, documentReading]);
   useEffect(() => {
     if (quiet) dialog.current?.focus({ preventScroll: true });
     else close.current?.focus();
@@ -944,6 +945,11 @@ export default function Reader({
     requestAnimationFrame(() =>
       contentsTrigger.current?.focus({ preventScroll: true }),
     );
+  }, []);
+  const openContents = useCallback(() => {
+    setQuery('');
+    setPanel('contents');
+    setAppearance(false);
   }, []);
   useEffect(() => {
     if (panel)
@@ -977,57 +983,6 @@ export default function Reader({
     });
     return () => cancelAnimationFrame(frame);
   }, [appearance, controls.reveal]);
-  const returnToPrint = useCallback(() => {
-    if (!articleId) return;
-    setArticleId(null);
-    if (articlePrint.current) {
-      const place = articlePrint.current;
-      setPage(place.page);
-      setMode(place.mode);
-      zoomRef.current = place.zoom;
-      setZoom(place.zoom);
-      pendingPlace.current = place;
-    }
-  }, [articleId]);
-  function openArticle() {
-    if (!currentEdition || articleId) return;
-    articlePrint.current = capturePlace();
-    articleTop.current = 0;
-    setArticleId(currentEdition.id);
-  }
-  function goToStory(n: number) {
-    const entry = issue.contents.find(
-      (c) => physicalPage(c.printedPage, issue) === n,
-    );
-    const edition = entry && articleForStory(issue, entry.printedPage);
-    const stayInArticle = !!articleId && !!edition;
-    navigate(n);
-    if (stayInArticle && edition) {
-      articlePrint.current = {
-        ...capturePlace(),
-        page: n,
-        zoom: 1,
-        left: 0,
-        top: 0,
-        article: undefined,
-      };
-      articleTop.current = 0;
-      setArticleId(edition.id);
-    } else if (articleId) announce('This story is available in print view.');
-  }
-  function restoreHistory() {
-    const place = historySnapshot.current;
-    if (!place) return;
-    navigate(place.page, false);
-    setMode(place.mode);
-    zoomRef.current = place.zoom;
-    setZoom(place.zoom);
-    articleTop.current = place.articleTop || 0;
-    setArticleId(place.article || null);
-    pendingPlace.current = place;
-    historySnapshot.current = null;
-    setHistoryPage(null);
-  }
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
@@ -1080,15 +1035,14 @@ export default function Reader({
         }
         if (panel) closeNavigation();
         else if (quiet) setFocus(false);
-        else if (articleId) returnToPrint();
         else onClose();
         return;
       }
       if (editing || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === 'c') {
         e.preventDefault();
-        if (!panel) setQuery('');
-        setPanel(panel ? null : 'contents');
+        if (panel) closeNavigation();
+        else openContents();
         return;
       }
       if (e.key === 'f') {
@@ -1099,14 +1053,16 @@ export default function Reader({
         setFocus(!quiet);
         return;
       }
-      if (articleId || panel || appearance) return;
+      if (panel || appearance) return;
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        turn(1);
+        if (mode === 'scroll') navigate(page + 1, false);
+        else turn(1);
       }
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        turn(-1);
+        if (mode === 'scroll') navigate(page - 1, false);
+        else turn(-1);
       }
       if (e.key === 'Home') {
         e.preventDefault();
@@ -1117,14 +1073,14 @@ export default function Reader({
         navigate(issue.pageCount);
       }
       if (e.key === 'b') bookmark();
-      if (e.key === 'f') setFocus(!quiet);
       if (e.key === '/') {
         e.preventDefault();
         setQuiet(false);
         setPanel('search');
       }
-      if (e.key === '+' || e.key === '=') changeZoom(zoomRef.current + 0.25);
-      if (e.key === '-') changeZoom(zoomRef.current - 0.25);
+      if (e.key === '+' || e.key === '=')
+        changeZoom(stepZoom(zoomRef.current, 1));
+      if (e.key === '-') changeZoom(stepZoom(zoomRef.current, -1));
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -1135,18 +1091,19 @@ export default function Reader({
     onClose,
     quiet,
     mobile,
+    mode,
+    page,
     panel,
     issue.pageCount,
     turning,
     appearance,
-    articleId,
     setFocus,
     changeZoom,
     closeNavigation,
+    openContents,
     controls.visible,
     controls.hide,
     controls.reveal,
-    returnToPrint,
   ]);
   function submitJump() {
     const n = parsePrintedPage(
@@ -1157,35 +1114,84 @@ export default function Reader({
     );
     if (n !== null) navigate(n);
     else {
-      announce(
-        `Enter a printed page from 1 to ${issue.pageCount - 4}, or “cover”.`,
-      );
+      announce(`Enter a page from 1 to ${printedCount}, or “cover”.`);
       setJump(null);
     }
   }
   const label = (n: number) =>
     pageLabel(n, issue.pageCount, issue.printOffset, issue.backMatterPages);
+  const saved = bookmarkPages.includes(page);
+  const goToStory = (entry?: { printedPage: number }) =>
+    entry && navigate(physicalPage(entry.printedPage, issue));
+  const invite = !location.story && !!location.next;
+  const folio = (
+    <input
+      aria-label="Go to page"
+      size={Math.max(2, (jump ?? label(page)).length)}
+      value={jump ?? label(page)}
+      onFocus={(e) => e.target.select()}
+      onChange={(e) => setJump(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          submitJump();
+          e.currentTarget.blur();
+        }
+        if (e.key === 'Escape') {
+          e.stopPropagation();
+          setJump(null);
+          e.currentTarget.blur();
+        }
+      }}
+      onBlur={() => {
+        if (jump !== null) submitJump();
+      }}
+    />
+  );
+  const storyButton = (
+    <button
+      className={`strip-story ${location.story ? '' : 'location'}`}
+      onClick={openContents}
+      aria-label={`Now reading ${location.label}. Open contents`}
+    >
+      <strong>{location.label}</strong>
+      {location.story?.author && <small>{location.story.author}</small>}
+    </button>
+  );
+  const viewSwitch = (
+    <div className="segmented view-switch" role="group" aria-label="View">
+      <button
+        aria-pressed={mode === 'spread'}
+        onClick={() => chooseView('spread')}
+      >
+        {mobile ? 'Pages' : 'Spread'}
+      </button>
+      <button
+        aria-pressed={mode === 'scroll'}
+        onClick={() => chooseView('scroll')}
+      >
+        Scroll
+      </button>
+    </div>
+  );
   return (
     <div
       ref={dialog}
       tabIndex={-1}
-      data-mobile-controls={mobileControls}
       data-modal-open={!!panel || appearance}
-      className={`reader reader-v3 ${mobile ? `mobile-reader ${documentReading ? 'document-reader' : ''} ${controls.visible ? 'mobile-controls-visible' : ''} ${mode !== 'spread' || zoom > 1 ? 'mobile-enlarged' : ''}` : 'desktop-reader'} ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''} ${articleId ? 'reading-article' : ''}`}
+      className={`reader reader-v3 ${mobile ? `mobile-reader ${documentReading ? 'document-reader' : ''} ${controls.visible ? 'mobile-controls-visible' : ''} ${mode === 'scroll' || zoom > 1 ? 'mobile-enlarged' : ''}` : 'desktop-reader'} ${mode === 'scroll' ? 'scroll-view' : ''} ${quiet ? 'quiet' : ''} ${arriving ? 'arriving' : ''} ${revealed || panel || appearance ? 'controls-revealed' : ''}`}
       onPointerMove={(e) => {
-        if (mobile || e.pointerType !== 'mouse') return;
-        // Revealing hidden chrome takes intent: a thin edge band plus a short
-        // dwell, and never while the pointer is working the page — otherwise
-        // reaching for a page corner summons the toolbar over it.
+        if (mobile || !quiet || e.pointerType !== 'mouse') return;
+        // Revealing hidden chrome takes intent: a 16px band at the top edge
+        // plus a 200ms dwell, never while the pointer is working the page.
+        // Once the bar is out, it stays while the pointer is over it.
         const box = e.currentTarget.getBoundingClientRect();
         const working =
           turningRef.current ||
           !!cornerDrag.current ||
           e.buttons !== 0 ||
           !!(e.target as HTMLElement).closest?.('.page-corner');
-        const inZone =
-          !working &&
-          (e.clientY < box.top + 56 || e.clientY > box.bottom - 44);
+        const y = e.clientY - box.top;
+        const inZone = !working && (y < 16 || (revealed && y < 52));
         if (!inZone) {
           revealArmed.current = false;
           clearTimeout(revealTimer.current);
@@ -1201,12 +1207,17 @@ export default function Reader({
       aria-label={`${issue.issue} full issue reader`}
     >
       {!mobile && (
-        <header className="reader-header" inert={!!panel || appearance}>
+        <nav
+          className="reader-header"
+          aria-label="Reader"
+          inert={!!panel || appearance}
+        >
           <div className="reader-header-left">
             <button
               ref={close}
               onClick={onClose}
-              aria-label="Return to cover index"
+              aria-label="Archive"
+              title="Archive · Esc"
               className="back-to-library"
             >
               <ArrowLeft size={18} />
@@ -1218,11 +1229,7 @@ export default function Reader({
               aria-label="Contents"
               aria-expanded={!!panel}
               title="Contents · C"
-              onClick={() => {
-                if (!panel) setQuery('');
-                setPanel(panel ? null : 'contents');
-                setAppearance(false);
-              }}
+              onClick={() => (panel ? closeNavigation() : openContents())}
             >
               <PanelLeftOpen size={18} />
               <span>Contents</span>
@@ -1234,72 +1241,43 @@ export default function Reader({
             alt="The Atlantic"
           />
           <div className="reader-header-tools">
-            <div className="reader-folio">
-              <span className="folio-date">{issue.issue}</span>
-              {!articleId && (
-                <label className="page-jump">
-                  <span className="folio-page">Page</span>
-                  <input
-                    aria-label="Go to printed page number, or type cover"
-                    size={Math.max(2, (jump ?? label(page)).length)}
-                    value={jump ?? label(page)}
-                    onFocus={(e) => e.target.select()}
-                    onChange={(e) => setJump(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        submitJump();
-                        e.currentTarget.blur();
-                      }
-                      if (e.key === 'Escape') {
-                        e.stopPropagation();
-                        setJump(null);
-                        e.currentTarget.blur();
-                      }
-                    }}
-                    onBlur={() => {
-                      if (jump !== null) submitJump();
-                    }}
-                  />
-                  <span className="folio-of">
-                    of{' '}
-                    {issue.pageCount -
-                      (issue.printOffset ?? 2) -
-                      (issue.backMatterPages ?? 2)}
-                  </span>
-                </label>
-              )}
-            </div>
-            {!articleId && (zoom !== 1 || mode !== 'spread') && (
+            {viewSwitch}
+            <div className="zoom-group" role="group" aria-label="Zoom">
               <button
-                className="fit-chip"
-                aria-label="Fit the page to the screen"
-                onClick={() => chooseMode('spread')}
+                className="reader-icon"
+                aria-label="Zoom out"
+                title="Zoom out · −"
+                disabled={zoom <= 1}
+                onClick={() => changeZoom(stepZoom(zoomRef.current, -1))}
               >
-                <span>
-                  {zoom !== 1
-                    ? `${Math.round(zoom * 100)}%`
-                    : mode === 'page'
-                      ? 'Page width'
-                      : mode === 'column'
-                        ? 'Column'
-                        : 'Scroll'}
-                </span>
-                <strong>Fit</strong>
+                <Minus size={16} />
               </button>
-            )}
+              <button
+                className="zoom-fit"
+                title={zoom > 1 ? 'Fit to the screen' : 'Fitted to the screen'}
+                aria-disabled={zoom <= 1}
+                onClick={() => changeZoom(1)}
+              >
+                {zoom > 1 ? `${Math.round(zoom * 100)}%` : 'Fit'}
+              </button>
+              <button
+                className="reader-icon"
+                aria-label="Zoom in"
+                title="Zoom in · +"
+                disabled={zoom >= 4}
+                onClick={() => changeZoom(stepZoom(zoomRef.current, 1))}
+              >
+                <Plus size={16} />
+              </button>
+            </div>
             <button
               className="reader-icon"
-              aria-label={
-                bookmarkPages.includes(page) ? 'Remove bookmark' : 'Save page'
-              }
-              aria-pressed={bookmarkPages.includes(page)}
-              title="Save page · B"
+              aria-label="Save page"
+              aria-pressed={saved}
+              title={saved ? 'Saved · B' : 'Save page · B'}
               onClick={bookmark}
             >
-              <Bookmark
-                size={18}
-                fill={bookmarkPages.includes(page) ? 'currentColor' : 'none'}
-              />
+              <Bookmark size={18} fill={saved ? 'currentColor' : 'none'} />
             </button>
             <button
               className="reader-icon"
@@ -1315,19 +1293,20 @@ export default function Reader({
             </button>
             <button
               className="reader-icon"
-              aria-label={quiet ? 'Leave focus mode' : 'Enter focus mode'}
+              aria-label="Focus"
+              aria-pressed={quiet}
               title="Focus · F"
               onClick={() => setFocus(!quiet)}
             >
               {quiet ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
             </button>
           </div>
-        </header>
+        </nav>
       )}
       {!mobile && quiet && (
         <button
           className="focus-access"
-          onClick={() => setRevealed((v) => !v)}
+          onClick={() => setFocus(false)}
           aria-label="Show reading controls"
         >
           Show reading controls
@@ -1357,17 +1336,6 @@ export default function Reader({
               saveTimer.current = setTimeout(persist, 250);
             }}
             className={`page-viewport ${zoom > 1 ? 'zoomed' : ''} ${mode === 'scroll' ? 'continuous-viewport' : ''}`}
-            style={
-              articleId
-                ? {
-                    visibility: 'hidden',
-                    pointerEvents: 'none',
-                    ...(documentReading ? { display: 'none' } : {}),
-                  }
-                : undefined
-            }
-            aria-hidden={!!articleId}
-            inert={!!articleId}
             onPointerDown={(e) => {
               if (
                 e.pointerType !== 'mouse' ||
@@ -1397,7 +1365,7 @@ export default function Reader({
             onPointerUp={() => (drag.current = null)}
             onPointerCancel={() => (drag.current = null)}
           >
-            {pdf && mode === 'scroll' && !articleId && (
+            {pdf && mode === 'scroll' && (
               <ContinuousPages
                 pdf={pdf}
                 issue={issue}
@@ -1407,9 +1375,10 @@ export default function Reader({
                 target={scrollTarget}
                 initialPage={page}
                 mobile={mobile}
-                documentScroll={documentReading && !articleId}
+                documentScroll={documentReading}
                 query={query}
                 onPosition={scrollPosition}
+                onEnd={scrollEnd}
                 onPaint={paintedPage}
                 onZoom={(x, y) =>
                   changeZoom(zoomRef.current === 1 ? 2 : 1, x, y)
@@ -1495,7 +1464,7 @@ export default function Reader({
               </div>
             )}
           </div>
-          {!mobile && pdf && !articleId && (
+          {!mobile && pdf && mode !== 'scroll' && (
             <>
               <button
                 className="edge-arrow left"
@@ -1516,69 +1485,66 @@ export default function Reader({
             </>
           )}
           {!mobile && pdf && (
-            <div className="desk-caption">
+            <div
+              className="story-strip"
+              role="group"
+              aria-label="Now reading"
+              inert={quiet}
+            >
               <button
-                className="caption-story"
-                onClick={() => {
-                  setQuery('');
-                  setPanel('contents');
-                }}
-                aria-label={`Current story: ${locationTitle(issue, page)}. Open contents`}
+                className="strip-nav"
+                aria-label="Previous story"
+                title={location.previous?.title}
+                disabled={!location.previous}
+                onClick={() => goToStory(location.previous)}
               >
-                <span>{articleId ? 'Reading as article' : 'Now reading'}</span>
-                <strong>{locationTitle(issue, page)}</strong>
+                <ChevronLeft size={16} />
+                <span>Previous story</span>
               </button>
-              {(currentEdition || articleId) && (
-                <button
-                  className="caption-article"
-                  aria-pressed={!!articleId}
-                  onClick={articleId ? returnToPrint : openArticle}
-                >
-                  {articleId ? 'Back to print' : 'Read as article'}
-                </button>
-              )}
-            </div>
-          )}
-
-          {articleId && (
-            <ArticleView
-              key={articleId}
-              id={articleId}
-              fontSize={fontSize}
-              documentScroll={documentReading}
-              initialTop={articleTop.current}
-              onPrint={returnToPrint}
-              onReady={paintedPage}
-              onScroll={(top) => {
-                articleTop.current = top;
-                clearTimeout(saveTimer.current);
-                saveTimer.current = setTimeout(persist, 250);
-              }}
-            />
-          )}
-          {historyPage !== null && (
-            <div className="reading-return">
-              <button onClick={restoreHistory}>
-                <ArrowLeft size={15} />
+              <div className="strip-center">
+                {storyButton}
+                {online && (
+                  <a
+                    className="strip-online"
+                    href={online}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Read online ↗
+                  </a>
+                )}
+              </div>
+              <label className="page-folio">
+                {folio}
+                <span>/ {printedCount}</span>
+              </label>
+              <button
+                className={`strip-nav ${invite ? 'invite' : ''}`}
+                aria-label="Next story"
+                title={location.next?.title}
+                disabled={!location.next}
+                onClick={() => goToStory(location.next)}
+              >
                 <span>
-                  Return to {locationTitle(issue, historyPage)} ·{' '}
-                  {label(historyPage)}
+                  {invite
+                    ? `Next story: ${truncate(location.next!.title, 28)}`
+                    : 'Next story'}
                 </span>
-              </button>
-              <button
-                aria-label="Dismiss return location"
-                onClick={() => {
-                  historySnapshot.current = null;
-                  setHistoryPage(null);
-                }}
-              >
-                <X size={14} />
+                <ChevronRight size={16} />
               </button>
             </div>
           )}
         </section>
+        {pdf && endReached && (
+          <EndOfIssue
+            issue={issue}
+            next={nextIssue}
+            onNext={() => nextIssue && onOpenIssue?.(nextIssue.id)}
+            onShelf={onClose}
+          />
+        )}
       </div>
-      {!articleId && pdf && (
+      {pdf && (
         <div className="reader-progress" aria-hidden="true">
           <span
             style={{ width: `${Math.min(100, (end / issue.pageCount) * 100)}%` }}
@@ -1606,20 +1572,18 @@ export default function Reader({
               ref={close}
               className="back-to-library"
               onClick={onClose}
-              aria-label="Return to cover index"
+              aria-label="Archive"
             >
               <ArrowLeft size={20} />
               <span>Archive</span>
             </button>
-            <span className="mobile-issue">{issue.issue}</span>
+            {storyButton}
             <button
               ref={contentsTrigger}
               className="mobile-contents"
-              onClick={() => {
-                setQuery('');
-                setPanel('contents');
-              }}
+              aria-label="Contents"
               aria-expanded={!!panel}
+              onClick={openContents}
             >
               <PanelLeftOpen size={19} />
               <span>Contents</span>
@@ -1631,74 +1595,54 @@ export default function Reader({
             inert={!controls.visible || !!panel || appearance}
             aria-hidden={!controls.visible}
           >
-            <button
-              aria-label="Previous page"
-              disabled={start === 1 || !!articleId}
-              onClick={() => turn(-1)}
-            >
-              <ChevronLeft size={22} />
-            </button>
-            <label className="mobile-page-jump">
-              <input
-                aria-label="Go to printed page number, or type cover"
-                size={Math.max(3, (jump ?? label(page)).length)}
-                value={jump ?? label(page)}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setJump(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    submitJump();
-                    e.currentTarget.blur();
-                  }
-                  if (e.key === 'Escape') {
-                    e.stopPropagation();
-                    setJump(null);
-                    e.currentTarget.blur();
-                  }
-                }}
-                onBlur={() => {
-                  if (jump !== null) submitJump();
-                }}
-              />
-            </label>
-            <button
-              aria-label="Next page"
-              disabled={end === issue.pageCount || !!articleId}
-              onClick={() => turn(1)}
-            >
-              <ChevronRight size={22} />
-            </button>
-            <span className="bar-spacer" aria-hidden="true" />
-            {(currentEdition || articleId) && (
+            <div className="bar-pages">
               <button
-                className="bar-article"
-                aria-pressed={!!articleId}
-                title={articleId ? 'Back to print' : 'Read with adjustable text'}
-                onClick={articleId ? returnToPrint : openArticle}
+                aria-label="Previous page"
+                disabled={start === 1}
+                onClick={() =>
+                  mode === 'scroll' ? navigate(page - 1, false) : turn(-1)
+                }
               >
-                {articleId ? 'Print' : 'Article'}
+                <ChevronLeft size={22} />
               </button>
-            )}
-            <button
-              aria-label={
-                bookmarkPages.includes(page) ? 'Remove bookmark' : 'Save page'
-              }
-              aria-pressed={bookmarkPages.includes(page)}
-              onClick={bookmark}
-            >
-              <Bookmark
-                size={20}
-                fill={bookmarkPages.includes(page) ? 'currentColor' : 'none'}
-              />
-            </button>
-            <button
-              aria-label="Reading settings"
-              aria-expanded={appearance}
-              onClick={() => setAppearance(true)}
-            >
-              <Settings2 size={20} />
-            </button>
+              <label className="mobile-page-jump">{folio}</label>
+              <button
+                aria-label="Next page"
+                disabled={end === issue.pageCount}
+                onClick={() =>
+                  mode === 'scroll' ? navigate(page + 1, false) : turn(1)
+                }
+              >
+                <ChevronRight size={22} />
+              </button>
+            </div>
+            {viewSwitch}
+            <div className="bar-tools">
+              <button
+                aria-label="Save page"
+                aria-pressed={saved}
+                onClick={bookmark}
+              >
+                <Bookmark size={20} fill={saved ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                aria-label="Reading settings"
+                aria-expanded={appearance}
+                onClick={() => setAppearance(true)}
+              >
+                <Settings2 size={20} />
+              </button>
+            </div>
           </nav>
+          {zoom > 1 && mode !== 'scroll' && !panel && !appearance && (
+            <button
+              className="zoom-fit mobile-fit-chip"
+              title="Fit the page to the screen"
+              onClick={() => changeZoom(1)}
+            >
+              Fit
+            </button>
+          )}
         </>
       )}
       {panel && (
@@ -1719,7 +1663,7 @@ export default function Reader({
               saveLocal(`atlantic:bookmarks:${issue.id}`, next);
             }}
             onNavigate={navigate}
-            onStory={goToStory}
+            onStory={navigate}
             onClose={closeNavigation}
           />
         </div>
@@ -1762,103 +1706,31 @@ export default function Reader({
                 Dark
               </button>
             </fieldset>
-            {articleId ? (
-              <fieldset className="stepper">
-                <legend>Text size</legend>
+            {mode !== 'scroll' && (
+              <fieldset className="segmented">
+                <legend>Page turn</legend>
                 <button
-                  disabled={fontSize <= 18}
-                  aria-label="Smaller article text"
-                  onClick={() => setFontSize((n) => Math.max(18, n - 2))}
+                  aria-pressed={motion === 'curl'}
+                  onClick={() => setMotion('curl')}
                 >
-                  <Minus size={16} />
+                  Curl
                 </button>
-                <span>{fontSize}</span>
                 <button
-                  disabled={fontSize >= 28}
-                  aria-label="Larger article text"
-                  onClick={() => setFontSize((n) => Math.min(28, n + 2))}
+                  aria-pressed={motion === 'simple'}
+                  onClick={() => setMotion('simple')}
                 >
-                  <Plus size={16} />
+                  Instant
                 </button>
               </fieldset>
-            ) : (
-              <>
-                <fieldset className="segmented">
-                  <legend>View</legend>
-                  {(['spread', 'page', 'scroll'] as const).map((v) => (
-                    <button
-                      key={v}
-                      aria-pressed={mode === v}
-                      onClick={() => chooseMode(v)}
-                    >
-                      {v === 'spread'
-                        ? 'Fit'
-                        : v === 'page'
-                          ? 'Page width'
-                          : 'Scroll'}
-                    </button>
-                  ))}
-                </fieldset>
-                <fieldset className="stepper">
-                  <legend>Zoom</legend>
-                  <button
-                    aria-label="Zoom out"
-                    disabled={zoom <= 1}
-                    onClick={() => changeZoom(zoomRef.current - 0.25)}
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <span>{Math.round(zoom * 100)}%</span>
-                  <button
-                    aria-label="Zoom in"
-                    disabled={zoom >= 4}
-                    onClick={() => changeZoom(zoomRef.current + 0.25)}
-                  >
-                    <Plus size={16} />
-                  </button>
-                </fieldset>
-                {mode !== 'scroll' && (
-                  <fieldset className="segmented">
-                    <legend>Page turn</legend>
-                    <button
-                      aria-pressed={motion === 'curl'}
-                      onClick={() => setMotion('curl')}
-                    >
-                      Classic curl
-                    </button>
-                    <button
-                      aria-pressed={motion === 'simple'}
-                      onClick={() => setMotion('simple')}
-                    >
-                      Instant
-                    </button>
-                  </fieldset>
-                )}
-              </>
             )}
             {typeof document !== 'undefined' &&
               document.documentElement.dataset.nativeReader !== 'true' && (
-                <BrowserReadingOptions
-                  installHelp={mobile}
-                  onEnter={() => setAppearance(false)}
-                />
+                <BrowserReadingOptions onEnter={() => setAppearance(false)} />
               )}
-            {mobile && (
-              <label className="settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={mobileControls === 'always'}
-                  onChange={(e) =>
-                    setMobileControls(e.target.checked ? 'always' : 'auto')
-                  }
-                />
-                Always show controls
-              </label>
-            )}
             <p className="settings-help">
               {mobile
-                ? 'Tap the edges to turn, the center for controls. Double-tap or pinch to zoom. When zoomed, swipe from the edge of the page to turn.'
-                : 'Arrows turn pages · C Contents · F Focus · B Save · / Search · Pinch or ⌘-scroll to zoom'}
+                ? 'Tap the edges to turn, the center for controls. Pinch or double-tap to zoom.'
+                : '← → turn · C contents · F focus · B save · / search · ⌘-scroll to zoom'}
             </p>
           </div>
         </div>

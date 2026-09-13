@@ -3,10 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 const readIndex=id=>{const base=`public/reader-assets/${id}/index.json`;return JSON.parse(fs.existsSync(base)?fs.readFileSync(base):gunzipSync(fs.readFileSync(base+'.gz')));};
-import {registerHooks} from 'node:module';
 import {readerIssues} from '../app/reader/catalog.ts';
-registerHooks({resolve(specifier,context,next){if(specifier==='./articles'&&context.parentURL?.endsWith('/story-model.ts'))return next('./articles.ts',context);return next(specifier,context);}});
-const {storyIndex,adjacentStory,physicalPage,articleForStory}=await import('../app/reader/story-model.ts');
+import {storyIndex,adjacentStory,physicalPage,locate,storyUrl,resumeLabel} from '../app/reader/story-model.ts';
 test('Story navigation visits every editorial destination in order, with honest boundaries',()=>{
  for(const issue of readerIssues){
   assert.equal(adjacentStory(issue,1,-1),undefined);
@@ -27,13 +25,41 @@ test('Every story destination is grounded in its actual opening spread, not a gu
   }
  }
 });
-test('Article availability resolves to existing extracted content for the same print story',()=>{
- let count=0;
- for(const issue of readerIssues)for(const entry of issue.contents){const article=articleForStory(issue,entry.printedPage);if(!article)continue;count++;
-  const data=JSON.parse(fs.readFileSync(`public/reader-assets/articles/${article.id}.json`));
-  assert.equal(data.issueId,issue.id);assert.equal(data.pages[0],physicalPage(entry.printedPage,issue));assert.ok(data.sections.every(s=>s.paragraphs.length));
+test('Every page locates to one story or one named front/back location, in reading order',()=>{
+ for(const issue of readerIssues){
+  let previousKind='';
+  for(let page=1;page<=issue.pageCount;page++){
+   const where=locate(issue,page);
+   assert.ok(where.start<=page&&page<=where.end,`${issue.id} p${page} inside its location`);
+   assert.equal(where.pageInLocation,page-where.start+1);
+   assert.equal(where.pages,where.end-where.start+1);
+   if(where.kind==='story'){assert.equal(where.story,issue.contents[where.index]);assert.equal(where.label,where.story.title);assert.equal(where.previous,issue.contents[where.index-1]);assert.equal(where.next,issue.contents[where.index+1]);}
+   else{assert.equal(where.index,-1);assert.ok(['Cover','Front matter','Contents','Back cover'].includes(where.label));}
+   previousKind=where.kind;
+  }
+  assert.equal(previousKind,'back');
+  assert.equal(locate(issue,1).kind,'cover');
+  assert.equal(locate(issue,1).next,issue.contents[0]);
+  assert.equal(locate(issue,issue.contentsPage).kind,'contents');
+  assert.equal(locate(issue,issue.pageCount).previous,issue.contents.at(-1));
+  // Stories tile the editorial pages: each ends where the next begins.
+  for(let i=1;i<issue.contents.length;i++){const opening=physicalPage(issue.contents[i].printedPage,issue);assert.equal(locate(issue,opening-1).end,opening-1);assert.equal(locate(issue,opening).start,opening);}
  }
- assert.equal(count,3);
+});
+test('Story URLs come from cover-story data, by web headline or by cover-story byline; resume speaks in stories',()=>{
+ const issue=readerIssues.find(i=>i.id==='202609');
+ const data={coverStories:[{title:'Why I Quit the Tenure Track',url:'https://example.test/tenure',authors:['Tyler Austin Harper']}]};
+ const cover=issue.contents.find(c=>c.section==='Cover story');
+ assert.equal(storyUrl(issue,cover,data),'https://example.test/tenure');
+ assert.equal(storyUrl(issue,issue.contents[3],data),undefined);
+ assert.equal(storyUrl(issue,{...issue.contents[3],url:'https://example.test/direct'},data),'https://example.test/direct');
+ assert.equal(storyUrl(issue,{title:'why i quit the tenure track!',printedPage:1,section:'Features'},data),'https://example.test/tenure');
+ assert.equal(storyUrl(issue,cover),undefined);
+ const resume=resumeLabel(issue,physicalPage(26,issue)+2);
+ assert.equal(resume.title,'Did al-Qaeda Succeed?');
+ assert.equal(resume.author,'Graeme Wood');
+ assert.equal(resume.pageLabel,'28');
+ assert.deepEqual(resumeLabel(issue,1),{title:'Cover',author:undefined,pageLabel:'Cover'});
 });
 test('Published availability includes complete issues, thumbnails, indexes, and PDF dependencies',()=>{
  const ids=JSON.parse(fs.readFileSync('public/reader-assets/available.json'));

@@ -156,3 +156,66 @@ export function horizontalEdges(
     atRight: left + width >= scrollWidth - tolerance,
   };
 }
+
+/** Bar zoom steps: 1 → 1.25 → 1.5 → 2 → 3 → 4. */
+export const ZOOM_STEPS = [1, 1.25, 1.5, 2, 3, 4];
+/** The next step above or below the current zoom, with tolerance for values
+ * that landed between steps after a pinch. */
+export function stepZoom(current: number, direction: number) {
+  if (direction > 0)
+    return ZOOM_STEPS.find((step) => step > current + 0.01) ?? ZOOM_STEPS.at(-1)!;
+  return (
+    [...ZOOM_STEPS].reverse().find((step) => step < current - 0.01) ??
+    ZOOM_STEPS[0]
+  );
+}
+
+/** Scroll-direction chrome reveal for phone Scroll view: bars hide after 24px
+ * of downward travel and return on any upward travel. Programmatic scrolls
+ * (a story jump from the bar) are held out so a control never hides itself. */
+export function createScrollReveal({
+  hide,
+  reveal,
+  threshold = 24,
+  now = () => performance.now(),
+}: {
+  hide: () => void;
+  reveal: () => void;
+  threshold?: number;
+  now?: () => number;
+}) {
+  let last: number | null = null,
+    down = 0,
+    holdUntil = 0;
+  return {
+    /** Feed the current scroll offset. */
+    scroll(top: number) {
+      if (last === null) {
+        last = top;
+        return;
+      }
+      const delta = top - last;
+      last = top;
+      if (now() < holdUntil) return;
+      if (delta > 0) {
+        down += delta;
+        if (down > threshold) {
+          down = 0;
+          hide();
+        }
+      } else if (delta < -2) {
+        down = 0;
+        reveal();
+      }
+    },
+    /** Ignore scrolling for a moment (a control moved the page). */
+    hold(ms = 600) {
+      holdUntil = now() + ms;
+      down = 0;
+    },
+    reset() {
+      last = null;
+      down = 0;
+    },
+  };
+}

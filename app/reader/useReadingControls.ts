@@ -5,35 +5,46 @@ import {
   useState,
   type RefObject,
 } from 'react';
-import { createReadingTap, tapZone } from './reading-controls';
+import {
+  createReadingTap,
+  createScrollReveal,
+  tapZone,
+} from './reading-controls';
 
 export type ReadingGestureActions = {
   /** Turn a page from an edge tap. */
   turn: (direction: number) => void;
   /** Zoom from a double-tap at a point. */
   doubleTap: (x: number, y: number) => void;
-  /** Whether edge taps may turn pages right now (Fit, not zoomed, print). */
+  /** Whether edge taps may turn pages right now (Pages view at Fit). */
   edgeTurns: () => boolean;
+  /** The reading surface's vertical scroll offset (Scroll view). */
+  scrollTop: () => number;
 };
 
-/** Phone chrome visibility plus the shared tap decision layer. Controls start
- * visible on entry and hide on the first reading gesture; explicit button use
- * never hides them. */
+/** Phone chrome visibility plus the shared tap decision layer.
+ *
+ * Pages: controls start visible on entry and hide on the first reading
+ * gesture; a center tap toggles them; control-driven turns keep them.
+ * Scroll: they hide after 24px of downward scrolling and return on any upward
+ * scroll or a tap. */
 export default function useReadingControls(
   root: RefObject<HTMLDivElement | null>,
   enabled: boolean,
-  always: boolean,
   blocked: boolean,
+  scrolling: boolean,
   actions: ReadingGestureActions,
 ) {
   const [revealed, setRevealed] = useState(true);
   const keyboard = useRef(false);
   const latest = useRef(actions);
   latest.current = actions;
+  const holdRef = useRef<() => void>(() => {});
   const reveal = useCallback(() => setRevealed(true), []);
   const hide = useCallback(() => {
-    if (!always && !blocked && !keyboard.current) setRevealed(false);
-  }, [always, blocked]);
+    if (!blocked && !keyboard.current) setRevealed(false);
+  }, [blocked]);
+  const hold = useCallback(() => holdRef.current(), []);
   useEffect(() => {
     const el = root.current;
     if (!enabled || !el) return;
@@ -43,13 +54,15 @@ export default function useReadingControls(
       turn: (d) => latest.current.turn(d),
       doubleTap: (x, y) => latest.current.doubleTap(x, y),
     });
+    const scrollReveal = createScrollReveal({ hide, reveal });
+    holdRef.current = () => scrollReveal.hold();
     const withinPage = (target: EventTarget | null) =>
       target instanceof Element &&
-      !!target.closest('.page-viewport, .article-scroll') &&
+      !!target.closest('.page-viewport') &&
       !target.closest(
         'button, a, input, select, textarea, [contenteditable], .page-corner',
       );
-    let lastX = 0;
+    let start = { x: 0, y: 0 };
     const down = (e: PointerEvent) => {
       keyboard.current = false;
       if (!withinPage(e.target) || blocked) {
@@ -60,23 +73,31 @@ export default function useReadingControls(
         taps.reading();
         return;
       }
-      lastX = e.clientX;
+      start = { x: e.clientX, y: e.clientY };
       taps.down(e.clientX, e.clientY, e.timeStamp);
     };
-    const move = (e: PointerEvent) => taps.move(e.clientX, e.clientY);
+    const move = (e: PointerEvent) => {
+      // In Scroll a drag is reading, and its direction decides the chrome;
+      // it must not hide the bars the way a pan does in Pages.
+      if (scrolling) {
+        if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8)
+          taps.cancel();
+      } else taps.move(e.clientX, e.clientY);
+    };
     const up = (e: PointerEvent) => {
       const box = el.getBoundingClientRect();
-      const inArticle =
-        e.target instanceof Element && !!e.target.closest('.article-scroll');
       taps.up(
         e.timeStamp,
         !!window.getSelection()?.toString(),
-        tapZone(lastX - box.left, box.width),
-        !inArticle && latest.current.edgeTurns(),
+        tapZone(start.x - box.left, box.width),
+        !scrolling && latest.current.edgeTurns(),
       );
     };
-    const scroll = (e: Event) => {
-      if (withinPage(e.target)) taps.reading();
+    const reading = (e: Event) => {
+      if (!scrolling && withinPage(e.target)) taps.reading();
+    };
+    const scroll = () => {
+      if (scrolling) scrollReveal.scroll(latest.current.scrollTop());
     };
     const key = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
@@ -93,20 +114,24 @@ export default function useReadingControls(
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', cancel);
     el.addEventListener('touchstart', multi, { passive: true });
-    el.addEventListener('touchmove', scroll, { passive: true });
-    el.addEventListener('wheel', scroll, { passive: true });
+    el.addEventListener('touchmove', reading, { passive: true });
+    el.addEventListener('wheel', reading, { passive: true });
+    // Capture on window sees element scrolls and document scrolls alike.
+    window.addEventListener('scroll', scroll, { capture: true, passive: true });
     window.addEventListener('keydown', key);
     return () => {
       taps.cancel();
+      holdRef.current = () => {};
       el.removeEventListener('pointerdown', down);
       el.removeEventListener('pointermove', move);
       el.removeEventListener('pointerup', up);
       el.removeEventListener('pointercancel', cancel);
       el.removeEventListener('touchstart', multi);
-      el.removeEventListener('touchmove', scroll);
-      el.removeEventListener('wheel', scroll);
+      el.removeEventListener('touchmove', reading);
+      el.removeEventListener('wheel', reading);
+      window.removeEventListener('scroll', scroll, { capture: true });
       window.removeEventListener('keydown', key);
     };
-  }, [root, enabled, blocked, hide, reveal]);
-  return { visible: always || blocked || revealed, reveal, hide };
+  }, [root, enabled, blocked, scrolling, hide, reveal]);
+  return { visible: blocked || revealed, reveal, hide, hold };
 }

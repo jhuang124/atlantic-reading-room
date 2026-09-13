@@ -362,7 +362,7 @@
 /* Toast */
 .reader-status {
   position: absolute;
-  bottom: calc(76px + var(--safe-bottom));
+  bottom: 60px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 85;
@@ -405,6 +405,63 @@
   transition: width 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* ---------- Shared controls ---------- */
+/* Segmented control: the View switch in the bars and the popover fieldsets. */
+.segmented {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.segmented > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  margin-left: -1px;
+  border: 1px solid var(--rule-soft);
+  border-radius: 0;
+  font-size: var(--ui-13);
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition:
+    background 120ms,
+    color 120ms;
+}
+.segmented > button:first-of-type {
+  margin-left: 0;
+  border-radius: var(--radius-1) 0 0 var(--radius-1);
+}
+.segmented > button:last-of-type {
+  border-radius: 0 var(--radius-1) var(--radius-1) 0;
+}
+.segmented > button:hover:not([aria-pressed='true']) {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.segmented > button[aria-pressed='true'] {
+  position: relative;
+  z-index: 1;
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+}
+.reader-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-1);
+}
+.reader-icon:hover:not(:disabled),
+.zoom-fit:hover:not([aria-disabled='true']),
+.strip-nav:hover:not(:disabled),
+.strip-story:hover {
+  background: var(--surface-2);
+}
+
 /* ---------- Desktop chrome ---------- */
 .desktop-reader .reader-header {
   position: absolute;
@@ -438,9 +495,7 @@
   font-size: var(--ui-13);
   white-space: nowrap;
 }
-.reader-header-left button:hover,
-.reader-icon:hover,
-.fit-chip:hover {
+.reader-header-left button:hover {
   background: var(--surface-2);
 }
 .reader-brand {
@@ -455,153 +510,166 @@
   gap: 2px;
   min-width: 0;
 }
-.reader-folio {
-  display: flex;
+.reader-header .view-switch {
+  margin: 0 8px;
+}
+.zoom-group {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
   margin-right: 8px;
-  min-width: 0;
-  font-size: var(--ui-13);
-  color: var(--ink-2);
 }
-.folio-date {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.reader-folio .page-jump {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.reader-header .zoom-fit {
+  min-width: 46px;
   height: 32px;
-  padding: 0 8px 0 10px;
-  border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-1);
-  color: var(--ink);
-  transition: border-color 140ms;
-}
-.reader-folio .page-jump:hover,
-.reader-folio .page-jump:focus-within {
-  border-color: var(--ink);
-}
-.folio-page,
-.folio-of {
-  color: var(--ink-2);
-  font-size: var(--ui-12);
-  white-space: nowrap;
-}
-.page-jump input {
-  width: auto;
-  min-width: 22px;
-  padding: 0 2px;
-  border: 0;
-  background: transparent;
-  text-align: center;
-  color: var(--ink);
-  font-size: var(--ui-13);
-  font-variant-numeric: tabular-nums;
-}
-.page-jump input:focus-visible {
-  outline: none;
-}
-.fit-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
-  margin-right: 6px;
-  border: 1px solid var(--rule-soft);
+  padding: 0 6px;
   border-radius: var(--radius-1);
   font-size: var(--ui-12);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
   white-space: nowrap;
 }
-.fit-chip span {
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
+.reader-header .zoom-fit[aria-disabled='false'] {
+  color: var(--ink);
 }
-.fit-chip strong {
-  font-weight: 500;
-}
-.reader-icon {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-1);
-}
-.reader-icon[aria-pressed='true'] {
-  color: var(--accent);
+.reader-header .zoom-fit[aria-disabled='true'] {
+  cursor: default;
 }
 .desktop-reader .reader-workspace {
   inset: 52px 0 0;
 }
+/* The scroll port stops above the story strip so pages never run beneath it;
+   the 72px margins hold the edge arrows. */
 .desktop-reader .page-viewport {
-  padding: 20px 72px 48px;
+  inset: 0 0 44px;
+  padding: 20px 72px;
+}
+.desktop-reader .page-viewport.continuous-viewport {
+  padding: 8px 0;
 }
 
-/* The story caption lives in the desk margin under the spread. */
-.desk-caption {
+/* Story strip: where you are, in stories. Sits in the desk's bottom margin. */
+.story-strip {
   position: absolute;
-  left: 72px;
-  right: 72px;
+  left: 0;
+  right: 0;
   bottom: 0;
-  height: 48px;
+  height: 44px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  z-index: 13;
+  transition:
+    opacity 160ms ease,
+    transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.strip-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-1);
+  font-size: var(--ui-13);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.strip-nav:first-child {
+  padding-left: 4px;
+}
+.strip-nav:last-child {
+  padding-right: 4px;
+}
+.strip-nav.invite {
+  color: var(--accent);
+  font-weight: 500;
+}
+.strip-center {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  pointer-events: none;
-  transition: opacity 160ms ease;
+  min-width: 0;
 }
-.desk-caption > * {
-  pointer-events: auto;
-}
-.caption-story {
+.strip-story {
   display: flex;
   align-items: baseline;
   gap: 10px;
   min-width: 0;
-  max-width: min(60%, 640px);
-  padding: 6px 10px;
+  max-width: 100%;
+  height: 32px;
+  padding: 0 10px;
   border-radius: var(--radius-1);
   text-align: left;
 }
-.caption-story span {
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  white-space: nowrap;
-}
-.caption-story strong {
+.strip-story strong {
   font:
-    400 17px/1.2 AGaramondPro,
+    400 17px/1.1 AGaramondPro,
     Georgia,
     serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.caption-story:hover strong {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.caption-article {
-  padding: 6px 10px;
-  border-radius: var(--radius-1);
+.strip-story small {
   font-size: var(--ui-12);
   color: var(--ink-2);
-  text-decoration: underline;
-  text-underline-offset: 3px;
   white-space: nowrap;
 }
-.caption-article:hover {
-  color: var(--ink);
-  background: var(--surface-2);
+.strip-story.location strong {
+  font:
+    500 var(--ui-13) / 1.2 Graphik,
+    sans-serif;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
 }
-.caption-article[aria-pressed='true'] {
-  color: var(--accent);
+.strip-story:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.strip-online {
+  flex-shrink: 0;
+  padding: 0 8px;
+  font-size: var(--ui-12);
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.strip-online:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.page-folio {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  font-size: var(--ui-13);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.page-folio input {
+  width: auto;
+  min-width: 1.5ch;
+  padding: 2px 1px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  text-align: right;
+  color: var(--ink);
+  font-size: var(--ui-13);
+  font-variant-numeric: tabular-nums;
+  transition: border-color 140ms;
+}
+.page-folio:hover input,
+.page-folio input:focus {
+  border-bottom-color: var(--ink);
+}
+.page-folio input:focus-visible {
+  outline: none;
 }
 
 /* Edge arrows: the guaranteed turn control, outside the scrolling surface. */
@@ -669,13 +737,15 @@
   inset: 0;
 }
 .desktop-reader.quiet .page-viewport {
-  padding: 16px;
+  inset: 0;
+  padding: 16px 32px;
 }
-.desktop-reader.quiet .desk-caption {
+.desktop-reader.quiet .page-viewport.continuous-viewport {
+  padding: 4px 0;
+}
+.desktop-reader.quiet .story-strip {
   opacity: 0;
-  pointer-events: none;
-}
-.desktop-reader.quiet .desk-caption > * {
+  transform: translateY(8px);
   pointer-events: none;
 }
 .focus-access,
@@ -708,125 +778,108 @@
   right: 12px;
 }
 
-@media (max-width: 1100px) {
-  .reader-header-left button span,
-  .folio-date {
+@media (max-width: 900px) {
+  .reader-header-left button span {
     display: none;
   }
   .reader-brand {
     width: 112px;
   }
 }
-@media (max-width: 860px) {
+@media (max-width: 760px) {
   .reader-brand {
     display: none;
   }
-  .desktop-reader .page-viewport {
-    padding: 16px 64px 48px;
-  }
-  .desk-caption {
-    left: 16px;
-    right: 16px;
+  .strip-nav:not(.invite) span {
+    display: none;
   }
 }
 
-/* ---------- Return control ---------- */
-.reading-return {
+/* ---------- End of issue ---------- */
+.end-of-issue-layer {
   position: absolute;
-  bottom: 56px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 14;
-  display: flex;
-  align-items: center;
-  max-width: calc(100% - 32px);
+  inset: 0;
+  z-index: 18;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  pointer-events: none;
+}
+.end-of-issue {
+  width: min(340px, 100%);
+  padding: 26px 26px 18px;
+  pointer-events: auto;
   background: var(--surface);
+  color: var(--ink);
   border: 1px solid var(--rule-soft);
   border-radius: var(--radius-2);
   box-shadow: var(--shadow-float);
-  white-space: nowrap;
+  text-align: center;
+  animation: end-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.reading-return button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 40px;
-  min-height: 40px;
-  padding: 0 12px;
-  font-size: var(--ui-13);
-  border-radius: var(--radius-2);
+@keyframes end-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
-.reading-return button:hover {
-  background: var(--surface-2);
-}
-.reading-return span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.desktop-reader.quiet .reading-return {
-  bottom: 24px;
-}
-
-/* ---------- Article view ---------- */
-.article-scroll {
-  position: absolute;
-  inset: 0;
-  padding: 56px 28px 96px;
-  background: var(--surface);
-  overflow: auto;
-  overscroll-behavior: contain;
-}
-.article-scroll article {
-  max-width: 660px;
-  margin: 0 auto;
-  font-family: AGaramondPro, Georgia, serif;
-  line-height: 1.55;
-  color: var(--ink);
-}
-.article-scroll h1 {
+.end-of-issue h2 {
+  margin: 0 0 20px;
   font:
-    400 clamp(38px, 4vw, 60px) / 1.02 'Atlantic Serif',
+    400 26px/1.1 AGaramondPro,
     Georgia,
     serif;
-  margin: 0 0 20px;
 }
-.article-byline {
-  font:
-    12px Graphik,
-    sans-serif;
-  letter-spacing: 0.04em;
+.end-next {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-1);
+  text-align: left;
+  transition: background 120ms;
+}
+.end-next:hover {
+  background: var(--surface-2);
+}
+.end-next img {
+  width: 54px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  box-shadow: var(--shadow-page);
+}
+.end-next small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-2);
-  margin: 0 0 36px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--rule);
 }
-.article-scroll section p {
-  margin: 0 0 1.1em;
-}
-.article-scroll footer {
-  margin-top: 40px;
-  padding: 24px 0;
-  border-top: 1px solid var(--rule-soft);
-}
-.article-scroll footer button {
+.end-next strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font:
-    var(--ui-13) Graphik,
-    sans-serif;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+    400 19px/1.1 AGaramondPro,
+    Georgia,
+    serif;
 }
-.article-message {
-  max-width: 600px;
-  margin: 80px auto;
-  font-family: Graphik, sans-serif;
-}
-.article-message button {
-  margin-right: 20px;
+.end-shelf {
   min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-1);
+  font-size: var(--ui-13);
+  color: var(--ink-2);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+.end-shelf:hover {
+  color: var(--ink);
+  background: var(--surface-2);
 }
 
 /* ---------- Contents panel ---------- */
@@ -1166,7 +1219,8 @@
   background: var(--surface-2);
 }
 
-/* ---------- Settings ---------- */
+/* ---------- Settings ----------
+   Appearance · Page turn · Full screen · one help line. Nothing else. */
 .settings-layer {
   position: absolute;
   inset: 0;
@@ -1246,24 +1300,12 @@
 .appearance-popover .segmented {
   gap: 0;
 }
-.appearance-popover .segmented button {
+.appearance-popover .segmented > button {
   flex: 1;
-  border-radius: 0;
-  margin-left: -1px;
+  min-height: 34px;
 }
-.appearance-popover .segmented button:first-of-type {
-  margin-left: 0;
-  border-radius: var(--radius-1) 0 0 var(--radius-1);
-}
-.appearance-popover .segmented button:last-of-type {
-  border-radius: 0 var(--radius-1) var(--radius-1) 0;
-}
-.appearance-popover button[aria-pressed='true'] {
-  background: var(--ink);
-  color: var(--surface);
-  border-color: var(--ink);
-  position: relative;
-  z-index: 1;
+.appearance-popover .segmented > button:not([aria-pressed='true']) {
+  color: var(--ink);
 }
 .reader-theme-options button::before {
   content: '';
@@ -1279,43 +1321,6 @@
 .reader-theme-options button:last-of-type::before {
   background: #1b1b1e;
 }
-.appearance-popover .stepper {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  gap: 0;
-}
-.appearance-popover .stepper button {
-  width: 40px;
-  padding: 0;
-  border-radius: 0;
-}
-.appearance-popover .stepper button:first-of-type {
-  border-radius: var(--radius-1) 0 0 var(--radius-1);
-}
-.appearance-popover .stepper button:last-of-type {
-  border-radius: 0 var(--radius-1) var(--radius-1) 0;
-}
-.appearance-popover .stepper span {
-  min-width: 60px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-top: 1px solid var(--rule-soft);
-  border-bottom: 1px solid var(--rule-soft);
-  font-size: var(--ui-13);
-  font-variant-numeric: tabular-nums;
-}
-.browser-reading-options details {
-  width: 100%;
-  margin-top: 6px;
-}
-.browser-reading-options summary {
-  min-height: 32px;
-  align-content: center;
-  cursor: pointer;
-  font-size: var(--ui-12);
-  color: var(--ink-2);
-}
 .browser-reading-options p,
 .browser-reading-options output {
   display: block;
@@ -1323,19 +1328,6 @@
   font-size: var(--ui-12);
   line-height: 1.5;
   color: var(--ink-2);
-}
-.settings-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  font-size: var(--ui-13);
-}
-.reader input[type='checkbox'] {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  accent-color: var(--ink);
 }
 .settings-help {
   margin: 16px 0 0;
@@ -1370,14 +1362,9 @@
 .mobile-reader.mobile-enlarged .page-viewport {
   padding: 0;
 }
-.mobile-reader[data-mobile-controls='always'] .page-viewport {
-  padding: calc(56px + var(--safe-top)) 8px calc(64px + var(--safe-bottom));
-}
-.mobile-reader[data-mobile-controls='always'].mobile-enlarged .page-viewport {
-  padding: 0 0 calc(64px + var(--safe-bottom));
-}
+/* Scroll: the track is padded by the bar heights so nothing ends beneath a bar. */
 .mobile-reader .page-viewport.continuous-viewport {
-  padding: 0;
+  padding: 48px 0 56px;
 }
 .mobile-reader .open-magazine,
 .mobile-reader .continuous-page {
@@ -1395,7 +1382,8 @@
   left: 0;
   right: 0;
   z-index: 25;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   color: var(--ink);
   /* Opaque on purpose: a blurred bar over a canvas-heavy scroll costs frames. */
@@ -1411,7 +1399,7 @@
   top: 0;
   height: calc(48px + var(--safe-top));
   padding: var(--safe-top) 6px 0;
-  justify-content: space-between;
+  gap: 4px;
   border-bottom: 1px solid var(--rule-soft);
   transform: translateY(-6px);
 }
@@ -1419,7 +1407,7 @@
   bottom: 0;
   height: calc(56px + var(--safe-bottom));
   padding: 0 6px var(--safe-bottom);
-  gap: 2px;
+  gap: 6px;
   border-top: 1px solid var(--rule-soft);
   transform: translateY(6px);
 }
@@ -1445,23 +1433,61 @@
 .mobile-reader-bar button:active:not(:disabled) {
   background: var(--surface-2);
 }
-.mobile-issue {
+.mobile-top-bar .strip-story {
+  justify-self: center;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  max-width: 100%;
+  height: 44px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+}
+.mobile-top-bar .strip-story strong {
+  font:
+    400 16px/1.1 AGaramondPro,
+    Georgia,
+    serif;
+}
+.mobile-top-bar .strip-story.location strong {
+  font:
+    500 var(--ui-13) / 1.2 Graphik,
+    sans-serif;
+  letter-spacing: 0.02em;
   color: var(--ink-2);
+}
+.mobile-top-bar .strip-story small {
+  display: none;
+}
+.mobile-contents span {
+  display: none;
+}
+@media (min-width: 420px) {
+  .mobile-contents span {
+    display: inline;
+  }
+}
+.bar-pages,
+.bar-tools {
+  display: flex;
+  align-items: center;
+}
+.mobile-reader-bar .view-switch {
+  justify-self: center;
+}
+.mobile-reader-bar .segmented > button {
+  min-width: 0;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: var(--ui-13);
 }
 .mobile-page-jump {
   min-width: 0;
 }
 .mobile-page-jump input {
   width: auto;
-  min-width: 44px;
-  max-width: 108px;
+  min-width: 40px;
+  max-width: 72px;
   height: 44px;
   padding: 0 4px;
   border: 0;
@@ -1476,44 +1502,24 @@
   background: var(--surface-2);
   outline: none;
 }
-.bar-spacer {
-  flex: 1;
-}
-.bar-article {
-  height: 32px !important;
-  min-width: 0 !important;
-  margin-right: 4px;
-  padding: 0 10px !important;
-  border: 1px solid var(--rule-soft);
-  font-size: var(--ui-13) !important;
-}
-.bar-article[aria-pressed='true'] {
-  background: var(--ink);
-  color: var(--surface);
-  border-color: var(--ink);
-}
-.mobile-reader .reading-return {
+/* Fit floats above the bar while zoomed in Pages: the way back without chrome. */
+.mobile-fit-chip {
+  position: absolute;
+  right: 12px;
   bottom: calc(68px + var(--safe-bottom));
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 140ms ease,
-    visibility 140ms;
-}
-.mobile-reader.mobile-controls-visible .reading-return {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+  z-index: 24;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-2);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-float);
+  font-size: var(--ui-13);
+  animation: toast-in 160ms ease;
 }
 .mobile-reader .reader-status {
   bottom: calc(72px + var(--safe-bottom));
-}
-.mobile-reader .article-scroll {
-  padding: calc(64px + var(--safe-top)) 22px calc(96px + var(--safe-bottom));
-}
-.mobile-reader .article-scroll h1 {
-  font-size: clamp(34px, 9vw, 44px);
 }
 
 /* Sheets */
@@ -1593,21 +1599,12 @@
   min-height: 42px;
   font-size: var(--ui-15);
 }
-.mobile-reader .appearance-popover .stepper span {
-  height: 42px;
-  font-size: var(--ui-15);
-}
-.mobile-reader .settings-toggle,
-.mobile-reader .browser-reading-options summary {
-  font-size: var(--ui-15);
-}
 .mobile-reader .settings-help,
 .mobile-reader .browser-reading-options p {
   font-size: var(--ui-13);
 }
-.mobile-reader .reader input[type='checkbox'] {
-  width: 18px;
-  height: 18px;
+.mobile-reader .end-of-issue {
+  width: min(320px, 100%);
 }
 @keyframes sheet-enter {
   from {
@@ -1616,9 +1613,8 @@
   }
 }
 
-/* Phone Scroll and Article let the browser own the scroll so its toolbars
-   can collapse. Fixed-reader modes and the Expo WebView keep their element
-   scrollport. */
+/* Phone Scroll lets the browser own the scroll so its toolbars can collapse.
+   Pages and the Expo WebView keep their element scrollport. */
 html:has(.document-reader),
 body:has(.document-reader) {
   overflow: visible !important;
@@ -1653,8 +1649,7 @@ body:has(.document-reader) {
   min-height: 100dvh;
 }
 .document-reader .reading-desk,
-.document-reader .page-viewport,
-.document-reader .article-scroll {
+.document-reader .page-viewport {
   position: relative;
   inset: auto;
   height: auto;
@@ -1677,14 +1672,17 @@ body:has(.document-reader) {
   bottom: auto;
 }
 .document-reader .reader-navigation-layer,
-.document-reader .settings-layer {
+.document-reader .settings-layer,
+.document-reader .end-of-issue-layer {
   display: block;
   position: fixed;
   inset: var(--reader-viewport-top, 0px) 0 auto;
   height: var(--reader-viewport-height, 100dvh);
+}
+.document-reader .reader-navigation-layer,
+.document-reader .settings-layer {
   z-index: 60;
 }
-.document-reader .reading-return,
 .document-reader .reader-status {
   position: fixed;
   top: calc(
