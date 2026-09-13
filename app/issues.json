@@ -24,7 +24,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1148256,
     "issueTheme": null,
-    "cover": "covers/202609.png"
+    "cover": "covers/202609.jpg"
   },
   {
     "id": "202608",
@@ -198,7 +198,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1269276,
     "issueTheme": null,
-    "cover": "covers/202602.png"
+    "cover": "covers/202602.jpg"
   },
   {
     "id": "202601",
@@ -283,7 +283,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1116090,
     "issueTheme": null,
-    "cover": "covers/202511.png"
+    "cover": "covers/202511.jpg"
   },
   {
     "id": "202510",
@@ -648,7 +648,7 @@
     "imageFormat": "PNG",
     "imageBytes": 1223576,
     "issueTheme": null,
-    "cover": "covers/202407.png"
+    "cover": "covers/202407.jpg"
   },
   {
     "id": "202406",
@@ -727,7 +727,7 @@
     "imageFormat": "PNG",
     "imageBytes": 821423,
     "issueTheme": null,
-    "cover": "covers/202404.png"
+    "cover": "covers/202404.jpg"
   },
   {
     "id": "202403",
@@ -754,7 +754,7 @@
     "imageFormat": "PNG",
     "imageBytes": 944341,
     "issueTheme": null,
-    "cover": "covers/202403.png"
+    "cover": "covers/202403.jpg"
   },
   {
     "id": "202401",
@@ -772,7 +772,7 @@
     "imageFormat": "PNG",
     "imageBytes": 295180,
     "issueTheme": "If Trump Wins",
-    "cover": "covers/202401.png"
+    "cover": "covers/202401.jpg"
   },
   {
     "id": "202312",
@@ -790,7 +790,7 @@
     "imageFormat": "PNG",
     "imageBytes": 168948,
     "issueTheme": "On Reconstruction",
-    "cover": "covers/202312.png"
+    "cover": "covers/202312.jpg"
   },
   {
     "id": "202311",
@@ -1137,7 +1137,7 @@
     "imageFormat": "PNG",
     "imageBytes": 182257,
     "issueTheme": null,
-    "cover": "covers/202209.png"
+    "cover": "covers/202209.jpg"
   },
   {
     "id": "202207",
@@ -1336,7 +1336,7 @@
     "imageFormat": "PNG",
     "imageBytes": 155849,
     "issueTheme": null,
-    "cover": "covers/202112.png"
+    "cover": "covers/202112.jpg"
   },
   {
     "id": "202111",
