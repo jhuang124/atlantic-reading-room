@@ -31,7 +31,7 @@ test('Old page-only places migrate; invalid fields cannot corrupt a reading sess
   assert.equal(bad.left, 0);
   assert.equal(bad.top, 0);
 });
-test('A complete print and article place round-trips with 26px text preference', () => {
+test('Places round-trip; retired Page width and Column views migrate to Scroll and Spread', () => {
   const data = new Map();
   globalThis.localStorage = {
     getItem: (k) => data.get(k) || null,
@@ -40,17 +40,21 @@ test('A complete print and article place round-trips with 26px text preference',
   const place = {
     page: 14,
     zoom: 1.7,
-    mode: 'page',
+    mode: 'spread',
     left: 1516,
     top: 630,
     column: 1,
     updated: 123,
-    article: 'blue-book',
-    articleTop: 740,
   };
   storePlace('202609', place);
   assert.deepEqual(loadPlace('202609', 112), place);
-  // A place saved in the retired Column view lands at Fit with a clean frame.
+  // Page width was page-width reading: it becomes Scroll and keeps its page.
+  storePlace('202609', { ...place, mode: 'page', pageOffset: 0.3 });
+  const scrolled = loadPlace('202609', 112);
+  assert.equal(scrolled.mode, 'scroll');
+  assert.equal(scrolled.page, 14);
+  assert.equal(scrolled.pageOffset, 0.3);
+  // Column lands at Spread, Fit, with a clean frame.
   storePlace('202609', { ...place, mode: 'column' });
   const migrated = loadPlace('202609', 112);
   assert.equal(migrated.mode, 'spread');
@@ -58,23 +62,36 @@ test('A complete print and article place round-trips with 26px text preference',
   assert.equal(migrated.left, 0);
   assert.equal(migrated.top, 0);
   assert.equal(migrated.page, 14);
-  assert.equal(migrated.article, 'blue-book');
-  storePlace('202609', place);
+  assert.equal('article' in migrated, false);
+  // Article places lose their article field; the print page remains.
+  storePlace('202609', { ...place, article: 'blue-book', articleTop: 740 });
+  assert.deepEqual(loadPlace('202609', 112), place);
+  // The view is a preference per device class: phones default to Scroll.
+  assert.deepEqual(loadPreferences(), {
+    warm: true,
+    motion: 'curl',
+    pinned: true,
+    viewDesktop: 'spread',
+    viewPhone: 'scroll',
+  });
   data.set(
     'atlantic:reader-preferences',
     JSON.stringify({
       fontSize: 26,
+      mobileControls: 'always',
       motion: 'simple',
       pinned: false,
       warm: false,
+      viewDesktop: 'scroll',
+      viewPhone: 'page',
     }),
   );
   assert.deepEqual(loadPreferences(), {
-    mobileControls: 'auto',
-    fontSize: 26,
+    warm: false,
     motion: 'simple',
     pinned: false,
-    warm: false,
+    viewDesktop: 'scroll',
+    viewPhone: 'scroll',
   });
   delete globalThis.localStorage;
 });
@@ -97,38 +114,6 @@ test('Actual print page 12 has four usable columns; sparse artwork stays one reg
   }
   assert.equal(pageColumns([]).length, 1);
 });
-test('Selected article editions preserve source pages and remove opener extraction artifacts', () => {
-  for (const id of [
-    'blue-book',
-    'look-closer-september',
-    'look-closer-august',
-  ]) {
-    const a = JSON.parse(
-      fs.readFileSync(
-        new URL(`../public/reader-assets/articles/${id}.json`, import.meta.url),
-      ),
-    );
-    assert.ok(
-      a.sections.every(
-        (s) =>
-          a.pages.includes(s.page) && s.paragraphs.every((p) => p.length > 30),
-      ),
-    );
-    if (id === 'blue-book') {
-      assert.ok(
-        a.sections[0].paragraphs[0].includes('Abstraction in Modern Art'),
-      );
-      assert.ok(a.sections[0].paragraphs[0].includes('Neurobiology'));
-      assert.ok(
-        a.sections
-          .at(-1)
-          .paragraphs.at(-1)
-          .endsWith('All they have to do is write it.'),
-      );
-    }
-  }
-});
-
 test('An illustrated opener enlarges actual prose without treating its headline as a column', () => {
   const pages = JSON.parse(
     gunzipSync(

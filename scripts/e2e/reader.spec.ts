@@ -115,7 +115,7 @@ async function center(locator: ReturnType<Page['locator']>) {
 // contract; enable by changing `describe.skip` to `describe` after the
 // `v4/reader` branch merges.
 // ---------------------------------------------------------------------------
-test.describe.skip('V4 contract', () => {
+test.describe('V4 contract', () => {
   test.describe('desktop', () => {
     test.skip(({ isMobile }) => !!isMobile);
 
@@ -152,7 +152,9 @@ test.describe.skip('V4 contract', () => {
     test('Go to page and story stepping', async ({ page }) => {
       await openReader(page);
       const folio = page.locator('input[aria-label="Go to page"]');
-      await folio.fill('10');
+      // Printed 8 is the first page of a story, so Next then Previous lands
+      // back on it; from mid-story, Previous goes to the story's start.
+      await folio.fill('8');
       await folio.press('Enter');
       await expect.poll(() => hash(page)).toMatch(/\/p\d+$/);
       const before = await hash(page);

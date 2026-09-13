@@ -757,9 +757,8 @@ export default function Home() {
             arriving={opening}
             onReady={readerReady}
             onPage={readerPage}
-            /* V4 merge: pass nextIssue and onOpenIssue once the reader branch lands:
-               nextIssue={nextIssue}
-               onOpenIssue={onOpenIssue} */
+            nextIssue={nextIssue}
+            onOpenIssue={onOpenIssue}
           />
         </Suspense>
       )}

@@ -31,6 +31,7 @@ export default function ContinuousPages({
   documentScroll = false,
   query,
   onPosition,
+  onEnd,
   onPaint,
   onZoom,
 }: {
@@ -45,6 +46,8 @@ export default function ContinuousPages({
   documentScroll?: boolean;
   query: string;
   onPosition: (page: number, offset: number) => void;
+  /** Whether the last page's foot is in view, and which way the reader moved. */
+  onEnd?: (atEnd: boolean, direction: number) => void;
   onPaint: () => void;
   onZoom: (x: number, y: number) => void;
 }) {
@@ -58,27 +61,37 @@ export default function ContinuousPages({
       ),
     [pdf.numPages, width, index, mobile],
   );
+  const surface = useRef<HTMLDivElement>(null);
   const position = useRef({ page: initialPage, offset: 0 });
+  const lastTop = useRef<number | null>(null);
   const lastTarget = useRef<ScrollTarget | null>(null);
   const [range, setRange] = useState({
     first: initialPage - 1,
     last: initialPage - 1,
   });
+  // The scroll port pads the track (bar heights on phones, the desk margin on
+  // desktops); layout offsets are relative to the track itself.
+  const padding = () => surface.current?.offsetTop ?? 0;
   const measure = useCallback(() => {
     const el = viewport.current;
     if (!el) return;
     const view = scrollPort(el, documentScroll).read();
-    const row = layout.pages[pageAtOffset(layout.pages, view.top + 12)];
+    const top = view.top - padding();
+    const row = layout.pages[pageAtOffset(layout.pages, top + 12)];
     position.current = {
       page: row.page,
-      offset: Math.max(0, Math.min(1, (view.top - row.top) / row.height)),
+      offset: Math.max(0, Math.min(1, (top - row.top) / row.height)),
     };
     onPosition(position.current.page, position.current.offset);
-    const next = scrollWindow(layout.pages, view.top, view.height);
+    const direction =
+      lastTop.current === null ? 0 : Math.sign(view.top - lastTop.current);
+    lastTop.current = view.top;
+    onEnd?.(top + view.height >= layout.height - 4, direction);
+    const next = scrollWindow(layout.pages, top, view.height);
     setRange((old) =>
       old.first === next.first && old.last === next.last ? old : next,
     );
-  }, [layout, viewport, onPosition, documentScroll]);
+  }, [layout, viewport, onPosition, onEnd, documentScroll]);
   useLayoutEffect(() => {
     const el = viewport.current;
     if (!el) return;
@@ -86,11 +99,9 @@ export default function ContinuousPages({
       target && target !== lastTarget.current ? target : position.current;
     lastTarget.current = target;
     scrollPort(el, documentScroll).to({
-      top: scrollDestination(
-        layout.pages,
-        destination.page,
-        destination.offset,
-      ),
+      top:
+        scrollDestination(layout.pages, destination.page, destination.offset) +
+        padding(),
     });
     measure();
   }, [layout, target, viewport, measure, documentScroll]);
@@ -119,8 +130,9 @@ export default function ContinuousPages({
   }, [viewport, measure, documentScroll]);
   return (
     <div
+      ref={surface}
       className="continuous-pages"
-      style={{ width, height: layout.height + (mobile ? 76 : 0) }}
+      style={{ width, height: layout.height }}
     >
       {layout.pages.slice(range.first, range.last + 1).map((row) => (
         <div

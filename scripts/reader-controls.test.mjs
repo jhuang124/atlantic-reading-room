@@ -2,11 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createReadingTap,
+  createScrollReveal,
   tapZone,
   swipeTurn,
   horizontalEdges,
+  stepZoom,
+  ZOOM_STEPS,
 } from '../app/reader/reading-controls.ts';
-import { loadPreferences } from '../app/reader/place.ts';
 function setup() {
   let toggles = 0,
     hides = 0,
@@ -134,12 +136,42 @@ test('Horizontal edges tolerate a few pixels of momentum settle', () => {
   assert.deepEqual(horizontalEdges(386, 390, 780), { atLeft: false, atRight: true });
   assert.deepEqual(horizontalEdges(200, 390, 780), { atLeft: false, atRight: false });
 });
-test('Legacy default pinned controls do not accidentally opt everyone out of immersive mobile reading', () => {
-  globalThis.localStorage = { getItem: () => JSON.stringify({ pinned: true }) };
-  assert.equal(loadPreferences().mobileControls, 'auto');
-  globalThis.localStorage = {
-    getItem: () => JSON.stringify({ mobileControls: 'always' }),
-  };
-  assert.equal(loadPreferences().mobileControls, 'always');
-  delete globalThis.localStorage;
+test('Bar zoom walks 1 → 1.25 → 1.5 → 2 → 3 → 4 and snaps values a pinch left between steps', () => {
+  assert.deepEqual(ZOOM_STEPS, [1, 1.25, 1.5, 2, 3, 4]);
+  let zoom = 1;
+  const walk = [];
+  for (let i = 0; i < 6; i++) walk.push((zoom = stepZoom(zoom, 1)));
+  assert.deepEqual(walk, [1.25, 1.5, 2, 3, 4, 4]);
+  assert.equal(stepZoom(4, -1), 3);
+  assert.equal(stepZoom(1, -1), 1);
+  assert.equal(stepZoom(1.7, 1), 2);
+  assert.equal(stepZoom(1.7, -1), 1.5);
+  assert.equal(stepZoom(1.2500001, 1), 1.5, 'float noise does not stall a step');
+});
+test('In Scroll the bars hide after 24px downward, return on any upward scroll, and ignore a control-driven jump', () => {
+  let hides = 0,
+    reveals = 0,
+    clock = 0;
+  const reveal = createScrollReveal({
+    hide: () => hides++,
+    reveal: () => reveals++,
+    now: () => clock,
+  });
+  reveal.scroll(0);
+  reveal.scroll(10);
+  reveal.scroll(20);
+  assert.equal(hides, 0, 'a nudge does not hide');
+  reveal.scroll(30);
+  assert.equal(hides, 1, 'accumulated downward travel past 24px hides');
+  reveal.scroll(40);
+  assert.equal(hides, 1, 'and hides once');
+  reveal.scroll(37);
+  assert.equal(reveals, 1, 'any upward scroll brings the bars back');
+  reveal.hold(600);
+  reveal.scroll(400);
+  assert.equal(hides, 1, 'a story jump from the bar is not a reading gesture');
+  clock = 700;
+  reveal.scroll(401);
+  reveal.scroll(430);
+  assert.equal(hides, 2);
 });
