@@ -55,7 +55,7 @@ import {
 } from './story-model';
 import Leaf from './Leaf';
 import ContinuousPages, { type ScrollTarget } from './ContinuousPages';
-import { loadPDF, type PDFModule } from './pdf';
+import { loadPDF, rangeTransport, type PDFModule } from './pdf';
 import { pageRasters, warmTurnPages } from './page-raster';
 import './reader-v3.css';
 import useReadingControls, {
@@ -851,6 +851,7 @@ export default function Reader({
           ).href,
           wasmUrl: new URL('reader-assets/pdfjs/wasm/', window.document.baseURI)
             .href,
+          ...rangeTransport,
         });
         task.onProgress = ({
           loaded,

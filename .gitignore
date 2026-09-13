@@ -42,3 +42,7 @@ next-env.d.ts
 /dist-pages/
 
 __pycache__/
+
+# playwright
+/playwright-report/
+/test-results/
