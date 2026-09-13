@@ -1,5 +1,7 @@
 import { clampPage, readSaved, saveLocal } from './model.ts';
 export type ReadingMode = 'spread' | 'page' | 'column' | 'scroll';
+/** The two V4 views. Spread is called Pages on phones; the value is shared. */
+export type ReadingView = 'spread' | 'scroll';
 export type ReadingPlace = {
   page: number;
   zoom: number;
@@ -18,6 +20,9 @@ export type ReaderPreferences = {
   pinned: boolean;
   mobileControls: 'auto' | 'always';
   fontSize: number;
+  /** The chosen view is a preference per device class, not per issue. */
+  viewDesktop: ReadingView;
+  viewPhone: ReadingView;
 };
 export const defaultPreferences: ReaderPreferences = {
   warm: true,
@@ -25,6 +30,8 @@ export const defaultPreferences: ReaderPreferences = {
   pinned: true,
   mobileControls: 'auto',
   fontSize: 20,
+  viewDesktop: 'spread',
+  viewPhone: 'scroll',
 };
 export function normalizePlace(
   value: unknown,
@@ -33,16 +40,20 @@ export function normalizePlace(
   if (!value || typeof value !== 'object') return null;
   const p = value as Partial<ReadingPlace>;
   if (!Number.isInteger(p.page)) return null;
-  // Column view was retired in V3. Its magnification and offsets only made
-  // sense against a detected column, so a saved Column place lands at Fit.
-  const retired = p.mode === 'column';
+  // Column view was retired in V3 and Page width in V4. Their magnification
+  // and offsets only made sense against the old layout, so a place saved in
+  // either lands at Fit: Column in Spread, Page width in Scroll (the
+  // page-width reading view that replaced it).
+  const retired = p.mode === 'column' || p.mode === 'page';
+  const mode: ReadingMode =
+    p.mode === 'page' || p.mode === 'scroll' ? 'scroll' : 'spread';
   return {
     page: clampPage(p.page!, count),
     zoom:
       !retired && Number.isFinite(p.zoom)
         ? Math.max(1, Math.min(4, p.zoom!))
         : 1,
-    mode: p.mode === 'page' || p.mode === 'scroll' ? p.mode : 'spread',
+    mode,
     left: !retired && Number.isFinite(p.left) ? Math.max(0, p.left!) : 0,
     top: !retired && Number.isFinite(p.top) ? Math.max(0, p.top!) : 0,
     column: Number.isInteger(p.column)
@@ -51,7 +62,7 @@ export function normalizePlace(
     updated: p.updated || 0,
     article: typeof p.article === 'string' ? p.article : undefined,
     articleTop: Number.isFinite(p.articleTop) ? p.articleTop : 0,
-    ...(p.mode === 'scroll'
+    ...(mode === 'scroll'
       ? {
           pageOffset: Number.isFinite(p.pageOffset)
             ? Math.max(0, Math.min(1, p.pageOffset!))
@@ -66,6 +77,8 @@ export const storePlace = (id: string, place: ReadingPlace) => {
   saveLocal(`atlantic:place:${id}`, place);
   saveLocal('atlantic:last-issue', id);
 };
+const view = (value: unknown, fallback: ReadingView): ReadingView =>
+  value === 'spread' || value === 'scroll' ? value : fallback;
 export function loadPreferences(): ReaderPreferences {
   const p = readSaved(
     'atlantic:reader-preferences',
@@ -79,5 +92,7 @@ export function loadPreferences(): ReaderPreferences {
     fontSize: [18, 20, 22, 24, 26, 28].includes(p.fontSize || 0)
       ? p.fontSize!
       : 20,
+    viewDesktop: view(p.viewDesktop, defaultPreferences.viewDesktop),
+    viewPhone: view(p.viewPhone, defaultPreferences.viewPhone),
   };
 }

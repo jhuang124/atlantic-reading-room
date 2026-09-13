@@ -40,7 +40,7 @@ test('A complete print and article place round-trips with 26px text preference',
   const place = {
     page: 14,
     zoom: 1.7,
-    mode: 'page',
+    mode: 'spread',
     left: 1516,
     top: 630,
     column: 1,
@@ -75,6 +75,8 @@ test('A complete print and article place round-trips with 26px text preference',
     motion: 'simple',
     pinned: false,
     warm: false,
+    viewDesktop: 'spread',
+    viewPhone: 'scroll',
   });
   delete globalThis.localStorage;
 });
