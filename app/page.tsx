@@ -28,6 +28,7 @@ import { loadPlace, type ReadingPlace } from './reader/place';
 import { pageLabel } from './reader/model';
 import { locationTitle } from './reader/story-model';
 import { parseRoute, routeHash, type Route } from './routes';
+import About from './About';
 const loadReader = () => import('./reader/Reader');
 const Reader = lazy(loadReader);
 function transition(update: () => void) {
@@ -64,6 +65,10 @@ const title = (issue: Issue) =>
     issue.issueTheme ||
     `The ${issue.issue} issue`
   ).replace(/<[^>]*>/g, '');
+// The shelf opens on the newest readable issue; `available` is newest first.
+const heroId = available[0];
+const heroIssue = issues.find((i) => i.id === heroId);
+const heroEntry = readerIssues.find((i) => i.id === heroId);
 export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   useLayoutEffect(() => {
@@ -96,6 +101,7 @@ export default function Home() {
   const [selected, setSelected] = useState<string | null>(null);
   const [transitionCover, setTransitionCover] = useState<string | null>(null);
   const [readingId, setReadingId] = useState<string | null>(null);
+  const [about, setAbout] = useState(false);
   const [places, setPlaces] = useState<Record<string, ReadingPlace>>({});
   const [readerEntry, setReaderEntry] = useState<{
     contents: boolean;
@@ -104,6 +110,8 @@ export default function Home() {
   const [opening, setOpening] = useState(false);
   const [full, setFull] = useState(false);
   const library = useRef<HTMLDivElement>(null);
+  // Which cover the splash transition grows from and returns to.
+  const heroTransition = useRef(false);
   const previousFocus = useRef<HTMLElement | null>(null);
   const modalClose = useRef<HTMLButtonElement>(null);
   const issue = issues.find((i) => i.id === selected);
@@ -143,10 +151,10 @@ export default function Home() {
       JSON.stringify({
         type: 'reader-state',
         theme,
-        canGoBack: !!(selected || readingId),
+        canGoBack: !!(selected || readingId || about),
       }),
     );
-  }, [theme, selected, readingId]);
+  }, [theme, selected, readingId, about]);
   useEffect(() => {
     const surface = document.querySelector('.archive-app');
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -160,8 +168,9 @@ export default function Home() {
   }, [theme, readingId]);
   // One owner controls background interactivity for both details and the reader.
   useLayoutEffect(() => {
-    if (library.current) library.current.inert = !!(selected || readingId);
-  }, [selected, readingId]);
+    if (library.current)
+      library.current.inert = !!(selected || readingId || about);
+  }, [selected, readingId, about]);
   useEffect(() => {
     const next: Record<string, ReadingPlace> = {};
     readerIssues.forEach((i) => {
@@ -173,8 +182,12 @@ export default function Home() {
   useEffect(() => {
     const base = 'The Print Edition — The Atlantic';
     const current = readingIssue?.issue || issue?.issue;
-    document.title = current ? `${current} · ${base}` : base;
-  }, [issue, readingIssue]);
+    document.title = current
+      ? `${current} · ${base}`
+      : about
+        ? `About · ${base}`
+        : base;
+  }, [issue, readingIssue, about]);
   const lastRead = useMemo(() => {
     let best: { id: string; place: ReadingPlace } | null = null;
     for (const [id, place] of Object.entries(places))
@@ -209,6 +222,7 @@ export default function Home() {
       transition(() => {
         setSelected(null);
         setOpening(false);
+        setAbout(false);
         setReadingId(route.id);
       });
     } else if (
@@ -219,13 +233,22 @@ export default function Home() {
       transition(() => {
         setReadingId(null);
         setOpening(false);
+        setAbout(false);
         setSelected(route.id);
+      });
+    } else if (route.surface === 'about') {
+      transition(() => {
+        setSelected(null);
+        setOpening(false);
+        setReadingId(null);
+        setAbout(true);
       });
     } else {
       transition(() => {
         setSelected(null);
         setOpening(false);
         setReadingId(null);
+        setAbout(false);
       });
       requestAnimationFrame(() =>
         previousFocus.current?.focus({ preventScroll: true }),
@@ -240,8 +263,9 @@ export default function Home() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, [applyRoute]);
-  const openIssue = (id: string) => {
+  const openIssue = (id: string, fromHero = false) => {
     previousFocus.current = document.activeElement as HTMLElement;
+    heroTransition.current = fromHero;
     flushSync(() => setTransitionCover(id));
     transition(() => setSelected(id));
     setHash({ surface: 'issue', id }, true);
@@ -279,6 +303,32 @@ export default function Home() {
       setOpening(false);
     });
   }, []);
+  // V4: the reader's End-of-issue card offers the next older issue on the
+  // shelf. Opening it swaps the issue in place at page 1 and replaces the
+  // hash, so Back still returns to the shelf rather than the finished issue.
+  const nextIssue = useMemo(() => {
+    if (!readingId) return undefined;
+    const nextId = available[available.indexOf(readingId) + 1];
+    const next = nextId ? issues.find((i) => i.id === nextId) : undefined;
+    return next
+      ? { id: next.id, issue: next.issue, cover: next.cover }
+      : undefined;
+  }, [readingId]);
+  const onOpenIssue = useCallback((id: string) => {
+    if (!available.includes(id)) return;
+    setReaderEntry({ contents: false, page: 1 });
+    setReadingId(id);
+    history.replaceState(
+      history.state,
+      '',
+      routeHash({ surface: 'reader', id }),
+    );
+  }, []);
+  const openAbout = () => {
+    previousFocus.current = document.activeElement as HTMLElement;
+    transition(() => setAbout(true));
+    setHash({ surface: 'about' }, true);
+  };
   const closeOverlay = useCallback(() => {
     if (selected) flushSync(() => setTransitionCover(selected));
     const depth = routeDepth();
@@ -325,13 +375,13 @@ export default function Home() {
     return () => window.removeEventListener('keydown', handler);
   }, [issue, opening, closeOverlay]);
   useEffect(() => {
-    if (!selected && !readingId) return;
+    if (!selected && !readingId && !about) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [selected, readingId]);
+  }, [selected, readingId, about]);
   useEffect(() => {
     const update = () => setFull(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', update);
@@ -378,10 +428,17 @@ export default function Home() {
     );
     return /^\d+$/.test(label) ? `Page ${label}` : label;
   };
-  return (
-    <main className="archive-app" data-theme={theme}>
-      <div className="library-shell" ref={library}>
-        <header className="archive-masthead">
+  // The story a saved place sits in, or nothing when the place is the cover.
+  const placeStory = (id: string) => {
+    const entry = readerIssues.find((i) => i.id === id),
+      place = places[id];
+    return entry && place && place.page > 1
+      ? locationTitle(entry, place.page)
+      : undefined;
+  };
+  const heroStory = heroId ? placeStory(heroId) : undefined;
+  const masthead = (
+    <header className="archive-masthead">
           <a
             className="atlantic-wordmark"
             href="https://www.theatlantic.com/"
@@ -407,8 +464,81 @@ export default function Home() {
             </button>
           </div>
         </header>
+  );
+  return (
+    <main className="archive-app" data-theme={theme}>
+      <div className="library-shell" ref={library}>
+        {masthead}
         <div className="archive-content">
           <h1 className="archive-visually-hidden">Magazine archive</h1>
+          {heroIssue && heroEntry && (
+            <section
+              className="archive-hero"
+              aria-labelledby="archive-hero-title"
+            >
+              <button
+                className="archive-hero-cover"
+                aria-label={`View ${heroIssue.issue}`}
+                onClick={() => openIssue(heroIssue.id, true)}
+              >
+                <img
+                  style={{
+                    viewTransitionName:
+                      heroTransition.current &&
+                      selected !== heroIssue.id &&
+                      transitionCover === heroIssue.id
+                        ? `cover-${heroIssue.id}`
+                        : 'none',
+                  }}
+                  src={heroIssue.cover}
+                  alt={`The Atlantic, ${heroIssue.issue}`}
+                  width="300"
+                  height="400"
+                />
+              </button>
+              <div className="archive-hero-copy">
+                <p className="archive-hero-kicker">
+                  Current issue · {heroIssue.issue}
+                </p>
+                <h2 id="archive-hero-title">{title(heroIssue)}</h2>
+                {heroIssue.coverStories[0]?.authors.length > 0 && (
+                  <p className="archive-hero-byline">
+                    By {heroIssue.coverStories[0].authors.join(' and ')}
+                  </p>
+                )}
+                {heroIssue.coverStories[0]?.dek && (
+                  <p className="archive-hero-dek">
+                    {heroIssue.coverStories[0].dek.replace(/<[^>]*>/g, '')}
+                  </p>
+                )}
+                <div className="archive-hero-actions">
+                  <button
+                    className="archive-hero-primary"
+                    onClick={() => startReading(heroIssue.id)}
+                  >
+                    <span>
+                      {heroStory ? `Continue · ${heroStory}` : 'Read the issue'}
+                    </span>
+                    <ArrowRight size={16} />
+                  </button>
+                  <button
+                    className="archive-hero-secondary"
+                    onClick={() => startReading(heroIssue.id, true)}
+                  >
+                    Contents
+                  </button>
+                  <a
+                    className="archive-hero-secondary"
+                    href={heroIssue.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    On TheAtlantic.com <ArrowUpRight size={14} />
+                  </a>
+                </div>
+              </div>
+            </section>
+          )}
           <section
             className="archive-browser"
             aria-label="Atlantic cover index"
@@ -468,7 +598,7 @@ export default function Home() {
                 {filtered.length} issues
               </output>
             </div>
-            {lastRead && lastReadIssue && !query && (
+            {lastRead && lastReadIssue && !query && lastRead.id !== heroId && (
               <button
                 className="archive-continue"
                 onClick={() => startReading(lastRead.id)}
@@ -523,7 +653,9 @@ export default function Home() {
                       <img
                         style={{
                           viewTransitionName:
-                            selected !== i.id && transitionCover === i.id
+                            selected !== i.id &&
+                            transitionCover === i.id &&
+                            !(heroTransition.current && i.id === heroId)
                               ? `cover-${i.id}`
                               : 'none',
                         }}
@@ -559,7 +691,11 @@ export default function Home() {
                         className="archive-read-link"
                         onClick={() => startReading(i.id)}
                       >
-                        {saved ? `Continue · ${placeText(i.id)}` : 'Read issue'}
+                        <span>
+                          {placeStory(i.id)
+                            ? `Continue · ${placeStory(i.id)}`
+                            : 'Read issue'}
+                        </span>
                         <ArrowRight size={14} />
                       </button>
                     ) : (
@@ -582,13 +718,16 @@ export default function Home() {
             )}
           </section>
           <footer className="archive-footer">
-            <a
-              href="https://www.theatlantic.com/magazine/backissues/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Explore the complete archive <ArrowUpRight size={14} />
-            </a>
+            <nav className="archive-footer-links" aria-label="About">
+              <button onClick={openAbout}>About this edition</button>
+              <a
+                href="https://www.theatlantic.com/magazine/backissues/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Explore the complete archive <ArrowUpRight size={14} />
+              </a>
+            </nav>
             <small>
               Independent concept · Covers and editorial material © The Atlantic
             </small>
@@ -618,8 +757,17 @@ export default function Home() {
             arriving={opening}
             onReady={readerReady}
             onPage={readerPage}
+            /* V4 merge: pass nextIssue and onOpenIssue once the reader branch lands:
+               nextIssue={nextIssue}
+               onOpenIssue={onOpenIssue} */
           />
         </Suspense>
+      )}
+      {about && (
+        <div className="about-shell">
+          {masthead}
+          <About onBack={closeOverlay} />
+        </div>
       )}
       {issue && (
         <div
