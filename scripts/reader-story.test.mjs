@@ -12,6 +12,7 @@ import {
   resumeLabel,
   storyIndex,
   storyUrl,
+  wayfindingLabel,
 } from '../app/reader/story-model.ts';
 import {
   defaultPreferences,
@@ -145,6 +146,38 @@ test('Location labels and locationTitle agree on every page', () => {
   );
   assert.equal(at.previous.title, 'You Call That a Pull-Up?');
   assert.equal(at.next.title, 'Did al-Qaeda Succeed?');
+});
+
+test('The strip label names the section and the story count, or the location outside stories', () => {
+  // September 2026: Kevin Dowdell’s Boys is the fourth of 17 entries, filed under Features.
+  const kevin = physicalPage(16, september);
+  assert.equal(wayfindingLabel(september, kevin), 'Features · Story 4 of 17');
+  assert.equal(wayfindingLabel(september, kevin + 3), 'Features · Story 4 of 17');
+  const cover = physicalPage(68, september);
+  assert.equal(wayfindingLabel(september, cover), 'Cover story · Story 9 of 17');
+  assert.equal(wayfindingLabel(september, 1), 'Cover');
+  assert.equal(wayfindingLabel(september, 3), 'Front matter');
+  assert.equal(wayfindingLabel(september, september.contentsPage), 'Contents');
+  assert.equal(wayfindingLabel(september, september.pageCount), 'Back cover');
+  // An entry without a section falls back to the count alone.
+  const bare = {
+    ...september,
+    contents: september.contents.map((entry) => ({ ...entry, section: '' })),
+  };
+  assert.equal(wayfindingLabel(bare, kevin), 'Story 4 of 17');
+  // Every story page of every issue counts within 1..contents.length.
+  for (const issue of readerIssues)
+    for (let page = 1; page <= issue.pageCount; page++) {
+      const at = locate(issue, page);
+      const label = wayfindingLabel(issue, page);
+      if (!at.story) assert.equal(label, at.label, `${issue.id} p${page}`);
+      else
+        assert.match(
+          label,
+          new RegExp(`Story ${at.index + 1} of ${issue.contents.length}$`),
+          `${issue.id} p${page}`,
+        );
+    }
 });
 
 test('resumeLabel speaks in stories for story pages and in labels elsewhere', () => {
