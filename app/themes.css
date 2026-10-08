@@ -35,6 +35,43 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
+  /* V5: the night stage. The reader desk, its chrome, the shelf hero and the
+     issue splash sit on charcoal in both themes, the way the Atlantic app
+     frames content: the magazine is the lit object, everything else recedes. */
+  --night: #17181a;
+  --night-2: #222326;
+  --night-3: #2e2f33;
+  --night-ink: #f3f1ec;
+  --night-ink-2: #a7a49e;
+  --night-ink-3: #6f6d69;
+  --night-rule: #ffffff1a;
+  --night-glass: #17181ad9;
+  --night-accent: #ff4a55;
+  --shadow-object: 0 1px 1px #0000004d, 0 10px 24px #00000059, 0 30px 70px #00000066;
+
+  /* V5 type scale: UI in Graphik, labels in Logic Monospace caps, titles in
+     Garamond, numerals and display in Atlantic Condensed. */
+  --t-label: 11px;
+  --t-ui: 13px;
+  --t-ui-lg: 15px;
+  --t-title: 19px;
+  --t-head: 28px;
+  --t-display: 52px;
+  --t-numeral: 72px;
+  --tracking-label: 0.12em;
+
+  /* V5 spacing: 4px base, use these and nothing in between. */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;
+  --radius-pill: 999px;
+
   --edition-surface: var(--surface);
   --edition-raised: #ffffff;
   --edition-ink: var(--ink);
@@ -70,6 +107,9 @@
   --shadow-page: 0 1px 2px #00000080, 0 16px 36px #00000099;
   --shadow-float: 0 2px 6px #00000060, 0 12px 28px #00000080;
   --edition-raised: #222225;
+  --night: #0f1011;
+  --night-2: #1b1c1e;
+  --night-3: #27282b;
   color-scheme: dark;
 }
 @media (pointer: coarse) {
