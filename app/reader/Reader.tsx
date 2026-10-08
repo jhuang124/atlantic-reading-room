@@ -46,7 +46,7 @@ import {
 } from './place';
 import { flushSync } from 'react-dom';
 import Navigation, { type NavigationTab } from './Navigation';
-import { locate, physicalPage, storyUrl } from './story-model';
+import { locate, physicalPage, storyUrl, wayfindingLabel } from './story-model';
 import Leaf from './Leaf';
 import ContinuousPages, { type ScrollTarget } from './ContinuousPages';
 import EndOfIssue from './EndOfIssue';
@@ -1503,7 +1503,21 @@ export default function Reader({
                 <span>Previous story</span>
               </button>
               <div className="strip-center">
-                {storyButton}
+                <button
+                  className={`strip-story ${location.story ? '' : 'location'}`}
+                  onClick={openContents}
+                  aria-label={`Now reading ${location.label}. Open contents`}
+                >
+                  <span className="strip-label">
+                    {wayfindingLabel(issue, page)}
+                  </span>
+                  <span className="strip-title">
+                    <strong>{location.story?.title ?? issue.issue}</strong>
+                    {location.story?.author && (
+                      <small>{location.story.author}</small>
+                    )}
+                  </span>
+                </button>
                 {online && (
                   <a
                     className="strip-online"
@@ -1515,24 +1529,26 @@ export default function Reader({
                   </a>
                 )}
               </div>
-              <label className="page-folio">
-                {folio}
-                <span>/ {printedCount}</span>
-              </label>
-              <button
-                className={`strip-nav ${invite ? 'invite' : ''}`}
-                aria-label="Next story"
-                title={location.next?.title}
-                disabled={!location.next}
-                onClick={() => goToStory(location.next)}
-              >
-                <span>
-                  {invite
-                    ? `Next story: ${truncate(location.next!.title, 28)}`
-                    : 'Next story'}
-                </span>
-                <ChevronRight size={16} />
-              </button>
+              <div className="strip-end">
+                <label className="page-folio">
+                  {folio}
+                  <span>/ {printedCount}</span>
+                </label>
+                <button
+                  className={`strip-nav ${invite ? 'invite' : ''}`}
+                  aria-label="Next story"
+                  title={location.next?.title}
+                  disabled={!location.next}
+                  onClick={() => goToStory(location.next)}
+                >
+                  <span>
+                    {invite
+                      ? `Next story: ${truncate(location.next!.title, 28)}`
+                      : 'Next story'}
+                  </span>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
           )}
         </section>
@@ -1548,7 +1564,9 @@ export default function Reader({
       {pdf && (
         <div className="reader-progress" aria-hidden="true">
           <span
-            style={{ width: `${Math.min(100, (end / issue.pageCount) * 100)}%` }}
+            style={{
+              width: `${Math.min(100, (end / issue.pageCount) * 100)}%`,
+            }}
           />
         </div>
       )}
