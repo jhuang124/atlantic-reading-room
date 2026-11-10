@@ -4,7 +4,7 @@
 .archive-app {
   --ink: #1a1a1a;
   --ink-2: #5c5955;
-  --ink-3: #9a968f;
+  --ink-3: #76726c;
   --rule: #1a1a1a;
   --rule-soft: #dcd8d1;
   --surface: #faf9f6;
@@ -43,7 +43,7 @@
   --night-3: #2e2f33;
   --night-ink: #f3f1ec;
   --night-ink-2: #a7a49e;
-  --night-ink-3: #6f6d69;
+  --night-ink-3: #8f8c86;
   --night-rule: #ffffff1a;
   --night-glass: #17181ad9;
   --night-accent: #ff4a55;
@@ -89,7 +89,7 @@
 .archive-app[data-theme='dark'] {
   --ink: #f0ede8;
   --ink-2: #b1aea8;
-  --ink-3: #75726c;
+  --ink-3: #8a8781;
   --rule: #f0ede8;
   --rule-soft: #3a3a3e;
   --surface: #1b1b1e;

@@ -187,14 +187,22 @@ test.describe('V4 contract', () => {
       const bar = page.locator(PHONE_BAR);
       await expect(bar).toBeVisible();
 
-      // Scroll is the phone default; Pages mounts the fitted single page.
-      const view = bar.locator('[role=group][aria-label="View"]');
+      // V6: the bar is the thumb's bar (Contents, page, Save, Settings).
+      // Pages/Scroll is a set-once choice in Reading settings, and choosing
+      // a view closes the sheet. Scroll is the phone default; Pages mounts
+      // the fitted single page.
+      await expect(bar.locator('button[aria-label="Contents"]')).toBeVisible();
+      const settings = bar.locator('button[aria-label="Reading settings"]');
+      const sheet = page.locator('.appearance-popover');
+      const view = sheet.locator('[role=group][aria-label="View"]');
+      await settings.click();
       await expect(view.getByRole('button', { name: 'Scroll' })).toHaveAttribute(
         'aria-pressed',
         'true',
       );
       await expect(page.locator('.continuous-pages')).toBeVisible();
       await view.getByRole('button', { name: 'Pages' }).click();
+      await expect(sheet).toHaveCount(0);
       await expect(page.locator('.leaf-canvas canvas').first()).toBeVisible();
 
       // In Pages a center tap hides both bars and a second tap restores them.
@@ -211,6 +219,7 @@ test.describe('V4 contract', () => {
       await folio.press('Enter');
       await expect.poll(() => hash(page)).toMatch(/\/p\d+$/);
 
+      await settings.click();
       await view.getByRole('button', { name: 'Scroll' }).click();
       await expect(page.locator('.continuous-pages')).toBeVisible();
     });

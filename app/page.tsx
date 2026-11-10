@@ -14,8 +14,6 @@ import {
   ArrowDownUp,
   ArrowRight,
   ArrowUpRight,
-  Maximize2,
-  Minimize2,
   Search,
   Sun,
   Moon,
@@ -24,10 +22,10 @@ import {
 import { flushSync } from 'react-dom';
 import data from './issues.json';
 import availableIssues from '../public/reader-assets/available.json';
-import { readerIssues } from './reader/catalog';
+import { readerIssues, type ContentsEntry } from './reader/catalog';
 import { loadPlace, type ReadingPlace } from './reader/place';
 import { pageLabel } from './reader/model';
-import { locationTitle, physicalPage } from './reader/story-model';
+import { locate, locationTitle, physicalPage } from './reader/story-model';
 import { parseRoute, routeHash, type Route } from './routes';
 import About from './About';
 const loadReader = () => import('./reader/Reader');
@@ -120,7 +118,6 @@ export default function Home() {
     page?: number;
   }>({ contents: false });
   const [opening, setOpening] = useState(false);
-  const [full, setFull] = useState(false);
   const library = useRef<HTMLDivElement>(null);
   // Which cover the splash transition grows from and returns to.
   const heroTransition = useRef(false);
@@ -170,14 +167,14 @@ export default function Home() {
   useEffect(() => {
     const surface = document.querySelector('.archive-app');
     const meta = document.querySelector('meta[name="theme-color"]');
+    // Every surface opens on the night stage (masthead, issue page, reader),
+    // so the browser's own chrome matches it rather than the ivory below.
     if (surface && meta)
       meta.setAttribute(
         'content',
-        getComputedStyle(surface)
-          .getPropertyValue(readingId ? '--edition-desk' : '--edition-surface')
-          .trim(),
+        getComputedStyle(surface).getPropertyValue('--night').trim(),
       );
-  }, [theme, readingId]);
+  }, [theme]);
   // One owner controls background interactivity for both details and the reader.
   useLayoutEffect(() => {
     if (library.current)
@@ -398,16 +395,42 @@ export default function Home() {
       document.body.style.overflow = previous;
     };
   }, [selected, readingId, about]);
-  useEffect(() => {
-    const update = () => setFull(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', update);
-    return () => document.removeEventListener('fullscreenchange', update);
-  }, []);
-  const toggleFullscreen = async () => {
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await document.documentElement.requestFullscreen();
-    } catch {}
+  // Search answers in stories first: a reader looking for a writer or a
+  // headline wants that story, not a cover that happens to contain it. From
+  // two letters on, matching stories are listed with a way straight in, and
+  // the cover grid narrows to issues that match by name or cover story.
+  const needle = query.trim().toLowerCase();
+  const searching = needle.length >= 2;
+  const storyHits = useMemo(() => {
+    if (!searching) return [];
+    const hits = readerIssues.flatMap((entry) =>
+      available.includes(entry.id)
+        ? entry.contents
+            .filter((story) =>
+              `${story.title} ${story.author || ''}`
+                .toLowerCase()
+                .includes(needle),
+            )
+            .map((story) => ({ entry, story }))
+        : [],
+    );
+    return hits.sort((a, b) =>
+      sort === 'oldest'
+        ? a.entry.id.localeCompare(b.entry.id)
+        : b.entry.id.localeCompare(a.entry.id),
+    );
+  }, [searching, needle, sort]);
+  /** Wrap the matched run of a result in <mark>. */
+  const marked = (text: string) => {
+    const at = searching ? text.toLowerCase().indexOf(needle) : -1;
+    if (at < 0) return text;
+    return (
+      <>
+        {text.slice(0, at)}
+        <mark>{text.slice(at, at + needle.length)}</mark>
+        {text.slice(at + needle.length)}
+      </>
+    );
   };
   const filtered = useMemo(
     () =>
@@ -415,16 +438,16 @@ export default function Home() {
         .filter(
           (i) =>
             (!readableOnly || available.includes(i.id)) &&
-            `${i.issue} ${title(i)} ${i.coverStories.flatMap((s) => s.authors).join(' ')} ${storySearch.get(i.id) || ''}`
+            `${i.issue} ${title(i)} ${i.coverStories.flatMap((s) => s.authors).join(' ')} ${searching ? '' : storySearch.get(i.id) || ''}`
               .toLowerCase()
-              .includes(query.trim().toLowerCase()),
+              .includes(needle),
         )
         .sort((a, b) =>
           sort === 'oldest'
             ? a.id.localeCompare(b.id)
             : b.id.localeCompare(a.id),
         ),
-    [readableOnly, available, query, sort],
+    [readableOnly, available, needle, searching, sort],
   );
   const shelves = useMemo(() => {
     const groups: { year: number; issues: Issue[] }[] = [];
@@ -485,6 +508,29 @@ export default function Home() {
       if (frame) cancelAnimationFrame(frame);
     };
   }, [shelves]);
+  // Keep the year in view visible in the rail when the rail itself scrolls.
+  useEffect(() => {
+    const rail = browseBar.current?.querySelector<HTMLElement>(
+      '.archive-year-rail',
+    );
+    const current = rail?.querySelector<HTMLElement>('[aria-current="true"]');
+    if (!rail || !current || rail.scrollWidth <= rail.clientWidth) return;
+    rail.scrollTo({
+      left: current.offsetLeft - rail.offsetLeft - rail.clientWidth / 3,
+      behavior: matchMedia('(prefers-reduced-motion:reduce)').matches
+        ? 'auto'
+        : 'smooth',
+    });
+  }, [yearInView]);
+  // Results appear under the browse bar; when a search starts with the hero
+  // still on screen, bring the bar to the top so they are in view.
+  useEffect(() => {
+    const shell = library.current,
+      bar = browseBar.current;
+    if (!searching || !shell || !bar) return;
+    const gap = bar.getBoundingClientRect().top - shell.getBoundingClientRect().top;
+    if (gap > 1) shell.scrollTo({ top: shell.scrollTop + gap });
+  }, [searching]);
   const reset = () => {
     setQuery('');
     setReadableOnly(false);
@@ -510,6 +556,28 @@ export default function Home() {
       : undefined;
   };
   const heroStory = heroId ? placeStory(heroId) : undefined;
+  // The issue page is the issue's table of contents: stories by section,
+  // each a way into the reader, with the saved place marked.
+  const issueEntry = issue
+    ? readerIssues.find((r) => r.id === issue.id)
+    : undefined;
+  const issueSections = useMemo(() => {
+    const groups: { name: string; entries: ContentsEntry[] }[] = [];
+    for (const entry of issueEntry?.contents ?? []) {
+      const last = groups.at(-1);
+      if (last?.name === entry.section) last.entries.push(entry);
+      else groups.push({ name: entry.section, entries: [entry] });
+    }
+    return groups;
+  }, [issueEntry]);
+  const placeIndex =
+    issueEntry && places[issueEntry.id] && places[issueEntry.id].page > 1
+      ? locate(issueEntry, places[issueEntry.id].page).index
+      : -1;
+  const issuePosition = issue ? issues.indexOf(issue) : -1;
+  const newerIssue = issuePosition > 0 ? issues[issuePosition - 1] : undefined;
+  const olderIssue =
+    issuePosition >= 0 ? issues[issuePosition + 1] : undefined;
   const masthead = (
     <header className="archive-masthead">
           <span className="archive-masthead-title">The Print Edition</span>
@@ -529,13 +597,6 @@ export default function Home() {
           </a>
           <div className="archive-masthead-tools">
             {themeButton('archive-icon theme-toggle')}
-            <button
-              className="archive-icon archive-fullscreen"
-              onClick={toggleFullscreen}
-              aria-label={full ? 'Exit fullscreen' : 'Enter fullscreen'}
-            >
-              {full ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-            </button>
           </div>
         </header>
   );
@@ -703,7 +764,9 @@ export default function Home() {
                 </div>
               </div>
               <output className="archive-visually-hidden" aria-live="polite">
-                {filtered.length} issues
+                {searching
+                  ? `${storyHits.length} stories, ${filtered.length} issues`
+                  : `${filtered.length} issues`}
               </output>
             </div>
             {lastRead && lastReadIssue && !query && lastRead.id !== heroId && (
@@ -745,6 +808,53 @@ export default function Home() {
                 </span>
                 <ArrowRight size={16} />
               </button>
+            )}
+            {storyHits.length > 0 && (
+              <section className="search-stories" aria-label="Matching stories">
+                <header className="shelf-year-head">
+                  <h2>Stories</h2>
+                  <span>
+                    {storyHits.length}{' '}
+                    {storyHits.length === 1 ? 'story' : 'stories'}
+                  </span>
+                </header>
+                <ol>
+                  {storyHits.slice(0, 60).map(({ entry, story }) => (
+                    <li key={`${entry.id}-${story.printedPage}`}>
+                      <button
+                        onClick={() =>
+                          startReading(
+                            entry.id,
+                            false,
+                            physicalPage(story.printedPage, entry),
+                          )
+                        }
+                      >
+                        <img
+                          src={issues.find((i) => i.id === entry.id)?.cover}
+                          alt=""
+                          width="36"
+                          height="48"
+                          loading="lazy"
+                        />
+                        <span className="search-story-title">
+                          <strong>{marked(story.title)}</strong>
+                          {story.author && <span>{marked(story.author)}</span>}
+                        </span>
+                        <span className="search-story-where">
+                          {entry.issue}
+                          <span>p. {story.printedPage}</span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+                {storyHits.length > 60 && (
+                  <p className="search-stories-more">
+                    Showing the first 60. Add a word to narrow it.
+                  </p>
+                )}
+              </section>
             )}
             {shelves.map(({ year: y, issues: group }) => (
               <section
@@ -841,10 +951,10 @@ export default function Home() {
                 </div>
               </section>
             ))}
-            {!filtered.length && (
+            {!filtered.length && !storyHits.length && (
               <div className="archive-empty">
-                <h2>No issues found.</h2>
-                <p>Try another title, author, or month.</p>
+                <h2>Nothing matches “{query.trim()}”.</h2>
+                <p>Try a headline, a writer, or a month.</p>
                 <button className="archive-primary" onClick={reset}>
                   See all issues <ArrowRight size={16} />
                 </button>
@@ -912,21 +1022,24 @@ export default function Home() {
             aria-modal="true"
             aria-labelledby="library-modal-title"
           >
-            <button
-              ref={modalClose}
-              className="library-modal-close"
-              onClick={closeOverlay}
-              aria-label="Back to covers"
-            >
-              <ArrowLeft size={18} />{' '}
-              <span className="splash-back-label">Archive</span> <kbd>Esc</kbd>
-            </button>
-            {themeButton('splash-theme-toggle')}
-            <img
-              className="splash-wordmark"
-              src="brand/atlantic-logo.svg"
-              alt="The Atlantic"
-            />
+            <header className="issue-splash-bar">
+              <button
+                ref={modalClose}
+                className="library-modal-close"
+                onClick={closeOverlay}
+                aria-label="Back to covers"
+              >
+                <ArrowLeft size={18} />{' '}
+                <span className="splash-back-label">Archive</span>{' '}
+                <kbd>Esc</kbd>
+              </button>
+              <img
+                className="splash-wordmark"
+                src="brand/atlantic-logo.svg"
+                alt="The Atlantic"
+              />
+              {themeButton('splash-theme-toggle')}
+            </header>
             <div className="issue-splash-art" key={`cover-${issue.id}`}>
               <img
                 className="library-detail-cover"
@@ -949,63 +1062,130 @@ export default function Home() {
                 </p>
               )}
               {available.includes(issue.id) ? (
-                <div className="issue-reading-actions">
-                  <button
-                    className="archive-primary"
-                    disabled={opening}
-                    onClick={() => startReading(issue.id)}
+                <div className="issue-ways-in">
+                  <div className="issue-reading-actions">
+                    <button
+                      className="archive-primary"
+                      disabled={opening}
+                      onClick={() => startReading(issue.id)}
+                    >
+                      <span>
+                        {opening
+                          ? 'Opening…'
+                          : placeStory(issue.id)
+                            ? `Continue · ${placeStory(issue.id)}`
+                            : 'Read the issue'}
+                      </span>
+                      <ArrowRight size={17} />
+                    </button>
+                  </div>
+                  <a
+                    className="archive-external"
+                    href={issue.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
                   >
-                    {opening
-                      ? 'Opening…'
-                      : places[issue.id]
-                        ? 'Continue reading'
-                        : 'Read issue'}
-                    <ArrowRight size={17} />
-                  </button>
-                  <button
-                    className="splash-contents"
-                    disabled={opening}
-                    onClick={() => startReading(issue.id, true)}
-                  >
-                    Contents
-                  </button>
+                    On TheAtlantic.com <ArrowUpRight size={16} />
+                  </a>
                 </div>
               ) : (
-                <p className="splash-availability">
-                  Cover preview · Read this issue at The Atlantic
-                </p>
+                <>
+                  <p className="splash-availability">
+                    Cover preview · Read this issue at The Atlantic
+                  </p>
+                  <a
+                    className="archive-external"
+                    href={issue.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    On TheAtlantic.com <ArrowUpRight size={16} />
+                  </a>
+                </>
               )}
-              <a
-                className="archive-external"
-                href={issue.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                On TheAtlantic.com <ArrowUpRight size={16} />
-              </a>
-              <nav
-                className="issue-splash-navigation"
-                aria-label="Browse issues"
-              >
-                <button
-                  aria-label="Previous issue"
-                  disabled={opening || issues[0].id === issue.id}
-                  onClick={() => showIssue(issues[issues.indexOf(issue) - 1].id)}
+              {issueSections.length > 0 && issueEntry && (
+                <nav
+                  className="issue-contents"
+                  aria-label={`In the ${issue.issue} issue`}
                 >
-                  <ArrowLeft size={18} />
-                </button>
-                <span>
-                  {issues.indexOf(issue) + 1} / {issues.length}
-                </span>
-                <button
-                  aria-label="Next issue"
-                  disabled={opening || issues.at(-1)?.id === issue.id}
-                  onClick={() => showIssue(issues[issues.indexOf(issue) + 1].id)}
-                >
-                  <ArrowRight size={18} />
-                </button>
-              </nav>
+                  <p className="issue-contents-head">
+                    In this issue
+                    <span>
+                      {issueEntry.contents.length} stories ·{' '}
+                      {issueEntry.pageCount} pages
+                    </span>
+                  </p>
+                  {issueSections.map((section) => (
+                    <section key={section.name}>
+                      <h3>{section.name}</h3>
+                      <ol>
+                        {section.entries.map((entry) => {
+                          const here =
+                            issueEntry.contents.indexOf(entry) === placeIndex;
+                          return (
+                            <li key={entry.printedPage}>
+                              <button
+                                disabled={opening}
+                                aria-current={here ? 'location' : undefined}
+                                onClick={() =>
+                                  // The story holding the saved place resumes
+                                  // it; every other row opens at its start.
+                                  here
+                                    ? startReading(issue.id)
+                                    : startReading(
+                                        issue.id,
+                                        false,
+                                        physicalPage(
+                                          entry.printedPage,
+                                          issueEntry,
+                                        ),
+                                      )
+                                }
+                              >
+                                <span className="issue-contents-title">
+                                  <strong>{entry.title}</strong>
+                                  {entry.author && <span>{entry.author}</span>}
+                                </span>
+                                {here && <em>Continue</em>}
+                                <span className="issue-contents-folio">
+                                  {entry.printedPage}
+                                </span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    </section>
+                  ))}
+                </nav>
+              )}
             </div>
+            <nav className="issue-splash-navigation" aria-label="Browse issues">
+              {newerIssue ? (
+                <button
+                  aria-label={`Newer issue: ${newerIssue.issue}`}
+                  disabled={opening}
+                  onClick={() => showIssue(newerIssue.id)}
+                >
+                  <ArrowLeft size={16} />
+                  <span>{newerIssue.issue}</span>
+                </button>
+              ) : (
+                <span />
+              )}
+              {olderIssue ? (
+                <button
+                  aria-label={`Older issue: ${olderIssue.issue}`}
+                  disabled={opening}
+                  onClick={() => showIssue(olderIssue.id)}
+                >
+                  <span>{olderIssue.issue}</span>
+                  <ArrowRight size={16} />
+                </button>
+              ) : (
+                <span />
+              )}
+            </nav>
           </section>
         </div>
       )}
