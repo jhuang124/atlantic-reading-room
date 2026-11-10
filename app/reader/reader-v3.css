@@ -1,5 +1,8 @@
-/* The Print Edition — V3 reader stylesheet.
+/* The Print Edition — reader stylesheet.
    One token system (see themes.css), one radius scale, one type scale.
+   V5: the desk and all reader chrome sit on the night stage (--night*) in
+   both themes; the magazine is the lit object. Panels and sheets keep the
+   theme surface. Sizes come from --t-*, gaps from --s-*.
    Sections: engine (pages, curl, text layer), desktop chrome, phone chrome,
    panels and sheets, motion. */
 
@@ -12,10 +15,13 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  background: var(--desk);
-  color: var(--ink);
+  /* Bar heights: 52px top bar, 56px two-line story strip. */
+  --bar-h: calc(var(--s-7) + var(--s-1));
+  --strip-h: calc(var(--s-7) + var(--s-2));
+  background: var(--night);
+  color: var(--night-ink);
   font-family: Graphik, sans-serif;
-  font-size: var(--ui-13);
+  font-size: var(--t-ui);
   color-scheme: inherit;
   transition: opacity 260ms ease;
 }
@@ -37,6 +43,13 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+.reader
+  :is(.reader-header, .story-strip, .mobile-top-bar, .mobile-reader-bar)
+  :is(button, input, a):focus-visible,
+.reader .edge-arrow:focus-visible,
+.reader .end-of-issue :is(button, a):focus-visible {
+  outline-color: var(--night-accent);
+}
 
 /* ---------- Engine: desk, viewport, pages ---------- */
 .reader-workspace {
@@ -47,7 +60,7 @@
 .reading-desk {
   position: absolute;
   inset: 0;
-  background: var(--desk);
+  background: var(--night);
   overflow: hidden;
 }
 .page-viewport {
@@ -57,7 +70,7 @@
   display: flex;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--ink-3) transparent;
+  scrollbar-color: var(--night-ink-3) transparent;
   padding: var(--desk-pad-y) var(--desk-pad-x);
 }
 .page-viewport.zoomed {
@@ -78,7 +91,7 @@
   display: flex;
   align-items: flex-start;
   isolation: isolate;
-  box-shadow: var(--shadow-page);
+  box-shadow: var(--shadow-object);
 }
 .open-magazine::after {
   content: '';
@@ -173,7 +186,7 @@
 /* Continuous print: a stable scroll track; only nearby pages are rasterized. */
 .page-viewport.continuous-viewport {
   display: block;
-  padding: 0 12px;
+  padding: 0 var(--s-3);
   overflow-anchor: none;
 }
 .continuous-pages {
@@ -183,7 +196,7 @@
 .continuous-page {
   position: absolute;
   left: 0;
-  box-shadow: var(--shadow-page);
+  box-shadow: var(--shadow-object);
 }
 
 /* Page curl (Three.js canvas) */
@@ -324,45 +337,54 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: var(--s-5);
   pointer-events: none;
+  background: var(--night);
+  color: var(--night-ink);
 }
 .reader-loading > img {
   height: 200px;
   max-height: 30vh;
-  box-shadow: var(--shadow-page);
+  box-shadow: var(--shadow-object);
 }
 .reader-loading > p {
   margin: 0;
   font:
-    15px Graphik,
-    sans-serif;
-  color: var(--ink-2);
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--night-ink-2);
 }
 .reader-loading > button {
   pointer-events: auto;
   min-height: 44px;
-  padding: 0 18px;
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-1);
-  background: var(--surface);
+  padding: 0 var(--s-5);
+  border: 1px solid var(--night-rule);
+  border-radius: var(--radius-pill);
+  background: var(--night-2);
+  color: var(--night-ink);
+  font-size: var(--t-ui);
+}
+.reader-loading > button:hover {
+  background: var(--night-3);
 }
 .reader-load-line {
   width: 120px;
   height: 2px;
-  background: var(--rule-soft);
+  background: var(--night-3);
 }
 .reader-load-line > span {
   display: block;
   height: 100%;
-  background: var(--ink);
+  background: var(--night-ink);
   transition: width 300ms;
 }
 
 /* Toast */
 .reader-status {
   position: absolute;
-  bottom: 60px;
+  bottom: calc(var(--strip-h) + var(--s-4));
   left: 50%;
   transform: translateX(-50%);
   z-index: 85;
@@ -372,12 +394,12 @@
 .reader-status > span {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
-  border-radius: var(--radius-2);
-  background: var(--ink);
-  color: var(--surface);
-  font-size: var(--ui-13);
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--radius-pill);
+  background: var(--night-ink);
+  color: var(--night);
+  font-size: var(--t-ui);
   box-shadow: var(--shadow-float);
   animation: toast-in 220ms ease;
 }
@@ -388,7 +410,9 @@
   }
 }
 
-/* Progress hairline */
+/* Issue progress: one 2px line. On the desktop it rides the story strip's top
+   edge (its track is the strip's hairline); in Focus and on phones, where
+   there is no strip, it runs along the top of the screen. */
 .reader-progress {
   position: absolute;
   top: 0;
@@ -398,15 +422,23 @@
   z-index: 80;
   pointer-events: none;
 }
+.desktop-reader:not(.quiet) .reader-progress {
+  top: auto;
+  bottom: calc(var(--strip-h) - 2px);
+  /* Above the strip, beneath the Contents scrim and panel. */
+  z-index: 14;
+  background: var(--night-rule);
+}
 .reader-progress span {
   display: block;
   height: 100%;
-  background: var(--accent);
+  background: var(--night-accent);
   transition: width 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* ---------- Shared controls ---------- */
-/* Segmented control: the View switch in the bars and the popover fieldsets. */
+/* Segmented control on the theme surface (the settings fieldsets): joined
+   segments with pill ends. The night bars restyle it as a pill track below. */
 .segmented {
   display: inline-flex;
   align-items: stretch;
@@ -419,11 +451,11 @@
   align-items: center;
   justify-content: center;
   min-height: 32px;
-  padding: 0 12px;
+  padding: 0 var(--s-3);
   margin-left: -1px;
   border: 1px solid var(--rule-soft);
   border-radius: 0;
-  font-size: var(--ui-13);
+  font-size: var(--t-ui);
   color: var(--ink-2);
   white-space: nowrap;
   transition:
@@ -432,10 +464,10 @@
 }
 .segmented > button:first-of-type {
   margin-left: 0;
-  border-radius: var(--radius-1) 0 0 var(--radius-1);
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
 }
 .segmented > button:last-of-type {
-  border-radius: 0 var(--radius-1) var(--radius-1) 0;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
 }
 .segmented > button:hover:not([aria-pressed='true']) {
   color: var(--ink);
@@ -448,32 +480,66 @@
   color: var(--surface);
   border-color: var(--ink);
 }
+
+/* Night chrome: the pill segmented control (Spread | Scroll, Pages | Scroll).
+   A --night-2 track, the active segment lit in night ink. */
+:is(.reader-header, .mobile-reader-bar) .view-switch {
+  gap: 0;
+  padding: var(--s-1);
+  border-radius: var(--radius-pill);
+  background: var(--night-2);
+}
+:is(.reader-header, .mobile-reader-bar) .view-switch > button {
+  min-width: 0;
+  min-height: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0 var(--s-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
+  color: var(--night-ink-2);
+}
+:is(.reader-header, .mobile-reader-bar)
+  .view-switch
+  > button:hover:not([aria-pressed='true']) {
+  color: var(--night-ink);
+  background: var(--night-3);
+}
+:is(.reader-header, .mobile-reader-bar)
+  .view-switch
+  > button[aria-pressed='true'] {
+  background: var(--night-ink);
+  color: var(--night);
+}
 .reader-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-pill);
+  transition:
+    background 120ms,
+    color 120ms;
 }
 .reader-icon:hover:not(:disabled),
-.zoom-fit:hover:not([aria-disabled='true']),
-.strip-nav:hover:not(:disabled),
 .strip-story:hover {
-  background: var(--surface-2);
+  background: var(--night-2);
 }
 
 /* ---------- Desktop chrome ---------- */
 .desktop-reader .reader-header {
   position: absolute;
   inset: 0 0 auto;
-  height: 52px;
+  height: var(--bar-h);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
-  padding: 0 10px 0 8px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--rule);
+  gap: var(--s-3);
+  padding: 0 var(--s-3) 0 var(--s-2);
+  background: var(--night);
+  color: var(--night-ink);
+  border-bottom: 1px solid var(--night-rule);
   z-index: 20;
   transition:
     opacity 160ms ease,
@@ -482,83 +548,108 @@
 .reader-header-left {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--s-1);
   min-width: 0;
 }
 .reader-header-left button {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 10px;
-  border-radius: var(--radius-1);
-  font-size: var(--ui-13);
+  gap: var(--s-2);
+  height: 40px;
+  padding: 0 var(--s-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
   white-space: nowrap;
+  transition: background 120ms;
 }
 .reader-header-left button:hover {
-  background: var(--surface-2);
+  background: var(--night-2);
 }
-.reader-brand {
+/* The wordmark is a black SVG; on the night stage it is drawn in night ink in
+   both themes. Owned here, not by the theme's logo filter. */
+.reader .reader-brand {
   width: 128px;
   justify-self: center;
-  filter: var(--logo-filter);
+  filter: invert(1);
+  opacity: 0.94;
 }
 .reader-header-tools {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 2px;
+  gap: var(--s-1);
   min-width: 0;
 }
 .reader-header .view-switch {
-  margin: 0 8px;
+  margin: 0 var(--s-2);
 }
+/* Zoom: one compact pill, − Fit +. */
 .zoom-group {
   display: inline-flex;
   align-items: center;
-  margin-right: 8px;
+  height: 40px;
+  padding: 0 var(--s-1);
+  margin-right: var(--s-2);
+  border-radius: var(--radius-pill);
+  background: var(--night-2);
+}
+.zoom-group .reader-icon {
+  width: 32px;
+  height: 32px;
+}
+.zoom-group .reader-icon:hover:not(:disabled),
+.reader-header .zoom-fit:hover:not([aria-disabled='true']) {
+  background: var(--night-3);
 }
 .reader-header .zoom-fit {
-  min-width: 46px;
+  min-width: 44px;
   height: 32px;
-  padding: 0 6px;
-  border-radius: var(--radius-1);
-  font-size: var(--ui-12);
+  padding: 0 var(--s-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
   font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
+  color: var(--night-ink-2);
   white-space: nowrap;
+  transition: background 120ms;
 }
 .reader-header .zoom-fit[aria-disabled='false'] {
-  color: var(--ink);
+  color: var(--night-ink);
 }
 .reader-header .zoom-fit[aria-disabled='true'] {
   cursor: default;
 }
 .desktop-reader .reader-workspace {
-  inset: 52px 0 0;
+  inset: var(--bar-h) 0 0;
 }
 /* The scroll port stops above the story strip so pages never run beneath it;
-   the 72px margins hold the edge arrows. */
+   the side margins hold the edge arrows. */
 .desktop-reader .page-viewport {
-  inset: 0 0 44px;
-  padding: 20px 72px;
+  inset: 0 0 var(--strip-h);
+  padding: var(--s-5) calc(var(--s-8) + var(--s-2));
 }
 .desktop-reader .page-viewport.continuous-viewport {
-  padding: 8px 0;
+  padding: var(--s-2) 0;
 }
 
-/* Story strip: where you are, in stories. Sits in the desk's bottom margin. */
+/* Story strip: where you are, in stories. A night band under the desk: a
+   caps label line (section · story n of N), the Garamond title and author,
+   the folio in condensed numerals. The issue-progress line rides its top
+   edge (see .reader-progress). */
 .story-strip {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 44px;
+  height: var(--strip-h);
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  /* Title centered on the screen; the sides keep their content width. */
+  grid-template-columns:
+    minmax(auto, 1fr) minmax(0, max-content) minmax(auto, 1fr);
   align-items: center;
-  gap: 12px;
-  padding: 0 16px;
+  gap: var(--s-3);
+  padding: 0 var(--s-3);
+  background: var(--night);
+  color: var(--night-ink);
   z-index: 13;
   transition:
     opacity 160ms ease,
@@ -567,112 +658,149 @@
 .strip-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 32px;
-  padding: 0 8px;
-  border-radius: var(--radius-1);
-  font-size: var(--ui-13);
-  color: var(--ink);
+  gap: var(--s-1);
+  height: 40px;
+  padding: 0 var(--s-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
+  color: var(--night-ink-2);
   white-space: nowrap;
+  transition:
+    background 120ms,
+    color 120ms;
+}
+.strip-nav:hover:not(:disabled) {
+  color: var(--night-ink);
+  background: var(--night-2);
 }
 .strip-nav:first-child {
-  padding-left: 4px;
+  justify-self: start;
+  padding-left: var(--s-2);
 }
 .strip-nav:last-child {
-  padding-right: 4px;
+  padding-right: var(--s-2);
 }
-.strip-nav.invite {
-  color: var(--accent);
-  font-weight: 500;
+.strip-nav.invite,
+.strip-nav.invite:hover:not(:disabled) {
+  color: var(--night-accent);
 }
 .strip-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--s-2);
   min-width: 0;
 }
 .strip-story {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
   max-width: 100%;
-  height: 32px;
-  padding: 0 10px;
-  border-radius: var(--radius-1);
-  text-align: left;
+  padding: var(--s-1) var(--s-4);
+  border-radius: var(--radius-2);
+  text-align: center;
+  transition: background 120ms;
+}
+.strip-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font:
+    var(--t-label) / 1.4 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--night-ink-2);
+}
+.strip-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--s-2);
+  min-width: 0;
+  max-width: 100%;
 }
 .strip-story strong {
+  min-width: 0;
   font:
-    400 17px/1.1 AGaramondPro,
+    400 var(--t-title) / 1.15 AGaramondPro,
     Georgia,
     serif;
+  color: var(--night-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .strip-story small {
-  font-size: var(--ui-12);
-  color: var(--ink-2);
+  flex-shrink: 0;
+  font-size: var(--t-ui);
+  color: var(--night-ink-2);
   white-space: nowrap;
-}
-.strip-story.location strong {
-  font:
-    500 var(--ui-13) / 1.2 Graphik,
-    sans-serif;
-  letter-spacing: 0.02em;
-  color: var(--ink-2);
 }
 .strip-story:hover strong {
   text-decoration: underline;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 .strip-online {
   flex-shrink: 0;
-  padding: 0 8px;
-  font-size: var(--ui-12);
-  color: var(--ink-2);
+  padding: 0 var(--s-2);
+  font-size: var(--t-ui);
+  color: var(--night-ink-2);
   text-decoration: none;
   white-space: nowrap;
 }
 .strip-online:hover {
-  color: var(--ink);
+  color: var(--night-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.page-folio {
+/* Folio and Next story share the right column. */
+.strip-end {
+  justify-self: end;
   display: flex;
   align-items: center;
-  gap: 5px;
-  height: 32px;
-  font-size: var(--ui-13);
+  gap: var(--s-4);
+  min-width: 0;
+}
+.page-folio {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-1);
+  font-size: var(--t-ui);
   font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
+  color: var(--night-ink-3);
   white-space: nowrap;
 }
 .page-folio input {
   width: auto;
   min-width: 1.5ch;
-  padding: 2px 1px;
+  padding: 0 1px;
   border: 0;
   border-bottom: 1px solid transparent;
   background: transparent;
   text-align: right;
-  color: var(--ink);
-  font-size: var(--ui-13);
+  color: var(--night-ink);
+  font:
+    400 var(--t-head) / 1 'Atlantic Serif',
+    Georgia,
+    serif;
   font-variant-numeric: tabular-nums;
   transition: border-color 140ms;
 }
 .page-folio:hover input,
 .page-folio input:focus {
-  border-bottom-color: var(--ink);
+  border-bottom-color: var(--night-ink-2);
 }
 .page-folio input:focus-visible {
   outline: none;
 }
 
-/* Edge arrows: the guaranteed turn control, outside the scrolling surface. */
+/* Edge arrows: the guaranteed turn control, outside the scrolling surface.
+   Frosted night circles. */
 .edge-arrow {
   position: absolute;
   top: 50%;
@@ -681,10 +809,11 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid var(--rule-soft);
-  box-shadow: var(--shadow-float);
-  color: var(--ink);
+  background: var(--night-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--night-rule);
+  color: var(--night-ink);
   z-index: 12;
   opacity: 0;
   transform: translateY(-50%);
@@ -694,10 +823,10 @@
     background 120ms;
 }
 .edge-arrow.left {
-  left: 14px;
+  left: var(--s-3);
 }
 .edge-arrow.right {
-  right: 14px;
+  right: var(--s-3);
 }
 .reading-desk:hover .edge-arrow,
 .edge-arrow:focus-visible,
@@ -709,7 +838,7 @@
   opacity: 0.25;
 }
 .edge-arrow:hover:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--night-3);
   transform: translateY(-50%) scale(1.05);
 }
 .edge-arrow:active:not(:disabled) {
@@ -738,10 +867,10 @@
 }
 .desktop-reader.quiet .page-viewport {
   inset: 0;
-  padding: 16px 32px;
+  padding: var(--s-4) var(--s-6);
 }
 .desktop-reader.quiet .page-viewport.continuous-viewport {
-  padding: 4px 0;
+  padding: var(--s-1) 0;
 }
 .desktop-reader.quiet .story-strip {
   opacity: 0;
@@ -763,31 +892,32 @@
   width: auto;
   height: 40px;
   clip-path: none;
-  top: 12px;
-  left: 12px;
-  padding: 0 14px;
-  border-radius: var(--radius-1);
-  background: var(--surface);
-  border: 1px solid var(--rule-soft);
+  top: var(--s-3);
+  left: var(--s-3);
+  padding: 0 var(--s-4);
+  border-radius: var(--radius-pill);
+  background: var(--night-2);
+  color: var(--night-ink);
+  border: 1px solid var(--night-rule);
   box-shadow: var(--shadow-float);
 }
 .mobile-controls-access:focus-visible {
   top: auto;
   left: auto;
   bottom: calc(68px + var(--safe-bottom));
-  right: 12px;
+  right: var(--s-3);
 }
 
 @media (max-width: 900px) {
   .reader-header-left button span {
     display: none;
   }
-  .reader-brand {
+  .reader .reader-brand {
     width: 112px;
   }
 }
 @media (max-width: 760px) {
-  .reader-brand {
+  .reader .reader-brand {
     display: none;
   }
   .strip-nav:not(.invite) span {
@@ -802,18 +932,19 @@
   z-index: 18;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: var(--s-5);
   pointer-events: none;
 }
+/* The end card sits on the night stage with the desk around it. */
 .end-of-issue {
   width: min(340px, 100%);
-  padding: 26px 26px 18px;
+  padding: var(--s-5) var(--s-5) var(--s-4);
   pointer-events: auto;
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-2);
-  box-shadow: var(--shadow-float);
+  background: var(--night-2);
+  color: var(--night-ink);
+  border: 1px solid var(--night-rule);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-object);
   text-align: center;
   animation: end-in 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -824,26 +955,26 @@
   }
 }
 .end-of-issue h2 {
-  margin: 0 0 20px;
+  margin: 0 0 var(--s-5);
   font:
-    400 26px/1.1 AGaramondPro,
+    400 var(--t-head) / 1.1 AGaramondPro,
     Georgia,
     serif;
 }
 .end-next {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--s-4);
   width: 100%;
-  padding: 10px;
-  margin-bottom: 6px;
-  border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-1);
+  padding: var(--s-3);
+  margin-bottom: var(--s-2);
+  border: 1px solid var(--night-rule);
+  border-radius: var(--radius-2);
   text-align: left;
   transition: background 120ms;
 }
 .end-next:hover {
-  background: var(--surface-2);
+  background: var(--night-3);
 }
 .end-next img {
   width: 54px;
@@ -853,33 +984,35 @@
 }
 .end-next small {
   display: block;
-  margin-bottom: 4px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
+  margin-bottom: var(--s-1);
+  font:
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--night-ink-2);
 }
 .end-next strong {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-2);
   font:
-    400 19px/1.1 AGaramondPro,
+    400 var(--t-title) / 1.1 AGaramondPro,
     Georgia,
     serif;
 }
 .end-shelf {
   min-height: 40px;
-  padding: 0 12px;
-  border-radius: var(--radius-1);
-  font-size: var(--ui-13);
-  color: var(--ink-2);
+  padding: 0 var(--s-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
+  color: var(--night-ink-2);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 .end-shelf:hover {
-  color: var(--ink);
-  background: var(--surface-2);
+  color: var(--night-ink);
+  background: var(--night-3);
 }
 
 /* ---------- Contents panel ---------- */
@@ -891,7 +1024,7 @@
   position: absolute;
   inset: 0;
   z-index: 60;
-  background: #00000030;
+  background: #00000059;
   cursor: default;
   animation: scrim-in 200ms ease;
 }
@@ -925,8 +1058,8 @@
 .reader-navigation > header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 12px 14px 20px;
+  gap: var(--s-4);
+  padding: var(--s-5) var(--s-3) var(--s-4) var(--s-5);
 }
 .contents-cover {
   width: 34px;
@@ -940,16 +1073,18 @@
   min-width: 0;
 }
 .reader-navigation > header p {
-  margin: 0 0 4px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  margin: 0 0 var(--s-1);
+  font:
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--ink-2);
 }
 .reader-navigation h2 {
   margin: 0;
   font:
-    400 28px/1 'Atlantic Serif',
+    400 var(--t-head) / 1 'Atlantic Serif',
     Georgia,
     serif;
 }
@@ -958,7 +1093,7 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-pill);
 }
 .reader-navigation > header button:hover {
   background: var(--surface-2);
@@ -966,13 +1101,13 @@
 .navigation-search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-2);
   flex-shrink: 0;
   min-height: 40px;
-  margin: 0 20px 12px;
-  padding: 0 8px 0 10px;
+  margin: 0 var(--s-5) var(--s-3);
+  padding: 0 var(--s-2) 0 var(--s-3);
   border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-pill);
   color: var(--ink-2);
   transition: border-color 140ms;
 }
@@ -985,7 +1120,7 @@
   min-width: 0;
   border: 0;
   background: none;
-  font-size: 14px;
+  font-size: var(--t-ui-lg);
   min-height: 38px;
   color: var(--ink);
 }
@@ -1000,18 +1135,18 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-pill);
 }
 .navigation-tabs {
   display: flex;
   flex-shrink: 0;
-  padding: 0 20px;
+  padding: 0 var(--s-5);
   border-bottom: 1px solid var(--rule-soft);
 }
 .navigation-tabs button {
   flex: 1;
-  min-height: 42px;
-  font-size: var(--ui-13);
+  min-height: 44px;
+  font-size: var(--t-ui);
   color: var(--ink-2);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -1023,37 +1158,37 @@
 .navigation-results {
   flex: 1;
   overflow: auto;
-  padding: 0 20px 20px;
+  padding: 0 var(--s-5) var(--s-5);
   scrollbar-width: thin;
   overscroll-behavior: contain;
-  scroll-padding-top: 12px;
+  scroll-padding-top: var(--s-3);
 }
 .contents-utility {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  margin: 8px 0 4px;
+  gap: var(--s-3);
+  margin: var(--s-2) 0 var(--s-1);
 }
 .contents-utility button {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-2);
   min-height: 36px;
-  padding: 0 4px;
-  font-size: var(--ui-12);
+  padding: 0 var(--s-1);
+  font-size: var(--t-ui);
   color: var(--ink-2);
 }
 .contents-utility button:hover {
   color: var(--ink);
 }
 .contents-item h3 {
-  margin: 18px 0 4px;
-  padding-top: 12px;
+  margin: var(--s-4) 0 var(--s-1);
+  padding-top: var(--s-3);
   border-top: 1px solid var(--rule-soft);
   font:
-    11px Graphik,
-    sans-serif;
-  letter-spacing: 0.12em;
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--ink-2);
 }
@@ -1061,7 +1196,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 11px 8px 11px 12px;
+  padding: var(--s-3) var(--s-2) var(--s-3) var(--s-3);
   border-radius: var(--radius-1);
   box-shadow: inset 2px 0 transparent;
 }
@@ -1077,7 +1212,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-3);
   text-align: left;
   border-radius: 2px;
   outline-offset: 4px;
@@ -1087,19 +1222,19 @@
 }
 .story-kicker {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--s-1);
   font:
-    11px Graphik,
-    sans-serif;
+    var(--t-label) 'Logic Monospace',
+    monospace;
   font-style: normal;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--accent);
 }
 .story-link {
   align-self: flex-start;
-  margin-top: 6px;
-  font-size: var(--ui-12);
+  margin-top: var(--s-2);
+  font-size: var(--t-ui);
   line-height: 1.35;
   color: var(--ink-2);
   text-decoration: none;
@@ -1117,43 +1252,47 @@
 .story-destination strong {
   display: block;
   font:
-    400 19px/1.2 AGaramondPro,
+    400 var(--t-title) / 1.2 AGaramondPro,
     Georgia,
     serif;
 }
 .story-destination small {
   display: block;
-  margin-top: 3px;
-  font-size: var(--ui-12);
+  margin-top: var(--s-1);
+  font-size: var(--t-ui);
   line-height: 1.35;
   color: var(--ink-2);
 }
+/* Page numbers are wayfinding: condensed numerals. */
 .story-folio {
-  padding-top: 3px;
-  font-size: var(--ui-12);
+  font:
+    400 var(--t-title) / 1.2 'Atlantic Serif',
+    Georgia,
+    serif;
   font-variant-numeric: tabular-nums;
   color: var(--ink-2);
 }
 .navigation-empty {
   margin: 0;
-  padding: 18px 0;
-  font-size: var(--ui-13);
+  padding: var(--s-4) 0;
+  font-size: var(--t-ui);
   line-height: 1.6;
   color: var(--ink-2);
 }
 .navigation-pages {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px 12px;
-  padding-top: 18px;
+  gap: var(--s-4) var(--s-3);
+  padding-top: var(--s-4);
 }
 .navigation-pages button {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  font-size: 11px;
+  gap: var(--s-2);
+  font-size: var(--t-label);
+  font-variant-numeric: tabular-nums;
   color: var(--ink-2);
 }
 .navigation-pages img {
@@ -1180,7 +1319,7 @@
 }
 .search-destination {
   width: 100%;
-  padding: 14px 0;
+  padding: var(--s-4) 0;
   text-align: left;
   border-bottom: 1px solid var(--rule-soft);
 }
@@ -1189,32 +1328,32 @@
   text-underline-offset: 3px;
 }
 .search-destination small {
-  font-size: 11px;
+  font-size: var(--t-label);
   line-height: 1.5;
   color: var(--ink-2);
 }
 .search-destination p {
-  margin: 6px 0 0;
+  margin: var(--s-2) 0 0;
   font:
-    400 17px/1.3 AGaramondPro,
+    400 var(--t-title) / 1.3 AGaramondPro,
     Georgia,
     serif;
 }
 .saved-destination {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 14px 0;
+  gap: var(--s-2);
+  padding: var(--s-4) 0;
   border-bottom: 1px solid var(--rule-soft);
 }
 .saved-destination > button:first-child {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--s-4);
   text-align: left;
   font:
-    400 19px/1.2 AGaramondPro,
+    400 var(--t-title) / 1.2 AGaramondPro,
     Georgia,
     serif;
 }
@@ -1224,9 +1363,9 @@
 }
 .saved-destination small {
   display: block;
-  margin-top: 4px;
+  margin-top: var(--s-1);
   font:
-    var(--ui-12) Graphik,
+    var(--t-ui) Graphik,
     sans-serif;
   color: var(--ink-2);
 }
@@ -1240,20 +1379,20 @@
 .contents-story-nav {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--s-2);
   flex-shrink: 0;
-  padding: 8px 12px calc(8px + var(--safe-bottom));
+  padding: var(--s-2) var(--s-3) calc(var(--s-2) + var(--safe-bottom));
   border-top: 1px solid var(--rule-soft);
 }
 .contents-story-nav button {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--s-2);
   min-height: 40px;
-  padding: 0 10px;
-  border-radius: var(--radius-1);
-  font-size: var(--ui-13);
+  padding: 0 var(--s-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
 }
 .contents-story-nav button:hover:not(:disabled) {
   background: var(--surface-2);
@@ -1268,13 +1407,13 @@
 }
 .appearance-popover {
   position: absolute;
-  top: 56px;
-  right: 10px;
+  top: calc(var(--bar-h) + var(--s-1));
+  right: var(--s-3);
   width: 320px;
-  max-width: calc(100% - 20px);
-  max-height: calc(100% - 72px);
+  max-width: calc(100% - var(--s-5));
+  max-height: calc(100% - var(--bar-h) - var(--s-5));
   overflow-y: auto;
-  padding: 16px 20px 20px;
+  padding: var(--s-4) var(--s-5) var(--s-5);
   z-index: 66;
   background: var(--surface);
   color: var(--ink);
@@ -1293,16 +1432,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
-  font-size: var(--ui-15);
+  margin-bottom: var(--s-2);
+  font-size: var(--t-ui-lg);
 }
 .popover-title button {
   display: grid;
   place-items: center;
   width: 36px;
   height: 36px;
-  margin-right: -8px;
-  border-radius: var(--radius-1);
+  margin-right: calc(-1 * var(--s-2));
+  border-radius: var(--radius-pill);
 }
 .popover-title button:hover {
   background: var(--surface-2);
@@ -1311,16 +1450,18 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--s-2);
   border: 0;
   padding: 0;
-  margin: 14px 0 0;
+  margin: var(--s-4) 0 0;
 }
 .appearance-popover legend {
-  margin-bottom: 8px;
+  margin-bottom: var(--s-2);
   padding: 0;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font:
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--ink-2);
 }
@@ -1328,11 +1469,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 34px;
-  padding: 0 12px;
+  min-height: 36px;
+  padding: 0 var(--s-3);
   border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-1);
-  font-size: var(--ui-13);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
 }
 .appearance-popover fieldset button:hover:not(:disabled) {
   border-color: var(--ink);
@@ -1342,7 +1483,14 @@
 }
 .appearance-popover .segmented > button {
   flex: 1;
-  min-height: 34px;
+  min-height: 36px;
+  border-radius: 0;
+}
+.appearance-popover .segmented > button:first-of-type {
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+}
+.appearance-popover .segmented > button:last-of-type {
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
 }
 .appearance-popover .segmented > button:not([aria-pressed='true']) {
   color: var(--ink);
@@ -1351,7 +1499,7 @@
   content: '';
   width: 12px;
   height: 12px;
-  margin-right: 8px;
+  margin-right: var(--s-2);
   border-radius: 50%;
   border: 1px solid #85817b;
 }
@@ -1364,16 +1512,16 @@
 .browser-reading-options p,
 .browser-reading-options output {
   display: block;
-  margin: 6px 0 0;
-  font-size: var(--ui-12);
+  margin: var(--s-2) 0 0;
+  font-size: var(--t-ui);
   line-height: 1.5;
   color: var(--ink-2);
 }
 .settings-help {
-  margin: 16px 0 0;
-  padding-top: 12px;
+  margin: var(--s-4) 0 0;
+  padding-top: var(--s-3);
   border-top: 1px solid var(--rule-soft);
-  font-size: var(--ui-12);
+  font-size: var(--t-ui);
   line-height: 1.6;
   color: var(--ink-2);
 }
@@ -1389,13 +1537,13 @@
   top: var(--reader-viewport-top, 0px);
   height: var(--reader-viewport-height, 100dvh);
   bottom: auto;
-  font-size: var(--ui-15);
+  font-size: var(--t-ui-lg);
 }
 .mobile-reader .reader-workspace {
   inset: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
 }
 .mobile-reader .page-viewport {
-  padding: 8px;
+  padding: var(--s-2);
   touch-action: pan-x pan-y;
   scrollbar-width: none;
 }
@@ -1425,9 +1573,9 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  color: var(--ink);
+  color: var(--night-ink);
   /* Opaque on purpose: a blurred bar over a canvas-heavy scroll costs frames. */
-  background: var(--surface);
+  background: var(--night);
   opacity: 0;
   visibility: hidden;
   transition:
@@ -1438,17 +1586,17 @@
 .mobile-top-bar {
   top: 0;
   height: calc(48px + var(--safe-top));
-  padding: var(--safe-top) 6px 0;
-  gap: 4px;
-  border-bottom: 1px solid var(--rule-soft);
+  padding: var(--safe-top) var(--s-1) 0;
+  gap: var(--s-1);
+  border-bottom: 1px solid var(--night-rule);
   transform: translateY(-6px);
 }
 .mobile-reader-bar {
   bottom: 0;
   height: calc(56px + var(--safe-bottom));
-  padding: 0 6px var(--safe-bottom);
-  gap: 6px;
-  border-top: 1px solid var(--rule-soft);
+  padding: 0 var(--s-1) var(--safe-bottom);
+  gap: var(--s-1);
+  border-top: 1px solid var(--night-rule);
   transform: translateY(6px);
 }
 .mobile-controls-visible .mobile-top-bar,
@@ -1462,38 +1610,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--s-2);
   min-width: 44px;
   height: 44px;
-  padding: 0 10px;
-  border-radius: var(--radius-1);
-  font-size: var(--ui-15);
+  padding: 0 var(--s-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui-lg);
 }
 .mobile-top-bar button:active,
 .mobile-reader-bar button:active:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--night-2);
 }
 .mobile-top-bar .strip-story {
   justify-self: center;
   min-width: 0;
   max-width: 100%;
   height: 44px;
-  padding: 0 8px;
+  padding: 0 var(--s-2);
   display: flex;
   align-items: center;
+  border-radius: var(--radius-pill);
 }
 .mobile-top-bar .strip-story strong {
   font:
-    400 16px/1.1 AGaramondPro,
+    400 var(--t-title) / 1.1 AGaramondPro,
     Georgia,
     serif;
 }
+/* Outside a story the bar names the place in the label voice. */
 .mobile-top-bar .strip-story.location strong {
   font:
-    500 var(--ui-13) / 1.2 Graphik,
-    sans-serif;
-  letter-spacing: 0.02em;
-  color: var(--ink-2);
+    var(--t-label) / 1.2 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--night-ink-2);
 }
 .mobile-top-bar .strip-story small {
   display: none;
@@ -1514,12 +1665,11 @@
 .mobile-reader-bar .view-switch {
   justify-self: center;
 }
-.mobile-reader-bar .segmented > button {
-  min-width: 0;
+/* Pages | Scroll: 36px segments in a 4px track make a 44px target. */
+.mobile-reader-bar .view-switch > button {
   height: 36px;
   min-height: 36px;
-  padding: 0 12px;
-  font-size: var(--ui-13);
+  padding: 0 var(--s-3);
 }
 .mobile-page-jump {
   min-width: 0;
@@ -1529,33 +1679,39 @@
   min-width: 40px;
   max-width: 72px;
   height: 44px;
-  padding: 0 4px;
+  padding: 0 var(--s-1);
   border: 0;
-  border-radius: var(--radius-1);
+  border-radius: var(--radius-pill);
   background: transparent;
   text-align: center;
-  color: var(--ink);
-  font-size: 16px;
+  color: var(--night-ink);
+  /* Condensed numerals; at least 16px so iOS never zooms on focus. */
+  font:
+    400 var(--t-title) / 1 'Atlantic Serif',
+    Georgia,
+    serif;
   font-variant-numeric: tabular-nums;
 }
 .mobile-page-jump input:focus {
-  background: var(--surface-2);
+  background: var(--night-2);
   outline: none;
 }
 /* Fit floats above the bar while zoomed in Pages: the way back without chrome. */
 .mobile-fit-chip {
   position: absolute;
-  right: 12px;
+  right: var(--s-3);
   bottom: calc(68px + var(--safe-bottom));
   z-index: 24;
   height: 36px;
-  padding: 0 14px;
-  border: 1px solid var(--rule-soft);
-  border-radius: var(--radius-2);
-  background: var(--surface);
-  color: var(--ink);
+  padding: 0 var(--s-4);
+  border: 1px solid var(--night-rule);
+  border-radius: var(--radius-pill);
+  background: var(--night-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--night-ink);
   box-shadow: var(--shadow-float);
-  font-size: var(--ui-13);
+  font-size: var(--t-ui);
   animation: toast-in 160ms ease;
 }
 .mobile-reader .reader-status {
@@ -1585,10 +1741,7 @@
   animation: sheet-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .mobile-reader .reader-navigation > header {
-  padding: 12px 12px 12px 20px;
-}
-.mobile-reader .reader-navigation h2 {
-  font-size: 30px;
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-5);
 }
 .mobile-reader .navigation-search input,
 .mobile-reader .navigation-tabs button,
@@ -1596,20 +1749,14 @@
 .mobile-reader .contents-story-nav button,
 .mobile-reader .story-destination small,
 .mobile-reader .navigation-empty {
-  font-size: var(--ui-15);
+  font-size: var(--t-ui-lg);
 }
 .mobile-reader .navigation-search input {
   font-size: 16px;
   min-height: 44px;
 }
-.mobile-reader .navigation-tabs button {
-  min-height: 46px;
-}
 .mobile-reader .story-destination {
-  padding: 13px 8px 13px 12px;
-}
-.mobile-reader .story-destination strong {
-  font-size: 21px;
+  padding: var(--s-3) var(--s-2) var(--s-3) var(--s-3);
 }
 .mobile-reader .contents-story-nav button {
   flex: 1;
@@ -1624,24 +1771,20 @@
     var(--reader-viewport-height, 100dvh) - var(--safe-top) -
       var(--safe-bottom) - 16px
   );
-  padding: 4px 22px 22px;
+  padding: var(--s-1) var(--s-5) var(--s-5);
   border: 0;
   border-radius: var(--radius-3) var(--radius-3) 0 0;
   animation: sheet-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .mobile-reader .appearance-popover .sheet-handle {
-  margin-bottom: 8px;
+  margin-bottom: var(--s-2);
 }
 .mobile-reader .appearance-popover fieldset {
-  margin-top: 18px;
+  margin-top: var(--s-4);
 }
 .mobile-reader .appearance-popover fieldset button {
-  min-height: 42px;
-  font-size: var(--ui-15);
-}
-.mobile-reader .settings-help,
-.mobile-reader .browser-reading-options p {
-  font-size: var(--ui-13);
+  min-height: 44px;
+  font-size: var(--t-ui-lg);
 }
 .mobile-reader .end-of-issue {
   width: min(320px, 100%);
@@ -1661,11 +1804,18 @@ body:has(.document-reader) {
   height: auto;
   overscroll-behavior-y: auto;
   overflow-anchor: none;
+  /* --night, which html cannot see: overscroll shows the stage, not white. */
+  background: #17181a;
+}
+html:has(.archive-app[data-theme='dark'] .document-reader),
+body:has(.archive-app[data-theme='dark'] .document-reader) {
+  background: #0f1011;
 }
 .archive-app:has(.document-reader) {
   height: auto;
   min-height: 100dvh;
   overflow: visible;
+  background: var(--night);
 }
 .archive-app:has(.document-reader) > .library-shell {
   position: fixed;

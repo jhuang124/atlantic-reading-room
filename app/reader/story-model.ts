@@ -152,6 +152,20 @@ export function locations(issue: ReadableIssue) {
   return result;
 }
 
+/**
+ * The story strip's label line: where this page sits in the issue's run of
+ * stories ("Features · Story 4 of 18"), or the location's own name for pages
+ * outside a story ("Cover", "Front matter", "Contents", "Back cover"). Plain
+ * case; the strip sets it in caps.
+ */
+export function wayfindingLabel(issue: ReadableIssue, page: number) {
+  const at = locate(issue, page);
+  if (!at.story) return at.label;
+  const count = `Story ${at.index + 1} of ${issue.contents.length}`;
+  const section = at.story.section?.trim();
+  return section ? `${section} · ${count}` : count;
+}
+
 export function adjacentStory(
   issue: ReadableIssue,
   page: number,
