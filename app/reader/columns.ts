@@ -44,8 +44,10 @@ export function pageColumns(words: Word[]): Column[] {
     // Each column is as wide as its own words, not as the space between
     // boundaries, so a wide gap never pads the column that borders it.
     const left = inside.length ? Math.min(...inside.map((w) => w.x)) : x;
+    // Gutter detection tolerates a stray word crossing it; the column still
+    // ends at its boundary rather than following that word into its neighbour.
     const right = inside.length
-      ? Math.max(...inside.map((w) => w.x + w.w))
+      ? Math.min(xs[i + 1], Math.max(...inside.map((w) => w.x + w.w)))
       : xs[i + 1];
     return {
       x: Math.max(0, left - 0.012),

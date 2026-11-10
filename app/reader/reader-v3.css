@@ -1687,6 +1687,12 @@
 .mobile-contents span {
   font-size: var(--t-ui-lg);
 }
+/* Narrow phones: the issue's page count goes first, then the label. */
+@media (max-width: 380px) {
+  .mobile-page-jump span {
+    display: none;
+  }
+}
 @media (max-width: 340px) {
   .mobile-contents span {
     display: none;

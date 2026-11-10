@@ -288,6 +288,8 @@ export default function Home() {
   // to the archive instead of retracing every viewed cover.
   const showIssue = (id: string) => {
     transition(() => setSelected(id));
+    // The page's scroller outlives the issue; a new issue starts at its cover.
+    document.querySelector('.issue-splash-backdrop')?.scrollTo({ top: 0 });
     setHash({ surface: 'issue', id }, false);
   };
   const startReading = (id: string, contents = false, page?: number) => {
@@ -1121,7 +1123,9 @@ export default function Home() {
                     </span>
                   </p>
                   {issueSections.map((section) => (
-                    <section key={section.name}>
+                    <section
+                      key={`${section.name}-${section.entries[0].printedPage}`}
+                    >
                       <h3>{section.name}</h3>
                       <ol>
                         {section.entries.map((entry) => {

@@ -83,6 +83,21 @@ and 15 end-to-end tests (desktop and phone) pass.
 - **Finish**: contrast tokens, night focus ring, browser chrome colour, year
   rail fade and follow, masthead fullscreen removed, shortcuts as a list.
 
+## Independent review
+
+A second reviewer read the diff cold. Six of its seven findings were real and
+are fixed: issue-page sections with repeated names shared a React key; paging
+to another issue kept the old scroll position; one stray word could stretch a
+column into its neighbour (24 of 337 pages sampled, now 0 of 780); phone
+Pages over-zoomed by about 4%; the phone bar crowded below 380px; and on
+desktop a double-click could miss its way back to Fit while magnified. The
+seventh (browser chrome colour in light theme) was a misread: the reader desk
+is night in both themes.
+
+One thing it surfaced that is by design: on desktop, double-clicking *text*
+selects the word, so smart zoom there starts from a margin or gutter. On a
+phone it works anywhere on the column.
+
 ## Left for a later pass
 
 - Dark-mode users see a 180ms fade from light on first load (the theme is

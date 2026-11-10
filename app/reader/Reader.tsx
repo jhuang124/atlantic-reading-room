@@ -621,10 +621,17 @@ export default function Reader({
         ? { left: 0, width: window.innerWidth }
         : el.getBoundingClientRect();
       const target = mobile ? port.width - 16 : Math.min(port.width - 96, 460);
+      // Phone Pages keeps an 8px margin round a fitted page and drops it
+      // once magnified, so the page the zoom multiplies is a little wider
+      // than the one on screen now.
+      const pageWidth =
+        mobile && mode !== 'scroll'
+          ? Math.min(port.width, (area.height - 16) / baseRatio)
+          : box.width;
       const fit = columnFit(
         index[Number(leaf.dataset.page) - 1]?.words,
         (clientX - box.left) / box.width,
-        box.width,
+        pageWidth,
         target,
       );
       if (!fit) {
@@ -636,7 +643,7 @@ export default function Reader({
         clientX: port.left + (port.width - target) / 2,
       });
     },
-    [changeZoom, index, mobile, documentReading],
+    [changeZoom, index, mobile, mode, documentReading, area.height, baseRatio],
   );
   useLayoutEffect(() => {
     const el = viewport.current,
@@ -1424,6 +1431,17 @@ export default function Reader({
             }}
             onPointerUp={() => (drag.current = null)}
             onPointerCancel={() => (drag.current = null)}
+            onDoubleClick={(e) => {
+              // While magnified the viewport captures the pointer to pan, and
+              // a browser may then deliver the double-click here instead of
+              // to the page. It is still the way back to Fit.
+              if (
+                !mobile &&
+                e.target === e.currentTarget &&
+                zoomRef.current > 1.01
+              )
+                smartZoom(e.clientX, e.clientY);
+            }}
           >
             {pdf && mode === 'scroll' && (
               <ContinuousPages
@@ -1871,7 +1889,7 @@ export default function Reader({
                     [['/'], 'Search this issue'],
                     [['B'], 'Save the page'],
                     [['F'], 'Focus'],
-                    [['+', '−'], 'Zoom; double-click fits a column'],
+                    [['+', '−'], 'Zoom; double-click a margin to fit a column'],
                   ] as const
                 ).map(([keys, action]) => (
                   <div key={action}>
