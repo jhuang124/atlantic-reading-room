@@ -57,3 +57,16 @@ test('Route formatting round-trips through parsing', () => {
     '#/202609/read',
   );
 });
+
+test('The archive lenses have their own fragments and the front page owns #/', () => {
+  assert.deepEqual(parseRoute('#/issues'), { surface: 'archive', lens: 'issues' });
+  assert.deepEqual(parseRoute('#/writers'), {
+    surface: 'archive',
+    lens: 'writers',
+  });
+  assert.equal(routeHash({ surface: 'archive' }), '#/');
+  assert.equal(routeHash({ surface: 'archive', lens: 'issues' }), '#/issues');
+  assert.equal(routeHash({ surface: 'archive', lens: 'writers' }), '#/writers');
+  // An unknown word is still the front page, not a lens.
+  assert.deepEqual(parseRoute('#/stories'), { surface: 'archive' });
+});

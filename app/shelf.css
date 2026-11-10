@@ -97,31 +97,6 @@
   color: var(--night-ink);
   padding: var(--s-8) var(--s-6) var(--s-8);
 }
-.archive-hero-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(220px, 320px) minmax(0, 1fr) minmax(220px, 280px);
-  gap: var(--s-7);
-  align-items: center;
-}
-.archive-hero-cover {
-  display: block;
-}
-.archive-hero-cover img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: 2px;
-  box-shadow: var(--shadow-object);
-  transition:
-    transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 320ms ease;
-}
-.archive-hero-cover:hover img {
-  transform: translateY(-6px);
-}
 .archive-hero-copy {
   min-width: 0;
 }
@@ -229,71 +204,6 @@ a.archive-hero-secondary {
 a.archive-hero-secondary:hover {
   background: none;
   color: var(--night-ink);
-}
-.archive-hero-inside {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-left: var(--s-6);
-  border-left: 1px solid var(--night-rule);
-}
-.archive-hero-inside > p {
-  font:
-    var(--t-label) 'Logic Monospace',
-    monospace;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--night-ink-2);
-  padding-bottom: var(--s-3);
-}
-.archive-hero-inside ol {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  counter-reset: inside;
-}
-.archive-hero-inside li {
-  counter-increment: inside;
-  border-top: 1px solid var(--night-rule);
-}
-.archive-hero-inside button {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  column-gap: var(--s-3);
-  width: 100%;
-  padding: var(--s-3) 0;
-  text-align: left;
-}
-.archive-hero-inside button::before {
-  content: counter(inside);
-  grid-row: span 2;
-  font:
-    32px / 0.9 'Atlantic Serif',
-    Georgia,
-    serif;
-  color: var(--night-ink-3);
-  transition: color 160ms ease;
-}
-.archive-hero-inside strong {
-  font:
-    400 17px / 1.2 'AGaramondPro',
-    Georgia,
-    serif;
-  color: var(--night-ink);
-}
-.archive-hero-inside span {
-  margin-top: 2px;
-  font-size: var(--t-ui);
-  color: var(--night-ink-2);
-}
-.archive-hero-inside button:hover::before {
-  color: var(--night-accent);
-}
-.archive-hero-inside button:hover strong {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
 }
 
 /* ---------- Browse bar (sticky) ---------- */
@@ -1182,21 +1092,6 @@ a.archive-hero-secondary:hover {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {
-  .archive-hero-inner {
-    grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
-    gap: var(--s-6) var(--s-7);
-  }
-  .archive-hero-inside {
-    grid-column: 1 / -1;
-    padding: var(--s-5) 0 0;
-    border-left: 0;
-    border-top: 1px solid var(--night-rule);
-  }
-  .archive-hero-inside ol {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: var(--s-6);
-  }
 }
 @media (max-width: 900px) {
   .archive-filter-inner {
@@ -1221,14 +1116,6 @@ a.archive-hero-secondary:hover {
   .archive-hero {
     padding: var(--s-6) var(--s-4) var(--s-7);
   }
-  .archive-hero-inner {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--s-5);
-  }
-  .archive-hero-cover {
-    width: min(62vw, 260px);
-    justify-self: center;
-  }
   .archive-hero h2 {
     font-size: clamp(32px, 9vw, 40px);
   }
@@ -1241,9 +1128,6 @@ a.archive-hero-secondary:hover {
   .archive-hero-primary {
     flex: 1 1 100%;
     justify-content: space-between;
-  }
-  .archive-hero-inside ol {
-    grid-template-columns: minmax(0, 1fr);
   }
   .archive-filter-inner {
     padding: var(--s-2) var(--s-4);

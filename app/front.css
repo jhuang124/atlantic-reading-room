@@ -1,0 +1,658 @@
+/* The Print Edition — V7 front page: the archive as stories. A lead story
+   shown as the magazine opens it, the lenses (Today, Writers, Issues), the
+   story rails and the writers index. Tokens come from themes.css. */
+
+/* ---------- Opening art ---------- */
+.opener-art {
+  position: relative;
+  display: flex;
+  width: 100%;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--paper-stack);
+}
+.opener-art img {
+  display: block;
+  width: 50%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+.opener-art.single img {
+  width: 100%;
+}
+/* The fold: a soft shade where the two pages meet. */
+.opener-art.spread::after {
+  content: '';
+  position: absolute;
+  inset: 0 calc(50% - 5%);
+  background: linear-gradient(
+    to right,
+    transparent,
+    #0000001f 42%,
+    #00000038 50%,
+    #0000001f 58%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ---------- Lead (night) ---------- */
+.front-lead {
+  padding: var(--s-7) var(--s-6) var(--s-8);
+}
+.front-lead-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--s-8);
+  align-items: center;
+}
+.front-lead-art {
+  display: block;
+  width: 100%;
+  border-radius: 2px;
+  box-shadow: var(--shadow-object);
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.front-lead-art:has(.single),
+.front-lead-art:has(.front-lead-cover) {
+  width: 52%;
+  justify-self: center;
+}
+.front-lead-cover {
+  width: 100%;
+  height: auto;
+  border-radius: 2px;
+}
+@media (hover: hover) {
+  .front-lead-art:hover {
+    transform: translateY(-6px);
+  }
+}
+.front-lead .archive-hero-copy h2 {
+  font-size: clamp(36px, 3.8vw, 60px);
+}
+.front-lead-issue {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  margin-top: var(--s-6);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--night-rule);
+  text-align: left;
+  color: var(--night-ink);
+}
+.front-lead-issue img {
+  width: 48px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 1px;
+  box-shadow: 0 1px 2px #0000004d, 0 6px 14px #00000059;
+}
+.front-lead-issue span {
+  display: grid;
+  gap: 2px;
+}
+.front-lead-issue small {
+  font:
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--night-ink-2);
+}
+.front-lead-issue strong {
+  font:
+    400 var(--t-title) / 1.2 'AGaramondPro',
+    Georgia,
+    serif;
+}
+.front-lead-issue em {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font:
+    normal var(--t-ui) Graphik,
+    sans-serif;
+  color: var(--night-ink-2);
+}
+@media (hover: hover) {
+  .front-lead-issue:hover em {
+    color: var(--night-ink);
+  }
+  .front-lead-issue:hover strong {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+
+/* ---------- Lenses ---------- */
+.archive-lens {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+.archive-lens button {
+  height: 32px;
+  padding: 0 var(--s-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui);
+  color: var(--ink-2);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+.archive-lens button:hover {
+  color: var(--ink);
+}
+.archive-lens button[aria-current='page'] {
+  background: var(--ink);
+  color: var(--surface);
+}
+.archive-year-rail[hidden],
+.archive-compact-filters[hidden] {
+  display: none;
+}
+/* Lenses lead, search closes the bar; the year rail and sort sit between
+   them when the shelves are showing. */
+.archive-filter-inner .archive-search {
+  order: 3;
+  margin-left: auto;
+}
+
+/* ---------- Front page ---------- */
+.front {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--s-6);
+}
+.front-section {
+  padding-top: var(--s-8);
+}
+.front-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--rule);
+}
+.front-head h2 {
+  font:
+    400 var(--t-display) / 0.9 'Atlantic Serif',
+    Georgia,
+    serif;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.front-head > span,
+.front-label {
+  font:
+    var(--t-label) 'Logic Monospace',
+    monospace;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.front-head button,
+.front-more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  min-height: 32px;
+  font-size: var(--t-ui);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.front-head button:hover,
+.front-more:hover {
+  color: var(--ink);
+}
+.story-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-6) var(--s-5);
+  padding-top: var(--s-5);
+}
+.story-card {
+  display: grid;
+  align-content: start;
+  gap: var(--s-3);
+  min-width: 0;
+  text-align: left;
+}
+.story-card .opener-art {
+  aspect-ratio: 3 / 2;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  box-shadow:
+    0 1px 2px #00000026,
+    0 10px 22px #0000001f;
+  transition:
+    transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 320ms ease;
+}
+/* A story that opens on one page sits on the mat at its own proportion. */
+.story-card .opener-art.single img {
+  width: auto;
+  height: 100%;
+}
+@media (hover: hover) {
+  .story-card:hover .opener-art {
+    transform: translateY(-4px);
+    box-shadow:
+      0 2px 4px #00000026,
+      0 18px 34px #0000002e;
+  }
+  .story-card:hover strong {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+.story-card-copy {
+  display: grid;
+  gap: var(--s-1);
+}
+.story-card-copy strong {
+  font:
+    400 22px / 1.15 'AGaramondPro',
+    Georgia,
+    serif;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.story-card-copy span {
+  font-size: var(--t-ui);
+  color: var(--ink-2);
+}
+
+/* This month, years ago: a tinted band that runs edge to edge, the year as
+   the wayfinding. */
+.front-time {
+  margin-top: var(--s-8);
+  padding-top: var(--s-7);
+  padding-bottom: var(--s-7);
+  background: var(--surface-2);
+  box-shadow: 0 0 0 100vmax var(--surface-2);
+  clip-path: inset(0 -100vmax);
+}
+.time-rail {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s-5) var(--s-4);
+}
+.story-card-year {
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--rule-soft);
+  font:
+    400 44px / 0.9 'Atlantic Serif',
+    Georgia,
+    serif;
+  color: var(--ink);
+}
+.time-rail .story-card .opener-art {
+  background: var(--surface);
+}
+.time-rail .story-card-copy strong {
+  font-size: var(--t-title);
+}
+
+/* The newest covers: the way into the Issues lens. */
+.cover-rail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s-5);
+  padding-top: var(--s-5);
+}
+.cover-rail button {
+  display: grid;
+  gap: var(--s-3);
+  text-align: left;
+}
+.cover-rail img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 2px;
+  background: var(--surface-2);
+  box-shadow:
+    0 1px 2px #00000026,
+    0 10px 22px #0000001f;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cover-rail span {
+  font:
+    400 var(--t-title) / 1.2 'AGaramondPro',
+    Georgia,
+    serif;
+  color: var(--ink);
+}
+@media (hover: hover) {
+  .cover-rail button:hover img {
+    transform: translateY(-4px);
+  }
+}
+
+/* Criticism, dispatches and writers, set in type. */
+.front-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(0, 0.8fr);
+  gap: var(--s-7);
+}
+.front-label {
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--rule);
+  color: var(--accent);
+}
+.front-type ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.front-type li {
+  border-bottom: 1px solid var(--rule-soft);
+}
+.front-type li button {
+  display: grid;
+  gap: var(--s-1);
+  width: 100%;
+  padding: var(--s-3) 0;
+  text-align: left;
+}
+.front-type li strong {
+  font:
+    400 22px / 1.2 'AGaramondPro',
+    Georgia,
+    serif;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.front-type li span {
+  font-size: var(--t-ui);
+  color: var(--ink-2);
+}
+.front-writers li button {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  padding: var(--s-2) 0;
+}
+.front-writers li strong {
+  font-size: var(--t-title);
+}
+.front-writers li span {
+  font:
+    400 22px / 1 'Atlantic Serif',
+    Georgia,
+    serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+@media (hover: hover) {
+  .front-type li button:hover strong,
+  .writers-leading button:hover strong {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+.front-more {
+  margin-top: var(--s-3);
+}
+.front-stacks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--s-3) var(--s-5);
+  margin-top: var(--s-8);
+  padding: var(--s-6) 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule-soft);
+}
+.front-stacks p {
+  font-size: var(--t-ui);
+  color: var(--ink-2);
+}
+.front-stacks button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 44px;
+  padding: 0 var(--s-5);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-ui-lg);
+  color: var(--ink);
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+.front-stacks button:hover {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+/* ---------- Writers ---------- */
+.writers-page .front-section {
+  padding-top: var(--s-7);
+}
+.writers-leading {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-5) 0 var(--s-6);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-5);
+  border-bottom: 1px solid var(--rule-soft);
+}
+.writers-leading button {
+  display: grid;
+  gap: var(--s-1);
+  width: 100%;
+  text-align: left;
+}
+.writers-leading span {
+  font:
+    400 52px / 0.9 'Atlantic Serif',
+    Georgia,
+    serif;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.writers-leading strong {
+  font:
+    400 24px / 1.15 'AGaramondPro',
+    Georgia,
+    serif;
+  color: var(--ink);
+}
+.writers-index {
+  columns: 4 220px;
+  column-gap: var(--s-6);
+  padding-top: var(--s-6);
+}
+.writers-index section {
+  break-inside: avoid;
+  padding-bottom: var(--s-5);
+}
+.writers-index h3 {
+  padding-bottom: var(--s-1);
+  border-bottom: 1px solid var(--rule);
+  font:
+    400 32px / 1 'Atlantic Serif',
+    Georgia,
+    serif;
+  color: var(--ink);
+}
+.writers-index ul {
+  list-style: none;
+  margin: 0;
+  padding: var(--s-1) 0 0;
+}
+.writers-index li button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 32px;
+  font-size: var(--t-ui-lg);
+  color: var(--ink);
+  text-align: left;
+}
+.writers-index li button span {
+  font-size: var(--t-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-3);
+}
+.writers-index li button:hover {
+  color: var(--accent);
+}
+.writers-note {
+  padding: var(--s-4) 0 0;
+  font-size: var(--t-ui);
+  color: var(--ink-2);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .front-lead-inner {
+    gap: var(--s-6);
+  }
+  .time-rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .front-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .front-writers {
+    grid-column: 1 / -1;
+  }
+  .front-writers ol {
+    columns: 2;
+    column-gap: var(--s-7);
+  }
+  .writers-leading {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 900px) {
+  /* One row: the lenses and a search that takes what is left. */
+  .archive-filter-inner .archive-search {
+    order: 0;
+    flex: 1 1 120px;
+    /* The field's own width would otherwise push it to a second row. */
+    min-width: 0;
+    margin-left: 0;
+  }
+  .archive-filter-inner .archive-year-rail {
+    flex: 1 1 60%;
+  }
+  .archive-lens button {
+    padding: 0 var(--s-3);
+  }
+}
+@media (max-width: 760px) {
+  .front-lead {
+    padding: var(--s-5) var(--s-4) var(--s-7);
+  }
+  .front-lead-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-5);
+  }
+  .front-lead-art:has(.single),
+  .front-lead-art:has(.front-lead-cover) {
+    width: 64%;
+  }
+  .front {
+    padding: 0 var(--s-4);
+  }
+  .front-section {
+    padding-top: var(--s-7);
+  }
+  .front-head h2 {
+    font-size: 36px;
+  }
+  .front-head {
+    flex-wrap: wrap;
+    row-gap: var(--s-2);
+  }
+  .front-head > span {
+    flex-basis: 100%;
+  }
+  /* Rails run sideways under the thumb and snap card by card. */
+  .story-rail {
+    display: flex;
+    gap: var(--s-4);
+    margin: 0 calc(-1 * var(--s-4));
+    padding: var(--s-5) var(--s-4) var(--s-2);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--s-4);
+    scrollbar-width: none;
+  }
+  .story-rail::-webkit-scrollbar {
+    display: none;
+  }
+  .story-rail .story-card {
+    flex: 0 0 78%;
+    scroll-snap-align: start;
+  }
+  .time-rail .story-card {
+    flex-basis: 56%;
+  }
+  .front-time {
+    margin-top: var(--s-7);
+    padding-top: var(--s-6);
+    padding-bottom: var(--s-6);
+  }
+  .front-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-6);
+  }
+  .cover-rail {
+    display: flex;
+    gap: var(--s-4);
+    margin: 0 calc(-1 * var(--s-4));
+    padding: var(--s-5) var(--s-4) var(--s-2);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--s-4);
+    scrollbar-width: none;
+  }
+  .cover-rail button {
+    flex: 0 0 40%;
+    scroll-snap-align: start;
+  }
+  .front-writers ol {
+    columns: 1;
+  }
+  .writers-leading {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .writers-index li button,
+  .front-head button,
+  .front-more {
+    min-height: 44px;
+  }
+}
+@media (pointer: coarse) {
+  .archive-lens button {
+    height: 36px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .front-lead-art,
+  .cover-rail img,
+  .story-card .opener-art {
+    transition: none;
+  }
+}

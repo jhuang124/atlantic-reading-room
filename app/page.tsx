@@ -25,8 +25,15 @@ import availableIssues from '../public/reader-assets/available.json';
 import { readerIssues, type ContentsEntry } from './reader/catalog';
 import { loadPlace, type ReadingPlace } from './reader/place';
 import { pageLabel } from './reader/model';
-import { locate, locationTitle, physicalPage } from './reader/story-model';
-import { parseRoute, routeHash, type Route } from './routes';
+import {
+  coverStoryEntry,
+  locate,
+  locationTitle,
+  physicalPage,
+} from './reader/story-model';
+import { parseRoute, routeHash, type Lens, type Route } from './routes';
+import { archive, type ArchiveStory } from './archive';
+import { OpenerArt, Today, Writers } from './Front';
 import About from './About';
 const loadReader = () => import('./reader/Reader');
 const Reader = lazy(loadReader);
@@ -68,16 +75,15 @@ const title = (issue: Issue) =>
 const heroId = available[0];
 const heroIssue = issues.find((i) => i.id === heroId);
 const heroEntry = readerIssues.find((i) => i.id === heroId);
-// The hero's "In this issue" list: the features after the cover story.
-const heroFeatures = (() => {
-  if (!heroEntry || !heroIssue) return [];
-  const cover = title(heroIssue).toLowerCase();
-  const rest = heroEntry.contents.filter(
-    (e) => e.section !== 'Cover story' && e.title.toLowerCase() !== cover,
-  );
-  const features = rest.filter((e) => e.section === 'Features');
-  return (features.length >= 3 ? features : rest).slice(0, 4);
-})();
+// The lead is the current issue's cover story, shown as the magazine opens
+// it: the story's own first spread.
+const leadStory = heroEntry ? coverStoryEntry(heroEntry) : undefined;
+const leadEntry: ArchiveStory | undefined =
+  heroEntry && leadStory
+    ? archive.find(
+        (entry) => entry.issue.id === heroEntry.id && entry.story === leadStory,
+      )
+    : undefined;
 export default function Home() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   useLayoutEffect(() => {
@@ -105,6 +111,10 @@ export default function Home() {
   );
   // The year rail jumps through the shelf and follows the year in view.
   const [yearInView, setYearInView] = useState<number | null>(null);
+  // The archive's three lenses: the front page, writers, and the shelves.
+  const [lens, setLens] = useState<Lens>('today');
+  const lensRef = useRef<Lens>('today');
+  lensRef.current = lens;
   const [query, setQuery] = useState('');
   const [readableOnly, setReadableOnly] = useState(false);
   const [sort, setSort] = useState('newest');
@@ -257,11 +267,13 @@ export default function Home() {
         setAbout(true);
       });
     } else {
+      const next = route.surface === 'archive' ? route.lens : undefined;
       apply(() => {
         setSelected(null);
         setOpening(false);
         setReadingId(null);
         setAbout(false);
+        setLens(next ?? 'today');
       });
       requestAnimationFrame(() =>
         previousFocus.current?.focus({ preventScroll: true }),
@@ -271,7 +283,8 @@ export default function Home() {
   useEffect(() => {
     const route = parseRoute(location.hash);
     history.replaceState({ room: routeDepth() }, '', routeHash(route));
-    if (route.surface !== 'archive') applyRoute(route, false);
+    // A lens in the fragment is part of the archive route and still applies.
+    if (route.surface !== 'archive' || route.lens) applyRoute(route, false);
     const onPop = () => applyRoute(parseRoute(location.hash));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -349,8 +362,12 @@ export default function Home() {
     const depth = routeDepth();
     if (depth > 0) history.go(-depth);
     else {
-      history.replaceState({ room: 0 }, '', routeHash({ surface: 'archive' }));
-      applyRoute({ surface: 'archive' });
+      const home: Route = {
+        surface: 'archive',
+        ...(lensRef.current === 'today' ? {} : { lens: lensRef.current }),
+      };
+      history.replaceState({ room: 0 }, '', routeHash(home));
+      applyRoute(home);
     }
   }, [selected, applyRoute]);
   const returnToLibrary = closeOverlay;
@@ -403,6 +420,8 @@ export default function Home() {
   // the cover grid narrows to issues that match by name or cover story.
   const needle = query.trim().toLowerCase();
   const searching = needle.length >= 2;
+  // Search answers over every lens; otherwise the shelves are the Issues lens.
+  const showShelves = searching || lens === 'issues';
   const storyHits = useMemo(() => {
     if (!searching) return [];
     const hits = readerIssues.flatMap((entry) =>
@@ -509,7 +528,7 @@ export default function Home() {
       shell.removeEventListener('scroll', onScroll);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [shelves]);
+  }, [shelves, showShelves]);
   // Keep the year in view visible in the rail when the rail itself scrolls.
   useEffect(() => {
     const rail = browseBar.current?.querySelector<HTMLElement>(
@@ -585,6 +604,32 @@ export default function Home() {
   const newerIssue = issuePosition > 0 ? issues[issuePosition - 1] : undefined;
   const olderIssue =
     issuePosition >= 0 ? issues[issuePosition + 1] : undefined;
+  const readLead = () =>
+    heroEntry &&
+    startReading(heroEntry.id, false, leadEntry ? leadEntry.page : undefined);
+  const openStory = (entry: ArchiveStory) =>
+    startReading(entry.issue.id, false, entry.page);
+  const chooseLens = (next: Lens) => {
+    setQuery('');
+    setLens(next);
+    history.replaceState(
+      history.state,
+      '',
+      routeHash({
+        surface: 'archive',
+        ...(next === 'today' ? {} : { lens: next }),
+      }),
+    );
+    // A new lens starts at its top when the bar is already pinned.
+    const shell = library.current,
+      browser = shell?.querySelector<HTMLElement>('.archive-browser');
+    if (!shell || !browser) return;
+    const top =
+      browser.getBoundingClientRect().top -
+      shell.getBoundingClientRect().top +
+      shell.scrollTop;
+    if (shell.scrollTop > top) shell.scrollTo({ top });
+  };
   const masthead = (
     <header className="archive-masthead">
           <span className="archive-masthead-title">The Print Edition</span>
@@ -615,33 +660,30 @@ export default function Home() {
           <h1 className="archive-visually-hidden">Magazine archive</h1>
           {heroIssue && heroEntry && (
             <section
-              className="archive-hero"
+              className="archive-hero front-lead"
               aria-labelledby="archive-hero-title"
             >
-              <div className="archive-hero-inner">
+              <div className="front-lead-inner">
                 <button
-                  className="archive-hero-cover"
-                  aria-label={`View ${heroIssue.issue}`}
-                  onClick={() => openIssue(heroIssue.id, true)}
+                  className="front-lead-art"
+                  aria-label={`Read ${title(heroIssue)}`}
+                  onClick={readLead}
                 >
-                  <img
-                    style={{
-                      viewTransitionName:
-                        heroTransition.current &&
-                        selected !== heroIssue.id &&
-                        transitionCover === heroIssue.id
-                          ? `cover-${heroIssue.id}`
-                          : 'none',
-                    }}
-                    src={heroIssue.cover}
-                    alt={`The Atlantic, ${heroIssue.issue}`}
-                    width="300"
-                    height="400"
-                  />
+                  {leadEntry && leadEntry.art.length > 0 ? (
+                    <OpenerArt entry={leadEntry} eager />
+                  ) : (
+                    <img
+                      className="front-lead-cover"
+                      src={heroIssue.cover}
+                      alt=""
+                      width="300"
+                      height="400"
+                    />
+                  )}
                 </button>
                 <div className="archive-hero-copy">
                   <p className="archive-hero-kicker">
-                    Current issue <span>{heroIssue.issue}</span>
+                    Cover story <span>{heroIssue.issue}</span>
                   </p>
                   <h2 id="archive-hero-title">{title(heroIssue)}</h2>
                   {heroIssue.coverStories[0]?.authors.length > 0 && (
@@ -657,20 +699,14 @@ export default function Home() {
                   <div className="archive-hero-actions">
                     <button
                       className="archive-hero-primary"
-                      onClick={() => startReading(heroIssue.id)}
+                      onClick={
+                        heroStory ? () => startReading(heroIssue.id) : readLead
+                      }
                     >
                       <span>
-                        {heroStory
-                          ? `Continue · ${heroStory}`
-                          : 'Read the issue'}
+                        {heroStory ? `Continue · ${heroStory}` : 'Read the story'}
                       </span>
                       <ArrowRight size={16} />
-                    </button>
-                    <button
-                      className="archive-hero-secondary"
-                      onClick={() => startReading(heroIssue.id, true)}
-                    >
-                      Contents
                     </button>
                     <a
                       className="archive-hero-secondary"
@@ -681,30 +717,35 @@ export default function Home() {
                       On TheAtlantic.com <ArrowUpRight size={14} />
                     </a>
                   </div>
+                  <button
+                    className="front-lead-issue"
+                    aria-label={`View ${heroIssue.issue}`}
+                    onClick={() => openIssue(heroIssue.id, true)}
+                  >
+                    <img
+                      style={{
+                        viewTransitionName:
+                          heroTransition.current &&
+                          selected !== heroIssue.id &&
+                          transitionCover === heroIssue.id
+                            ? `cover-${heroIssue.id}`
+                            : 'none',
+                      }}
+                      src={heroIssue.cover}
+                      alt={`The Atlantic, ${heroIssue.issue}`}
+                      width="300"
+                      height="400"
+                    />
+                    <span>
+                      <small>From the issue</small>
+                      <strong>{heroIssue.issue}</strong>
+                      <em>
+                        {heroEntry.contents.length} stories{' '}
+                        <ArrowRight size={13} />
+                      </em>
+                    </span>
+                  </button>
                 </div>
-                {heroFeatures.length > 0 && (
-                  <nav className="archive-hero-inside" aria-label="In this issue">
-                    <p>In this issue</p>
-                    <ol>
-                      {heroFeatures.map((entry) => (
-                        <li key={entry.printedPage}>
-                          <button
-                            onClick={() =>
-                              startReading(
-                                heroEntry.id,
-                                false,
-                                physicalPage(entry.printedPage, heroEntry),
-                              )
-                            }
-                          >
-                            <strong>{entry.title}</strong>
-                            {entry.author && <span>{entry.author}</span>}
-                          </button>
-                        </li>
-                      ))}
-                    </ol>
-                  </nav>
-                )}
               </div>
             </section>
           )}
@@ -714,6 +755,25 @@ export default function Home() {
           >
             <div className="archive-filter-bar" ref={browseBar}>
               <div className="archive-filter-inner">
+                <nav className="archive-lens" aria-label="Browse by">
+                  {(
+                    [
+                      ['today', 'Today'],
+                      ['writers', 'Writers'],
+                      ['issues', 'Issues'],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      aria-current={
+                        !searching && lens === value ? 'page' : undefined
+                      }
+                      onClick={() => chooseLens(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </nav>
                 <label className="archive-search">
                   <Search size={16} />
                   <input
@@ -732,7 +792,11 @@ export default function Home() {
                     </button>
                   )}
                 </label>
-                <nav className="archive-year-rail" aria-label="Jump to year">
+                <nav
+                  className="archive-year-rail"
+                  aria-label="Jump to year"
+                  hidden={!showShelves}
+                >
                   {shelves.map(({ year: y }) => (
                     <button
                       key={y}
@@ -743,7 +807,7 @@ export default function Home() {
                     </button>
                   ))}
                 </nav>
-                <div className="archive-compact-filters">
+                <div className="archive-compact-filters" hidden={!showShelves}>
                   <button
                     className="archive-sort"
                     aria-label={
@@ -776,7 +840,11 @@ export default function Home() {
                   : `${filtered.length} issues`}
               </output>
             </div>
-            {lastRead && lastReadIssue && !query && lastRead.id !== heroId && (
+            {lastRead &&
+              lastReadIssue &&
+              !query &&
+              lens !== 'writers' &&
+              lastRead.id !== heroId && (
               <button
                 className="archive-continue"
                 onClick={() => startReading(lastRead.id)}
@@ -816,6 +884,21 @@ export default function Home() {
                 <ArrowRight size={16} />
               </button>
             )}
+            {!searching && lens === 'today' && heroId && (
+              <Today
+                heroId={heroId}
+                onOpen={openStory}
+                onIssue={(id) => openIssue(id)}
+                onWriter={setQuery}
+                onWriters={() => chooseLens('writers')}
+                recent={issues
+                  .filter((i) => i.id !== heroId && available.includes(i.id))
+                  .slice(0, 6)}
+                issueCount={issues.length}
+                onIssues={() => chooseLens('issues')}
+              />
+            )}
+            {!searching && lens === 'writers' && <Writers onWriter={setQuery} />}
             {storyHits.length > 0 && (
               <section className="search-stories" aria-label="Matching stories">
                 <header className="shelf-year-head">
@@ -863,7 +946,8 @@ export default function Home() {
                 )}
               </section>
             )}
-            {shelves.map(({ year: y, issues: group }) => (
+            {showShelves &&
+              shelves.map(({ year: y, issues: group }) => (
               <section
                 className="shelf-year"
                 id={`shelf-${y}`}

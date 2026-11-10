@@ -4,6 +4,16 @@ An Atlantic magazine archive and reader: 71 complete issues from January/Februar
 
 [Open the demo](https://jhuang124.github.io/atlantic-reading-room/)
 
+## V7 (November 2026)
+
+V7 changes what the archive is: **stories first**. The front page leads with
+the cover story shown as its own opening spread, then the issue's other
+features, the same month in earlier years, criticism and dispatches in type,
+and the most-published writers. `Today`, `Writers` and `Issues` are lenses
+with their own addresses (`#/`, `#/writers`, `#/issues`); the cover shelves
+are the Issues lens. Opening art comes from `node scripts/prepare-openers.mjs`
+(needs `pdftoppm` and `cwebp`). [V7-DESIGN.md](V7-DESIGN.md) has the reasoning.
+
 ## V6 (November 2026)
 
 V6 is a usability pass on V5's night stage; [V6-DESIGN.md](V6-DESIGN.md) has

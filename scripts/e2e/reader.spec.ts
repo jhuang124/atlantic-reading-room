@@ -72,6 +72,44 @@ test('shelf search lists matching stories and opens one', async ({ page }) => {
   await expect.poll(() => hash(page)).toMatch(/^#\/\d{6}\/read\/p\d+$/);
 });
 
+// V7: the archive opens on stories. The front page, its lenses and the
+// writers index.
+test('front page opens a story from its opening art', async ({ page }) => {
+  await openArchive(page);
+  await expect(page.locator('.front-lead-art img').first()).toBeVisible();
+  const card = page.locator('.front .story-card').first();
+  await expect(card.locator('img').first()).toBeVisible();
+  // The time rail names a year on every card.
+  await expect(page.locator('.time-rail .story-card-year').first()).toHaveText(
+    /^20\d\d$/,
+  );
+  await card.click();
+  await expect(page.locator(READER)).toBeVisible();
+  await expect.poll(() => hash(page)).toMatch(/^#\/\d{6}\/read\/p\d+$/);
+});
+
+test('lenses have their own addresses; a writer leads to their stories', async ({
+  page,
+}) => {
+  await page.goto('/#/issues');
+  await expect(page.locator('.archive-grid').first()).toBeVisible();
+  await expect(page.locator('.archive-lens [aria-current="page"]')).toHaveText(
+    'Issues',
+  );
+  await page.locator('.archive-lens button', { hasText: 'Writers' }).click();
+  await expect.poll(() => hash(page)).toBe('#/writers');
+  await page
+    .locator('.writers-leading button', { hasText: 'Anne Applebaum' })
+    .click();
+  await expect(page.locator('.archive-search input')).toHaveValue(
+    'Anne Applebaum',
+  );
+  expect(await page.locator('.search-stories li').count()).toBeGreaterThan(10);
+  await page.locator('.archive-lens button', { hasText: 'Today' }).click();
+  await expect.poll(() => hash(page)).toBe('#/');
+  await expect(page.locator('.front .story-card').first()).toBeVisible();
+});
+
 test.describe('phone smart zoom', () => {
   test.skip(({ isMobile }) => !isMobile, 'phone-only gesture');
 

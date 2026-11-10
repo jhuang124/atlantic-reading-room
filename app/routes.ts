@@ -1,8 +1,11 @@
 // Hash routes so issues and reading places are shareable and the browser's
 // Back button walks archive → splash → reader. GitHub Pages serves one HTML
 // file, so the fragment is the only path segment we own.
+/** The archive has three lenses: the front page (stories), writers, and the
+ * cover shelves. The front page is the default and owns `#/`. */
+export type Lens = 'today' | 'writers' | 'issues';
 export type Route =
-  | { surface: 'archive' }
+  | { surface: 'archive'; lens?: Exclude<Lens, 'today'> }
   | { surface: 'about' }
   | { surface: 'issue'; id: string }
   | { surface: 'reader'; id: string; page?: number };
@@ -19,6 +22,8 @@ export function parseRoute(hash: string): Route {
   // The About page is the one non-issue surface; anything else unknown is
   // the shelf, so a stale or mistyped link still lands somewhere useful.
   if (id === 'about') return { surface: 'about' };
+  if (id === 'writers' || id === 'issues')
+    return { surface: 'archive', lens: id };
   if (!ISSUE_ID.test(id)) return { surface: 'archive' };
   if (parts[1] === 'read') {
     const match = PAGE.exec(parts[2] || '');
@@ -29,7 +34,8 @@ export function parseRoute(hash: string): Route {
 }
 
 export function routeHash(route: Route): string {
-  if (route.surface === 'archive') return '#/';
+  if (route.surface === 'archive')
+    return route.lens ? `#/${route.lens}` : '#/';
   if (route.surface === 'about') return '#/about';
   if (route.surface === 'issue') return `#/${route.id}`;
   const page = route.page && route.page > 1 ? `/p${route.page}` : '';
