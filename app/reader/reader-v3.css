@@ -1517,13 +1517,46 @@
   line-height: 1.5;
   color: var(--ink-2);
 }
-.settings-help {
-  margin: var(--s-4) 0 0;
-  padding-top: var(--s-3);
+.settings-keys {
+  display: grid;
+  gap: var(--s-2);
+  margin: var(--s-5) 0 0;
+  padding-top: var(--s-4);
   border-top: 1px solid var(--rule-soft);
   font-size: var(--t-ui);
-  line-height: 1.6;
+  line-height: 1.4;
+}
+.settings-keys > div {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-3);
+}
+.mobile-reader .settings-keys > div {
+  grid-template-columns: 112px minmax(0, 1fr);
+}
+.settings-keys dt {
+  display: flex;
+  gap: var(--s-1);
+  color: var(--ink);
+}
+.settings-keys dd {
+  margin: 0;
   color: var(--ink-2);
+}
+.settings-keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-1);
+  background: var(--surface-2);
+  font:
+    12px Graphik,
+    sans-serif;
+  color: var(--ink);
 }
 
 /* ---------- Phone chrome ---------- */
@@ -1649,12 +1682,18 @@
 .mobile-top-bar .strip-story small {
   display: none;
 }
-.mobile-contents span {
-  display: none;
+/* V6: the bottom bar is the thumb's bar. Contents, the page, Save and
+   Settings live here; Pages/Scroll is a set-once choice and sits in Settings. */
+.mobile-reader-bar .mobile-contents {
+  justify-self: start;
+  padding: 0 var(--s-3) 0 var(--s-3);
 }
-@media (min-width: 420px) {
+.mobile-contents span {
+  font-size: var(--t-ui-lg);
+}
+@media (max-width: 340px) {
   .mobile-contents span {
-    display: inline;
+    display: none;
   }
 }
 .bar-pages,
@@ -1662,17 +1701,50 @@
   display: flex;
   align-items: center;
 }
-.mobile-reader-bar .view-switch {
+.bar-pages {
   justify-self: center;
 }
-/* Pages | Scroll: 36px segments in a 4px track make a 44px target. */
-.mobile-reader-bar .view-switch > button {
-  height: 36px;
-  min-height: 36px;
+.mobile-reader-bar .bar-pages button,
+.mobile-reader-bar .bar-tools button {
+  padding: 0;
+  width: 44px;
+}
+.mobile-reader-bar button[aria-pressed='true'] {
+  color: var(--night-accent);
+}
+/* The web edition of the story in view: the comfortable way to read a long
+   piece on a phone, one tap from the page. */
+.mobile-online,
+.mobile-top-spacer {
+  justify-self: end;
+  min-width: 44px;
+}
+.mobile-online {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  height: 44px;
   padding: 0 var(--s-3);
+  border-radius: var(--radius-pill);
+  color: var(--night-ink-2);
+  font-size: var(--t-ui);
+  text-decoration: none;
+}
+.mobile-online:active {
+  background: var(--night-2);
+  color: var(--night-ink);
 }
 .mobile-page-jump {
+  display: inline-flex;
+  align-items: baseline;
   min-width: 0;
+}
+.mobile-page-jump span {
+  padding-right: var(--s-1);
+  color: var(--night-ink-2);
+  font-size: var(--t-ui);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .mobile-page-jump input {
   width: auto;
@@ -1696,7 +1768,7 @@
   background: var(--night-2);
   outline: none;
 }
-/* Fit floats above the bar while zoomed in Pages: the way back without chrome. */
+/* Fit floats above the bar while zoomed: the way back without chrome. */
 .mobile-fit-chip {
   position: absolute;
   right: var(--s-3);
@@ -1882,6 +1954,14 @@ body:has(.archive-app[data-theme='dark'] .document-reader) {
 }
 .document-reader .mobile-controls-access:focus-visible {
   position: fixed;
+}
+.document-reader .mobile-fit-chip {
+  position: fixed;
+  top: calc(
+    var(--reader-viewport-top, 0px) + var(--reader-viewport-height, 100dvh) -
+      104px - var(--safe-bottom)
+  );
+  bottom: auto;
 }
 html:has(.document-reader[data-modal-open='true']),
 body:has(.document-reader[data-modal-open='true']) {

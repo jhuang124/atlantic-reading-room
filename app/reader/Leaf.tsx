@@ -131,6 +131,7 @@ export default function Leaf({
   return (
     <div
       className="reader-leaf"
+      data-page={number}
       style={{ width, height: width * ratio }}
       aria-label={pageLabel(number, pdf.numPages, printOffset, backMatterPages)}
       onDoubleClick={(e) => {

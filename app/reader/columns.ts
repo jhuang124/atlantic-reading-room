@@ -51,3 +51,30 @@ export function pageColumns(words: Word[]): Column[] {
     ),
   }));
 }
+
+/** Smart zoom: the magnification that fits the prose column under a point to
+ * `target` pixels, and that column's left edge as a fraction of the page.
+ * `fx` is the point's x as a fraction of the page; `pageWidth` is the page's
+ * rendered width at Fit. Null when the page has no column worth fitting (art,
+ * ads, a single wide measure), where a plain 2× at the point serves better. */
+export function columnFit(
+  words: Word[] | undefined,
+  fx: number,
+  pageWidth: number,
+  target: number,
+  maxZoom = 4,
+): { zoom: number; x: number; width: number } | null {
+  if (!words?.length || pageWidth <= 0 || target <= 0) return null;
+  const columns = pageColumns(words);
+  const column =
+    columns.find((c) => fx >= c.x && fx <= c.x + c.width) ??
+    [...columns].sort(
+      (a, b) =>
+        Math.abs(a.x + a.width / 2 - fx) - Math.abs(b.x + b.width / 2 - fx),
+    )[0];
+  if (!column || column.width <= 0) return null;
+  const zoom = Math.min(maxZoom, target / (column.width * pageWidth));
+  // Under 1.5× the text barely grows; the caller's 2× is the better answer.
+  if (zoom < 1.5) return null;
+  return { zoom, x: column.x, width: column.width };
+}

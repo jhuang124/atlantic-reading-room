@@ -8,12 +8,14 @@ import {
 } from 'react';
 import {
   ArrowLeft,
+  ArrowUpRight,
   Bookmark,
   Check,
   ChevronLeft,
   ChevronRight,
   Maximize2,
   Minimize2,
+  List,
   Minus,
   PanelLeftOpen,
   Settings2,
@@ -60,6 +62,7 @@ import useReaderViewport from './useReaderViewport';
 import { scrollPort } from './scroll-port';
 import { swipeTurn, horizontalEdges, stepZoom } from './reading-controls';
 import BrowserReadingOptions from './BrowserReadingOptions';
+import { columnFit } from './columns';
 
 const asset = (id: string, path: string) => `reader-assets/${id}/${path}`;
 
@@ -532,7 +535,14 @@ export default function Reader({
     cornerDrag.current = null;
   }
   const changeZoom = useCallback(
-    (value: number, clientX?: number, clientY?: number) => {
+    (
+      value: number,
+      clientX?: number,
+      clientY?: number,
+      // Smart zoom lands a page point (pageX, in client pixels before the
+      // zoom) at a chosen screen x instead of keeping it under the pointer.
+      land?: { pageX: number; clientX: number },
+    ) => {
       if (turningRef.current) {
         turningRef.current = false;
         setTurning(null);
@@ -564,9 +574,9 @@ export default function Reader({
         const cx = clientX ?? box.left + box.width / 2,
           cy = clientY ?? box.top + box.height / 2;
         zoomAnchor.current = {
-          x: (cx - book.left) / book.width,
+          x: ((land ? land.pageX : cx) - book.left) / book.width,
           y: (cy - book.top) / book.height,
-          clientX: cx,
+          clientX: land ? land.clientX : cx,
           clientY: cy,
           selector: paper.dataset.page
             ? `.continuous-page[data-page="${paper.dataset.page}"]`
@@ -577,6 +587,56 @@ export default function Reader({
       setZoom(next);
     },
     [],
+  );
+  /** Double-tap and double-click: fit the prose column under the point to a
+   * comfortable reading width, or return to Fit when already magnified.
+   * Phones fill the screen with the column; desktops stop at a reading
+   * measure and centre it. Pages without columns get a plain 2×. */
+  const smartZoom = useCallback(
+    (clientX: number, clientY: number) => {
+      if (zoomRef.current > 1.01) {
+        changeZoom(1, clientX, clientY);
+        return;
+      }
+      const el = viewport.current;
+      const leaf =
+        el &&
+        [...el.querySelectorAll<HTMLElement>('.reader-leaf[data-page]')].find(
+          (node) => {
+            const box = node.getBoundingClientRect();
+            return (
+              clientX >= box.left &&
+              clientX <= box.right &&
+              clientY >= box.top &&
+              clientY <= box.bottom
+            );
+          },
+        );
+      if (!el || !leaf) {
+        changeZoom(2, clientX, clientY);
+        return;
+      }
+      const box = leaf.getBoundingClientRect();
+      const port = documentReading
+        ? { left: 0, width: window.innerWidth }
+        : el.getBoundingClientRect();
+      const target = mobile ? port.width - 16 : Math.min(port.width - 96, 460);
+      const fit = columnFit(
+        index[Number(leaf.dataset.page) - 1]?.words,
+        (clientX - box.left) / box.width,
+        box.width,
+        target,
+      );
+      if (!fit) {
+        changeZoom(2, clientX, clientY);
+        return;
+      }
+      changeZoom(fit.zoom, clientX, clientY, {
+        pageX: box.left + fit.x * box.width,
+        clientX: port.left + (port.width - target) / 2,
+      });
+    },
+    [changeZoom, index, mobile, documentReading],
   );
   useLayoutEffect(() => {
     const el = viewport.current,
@@ -761,8 +821,7 @@ export default function Reader({
   }, [turn, changeZoom, mode]);
   // Wire the phone gesture layer now that turn and changeZoom exist.
   gestureActions.current.turn = turn;
-  gestureActions.current.doubleTap = (x, y) =>
-    changeZoom(zoomRef.current > 1.01 ? 1 : 2, x, y);
+  gestureActions.current.doubleTap = smartZoom;
   gestureActions.current.edgeTurns = () =>
     mode !== 'scroll' && zoomRef.current <= 1.01 && !!pdf;
   gestureActions.current.scrollTop = () =>
@@ -1381,9 +1440,7 @@ export default function Reader({
                 onPosition={scrollPosition}
                 onEnd={scrollEnd}
                 onPaint={paintedPage}
-                onZoom={(x, y) =>
-                  changeZoom(zoomRef.current === 1 ? 2 : 1, x, y)
-                }
+                onZoom={smartZoom}
               />
             )}
             {pdf && mode !== 'scroll' && (
@@ -1405,8 +1462,7 @@ export default function Reader({
                         query={query}
                         onDoubleClick={(x, y) => {
                           // Phones resolve double-taps in the gesture layer.
-                          if (!mobile)
-                            changeZoom(zoomRef.current === 1 ? 2 : 1, x, y);
+                          if (!mobile) smartZoom(x, y);
                         }}
                       />
                       <span className="leaf-number">{label(n)}</span>
@@ -1597,16 +1653,20 @@ export default function Reader({
               <span>Archive</span>
             </button>
             {storyButton}
-            <button
-              ref={contentsTrigger}
-              className="mobile-contents"
-              aria-label="Contents"
-              aria-expanded={!!panel}
-              onClick={openContents}
-            >
-              <PanelLeftOpen size={19} />
-              <span>Contents</span>
-            </button>
+            {online ? (
+              <a
+                className="mobile-online"
+                href={online}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Read this story on TheAtlantic.com"
+              >
+                <span>Web</span>
+                <ArrowUpRight size={16} />
+              </a>
+            ) : (
+              <span className="mobile-top-spacer" aria-hidden="true" />
+            )}
           </nav>
           <nav
             className="mobile-reader-bar"
@@ -1614,6 +1674,16 @@ export default function Reader({
             inert={!controls.visible || !!panel || appearance}
             aria-hidden={!controls.visible}
           >
+            <button
+              ref={contentsTrigger}
+              className="mobile-contents"
+              aria-label="Contents"
+              aria-expanded={!!panel}
+              onClick={openContents}
+            >
+              <List size={20} />
+              <span>Contents</span>
+            </button>
             <div className="bar-pages">
               <button
                 aria-label="Previous page"
@@ -1624,7 +1694,12 @@ export default function Reader({
               >
                 <ChevronLeft size={22} />
               </button>
-              <label className="mobile-page-jump">{folio}</label>
+              <label className="mobile-page-jump">
+                {folio}
+                {/^\d+$/.test(label(page)) && jump === null && (
+                  <span aria-hidden="true">/ {printedCount}</span>
+                )}
+              </label>
               <button
                 aria-label="Next page"
                 disabled={end === issue.pageCount}
@@ -1635,7 +1710,6 @@ export default function Reader({
                 <ChevronRight size={22} />
               </button>
             </div>
-            {viewSwitch}
             <div className="bar-tools">
               <button
                 aria-label="Save page"
@@ -1653,7 +1727,7 @@ export default function Reader({
               </button>
             </div>
           </nav>
-          {zoom > 1 && mode !== 'scroll' && !panel && !appearance && (
+          {zoom > 1 && !panel && !appearance && (
             <button
               className="zoom-fit mobile-fit-chip"
               title="Fit the page to the screen"
@@ -1710,6 +1784,29 @@ export default function Reader({
                 <X size={18} />
               </button>
             </div>
+            {mobile && (
+              <fieldset className="segmented" role="group" aria-label="View">
+                <legend>View</legend>
+                <button
+                  aria-pressed={mode === 'spread'}
+                  onClick={() => {
+                    chooseView('spread');
+                    setAppearance(false);
+                  }}
+                >
+                  Pages
+                </button>
+                <button
+                  aria-pressed={mode === 'scroll'}
+                  onClick={() => {
+                    chooseView('scroll');
+                    setAppearance(false);
+                  }}
+                >
+                  Scroll
+                </button>
+              </fieldset>
+            )}
             <fieldset className="reader-theme-options segmented">
               <legend>Appearance</legend>
               <button
@@ -1746,11 +1843,44 @@ export default function Reader({
               document.documentElement.dataset.nativeReader !== 'true' && (
                 <BrowserReadingOptions onEnter={() => setAppearance(false)} />
               )}
-            <p className="settings-help">
-              {mobile
-                ? 'Tap the edges to turn, the center for controls. Pinch or double-tap to zoom.'
-                : '← → turn · C contents · F focus · B save · / search · ⌘-scroll to zoom'}
-            </p>
+            {mobile ? (
+              <dl className="settings-keys">
+                <div>
+                  <dt>Double-tap</dt>
+                  <dd>Fit a column to the screen</dd>
+                </div>
+                <div>
+                  <dt>Tap the edges</dt>
+                  <dd>Turn the page in Pages view</dd>
+                </div>
+                <div>
+                  <dt>Tap the center</dt>
+                  <dd>Show or hide the controls</dd>
+                </div>
+              </dl>
+            ) : (
+              <dl className="settings-keys">
+                {(
+                  [
+                    [['←', '→'], 'Turn the page'],
+                    [['C'], 'Contents'],
+                    [['/'], 'Search this issue'],
+                    [['B'], 'Save the page'],
+                    [['F'], 'Focus'],
+                    [['+', '−'], 'Zoom; double-click fits a column'],
+                  ] as const
+                ).map(([keys, action]) => (
+                  <div key={action}>
+                    <dt>
+                      {keys.map((key) => (
+                        <kbd key={key}>{key}</kbd>
+                      ))}
+                    </dt>
+                    <dd>{action}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </div>
         </div>
       )}
