@@ -1223,7 +1223,7 @@ export default function Reader({
         aria-pressed={mode === 'spread'}
         onClick={() => chooseView('spread')}
       >
-        {mobile ? 'Pages' : 'Spread'}
+        Spread
       </button>
       <button
         aria-pressed={mode === 'scroll'}
@@ -1440,7 +1440,11 @@ export default function Reader({
                 onPosition={scrollPosition}
                 onEnd={scrollEnd}
                 onPaint={paintedPage}
-                onZoom={smartZoom}
+                onZoom={(x, y) => {
+                  // Phones resolve double-taps in the gesture layer; a
+                  // browser dblclick on top of it would zoom straight back.
+                  if (!mobile) smartZoom(x, y);
+                }}
               />
             )}
             {pdf && mode !== 'scroll' && (
@@ -1785,7 +1789,7 @@ export default function Reader({
               </button>
             </div>
             {mobile && (
-              <fieldset className="segmented" role="group" aria-label="View">
+              <fieldset className="segmented" aria-label="View">
                 <legend>View</legend>
                 <button
                   aria-pressed={mode === 'spread'}

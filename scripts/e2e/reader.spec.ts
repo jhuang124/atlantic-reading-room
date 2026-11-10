@@ -44,6 +44,93 @@ test('reader paints the first page within 8 s', async ({ page }) => {
   await expect(page.locator('.reader-loading')).toHaveCount(0);
 });
 
+// V6: the two ways in that do not start from a cover.
+test('issue page lists the stories and opens the reader at one', async ({
+  page,
+}) => {
+  await page.goto(`/#/${ISSUE}`);
+  const rows = page.locator('.issue-contents li button');
+  await expect(rows.first()).toBeVisible();
+  expect(await rows.count()).toBeGreaterThan(8);
+  // The neighbouring issue is named, not counted.
+  await expect(
+    page.locator('.issue-splash-navigation button').first(),
+  ).toContainText(/20\d\d/);
+  await rows.nth(3).click();
+  await expect(page.locator(READER)).toBeVisible();
+  await expect.poll(() => hash(page)).toMatch(/\/read\/p\d+$/);
+});
+
+test('shelf search lists matching stories and opens one', async ({ page }) => {
+  await openArchive(page);
+  await page.locator('.archive-search input').fill('graeme wood');
+  const hits = page.locator('.search-stories li button');
+  await expect(hits.first()).toBeVisible();
+  await expect(hits.first().locator('mark')).toHaveText(/graeme wood/i);
+  await hits.first().click();
+  await expect(page.locator(READER)).toBeVisible();
+  await expect.poll(() => hash(page)).toMatch(/^#\/\d{6}\/read\/p\d+$/);
+});
+
+test.describe('phone smart zoom', () => {
+  test.skip(({ isMobile }) => !isMobile, 'phone-only gesture');
+
+  test('double-tap fits a column and the bars stay on screen', async ({
+    page,
+  }) => {
+    // Physical page 30 is two columns of prose; Scroll is the phone default.
+    await page.goto(`/#/${ISSUE}/read/p30`);
+    const leaf = page.locator('.reader-leaf[data-page="30"]');
+    await expect(leaf.locator('canvas').first()).toBeVisible({
+      timeout: FIRST_PAINT_MS,
+    });
+    // Let the word index arrive: smart zoom reads the page's columns from it.
+    await page.waitForTimeout(800);
+    const before = await leaf.boundingBox();
+    if (!before) throw new Error('page 30 has no box');
+    const screen = page.viewportSize()!.width;
+    // Double-tap in the left column, a third of the way down the page.
+    const x = before.x + before.width * 0.25,
+      y = Math.min(before.y + before.height * 0.35, 600);
+    await page.touchscreen.tap(x, y);
+    await page.waitForTimeout(90);
+    await page.touchscreen.tap(x, y);
+    // The page grows until one column is about as wide as the screen.
+    await expect
+      .poll(async () => (await leaf.boundingBox())?.width ?? 0)
+      .toBeGreaterThan(before.width * 1.8);
+    const report = await page.evaluate(() => {
+      const visual = window.visualViewport!;
+      const rect = (selector: string) => {
+        const box = document.querySelector(selector)?.getBoundingClientRect();
+        // Client rects are layout-viewport relative; subtract the visual
+        // viewport's offset to get what the reader sees.
+        return box
+          ? { left: box.left - visual.offsetLeft, right: box.right - visual.offsetLeft }
+          : null;
+      };
+      return {
+        width: visual.width,
+        leaf: rect('.reader-leaf[data-page="30"]'),
+        chip: rect('.mobile-fit-chip'),
+      };
+    });
+    expect(report.width).toBeCloseTo(screen, 0);
+    // The left column starts near the screen's left edge: the page's own
+    // left margin (about 6% of its width) is off-screen to the left.
+    expect(report.leaf!.left).toBeLessThan(0);
+    expect(report.leaf!.left).toBeGreaterThan(-0.2 * (report.leaf!.right - report.leaf!.left));
+    // The way back is on screen.
+    expect(report.chip).not.toBeNull();
+    expect(report.chip!.left).toBeGreaterThan(0);
+    expect(report.chip!.right).toBeLessThanOrEqual(screen + 1);
+    await page.locator('.mobile-fit-chip').tap();
+    await expect
+      .poll(async () => (await leaf.boundingBox())?.width ?? 0)
+      .toBeLessThan(before.width * 1.05);
+  });
+});
+
 test.describe('desktop loop', () => {
   test.skip(({ isMobile }) => !!isMobile, 'desktop-only keyboard loop');
 
@@ -194,7 +281,7 @@ test.describe('V4 contract', () => {
       await expect(bar.locator('button[aria-label="Contents"]')).toBeVisible();
       const settings = bar.locator('button[aria-label="Reading settings"]');
       const sheet = page.locator('.appearance-popover');
-      const view = sheet.locator('[role=group][aria-label="View"]');
+      const view = sheet.getByRole('group', { name: 'View' });
       await settings.click();
       await expect(view.getByRole('button', { name: 'Scroll' })).toHaveAttribute(
         'aria-pressed',

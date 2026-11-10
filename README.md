@@ -1,8 +1,18 @@
-# The Print Edition — V3
+# The Print Edition
 
 An Atlantic magazine archive and reader: 71 complete issues from January/February 2020 through September 2026.
 
 [Open the demo](https://jhuang124.github.io/atlantic-reading-room/)
+
+## V6 (November 2026)
+
+V6 is a usability pass on V5's night stage; [V6-DESIGN.md](V6-DESIGN.md) has
+the evaluation and the plan. Double-tap or double-click fits the column under
+the point to a reading width (**smart zoom**). The issue page is the issue's
+**table of contents**: every story by section, each a way into the reader.
+Shelf **search lists matching stories** with a direct link into the reader.
+On a phone the bottom bar holds Contents, the page, Save and Settings;
+Pages/Scroll lives in Settings.
 
 ## V4 (September 2026)
 

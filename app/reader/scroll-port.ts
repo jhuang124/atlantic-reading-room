@@ -1,4 +1,8 @@
-/** Keep page-relative coordinates identical for an element or the browser document. */
+/** Keep page-relative coordinates identical for an element or the browser
+ * document. In document mode the browser owns the vertical scroll (so its
+ * toolbars can collapse) and the element owns the horizontal one: a magnified
+ * page pans inside the element and never widens the document, which on phones
+ * would widen the layout viewport and stretch fixed chrome with it. */
 export function scrollPort(element: HTMLElement, documentScroll = false) {
   const view = element.ownerDocument.defaultView!;
   const origin = () => {
@@ -17,7 +21,7 @@ export function scrollPort(element: HTMLElement, documentScroll = false) {
         };
       const offset = origin();
       return {
-        left: view.scrollX - offset.left,
+        left: element.scrollLeft,
         top: view.scrollY - offset.top,
         width: view.document.documentElement.clientWidth,
         height: view.visualViewport?.height || view.innerHeight,
@@ -29,15 +33,13 @@ export function scrollPort(element: HTMLElement, documentScroll = false) {
         return;
       }
       const offset = origin();
-      view.scrollTo({
-        ...options,
-        top:
-          options.top === undefined ? view.scrollY : offset.top + options.top,
-        left:
-          options.left === undefined
-            ? view.scrollX
-            : offset.left + options.left,
-      });
+      if (options.left !== undefined) element.scrollLeft = options.left;
+      if (options.top !== undefined)
+        view.scrollTo({
+          ...options,
+          left: view.scrollX,
+          top: offset.top + options.top,
+        });
     },
   };
 }

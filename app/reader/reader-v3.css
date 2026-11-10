@@ -481,15 +481,15 @@
   border-color: var(--ink);
 }
 
-/* Night chrome: the pill segmented control (Spread | Scroll, Pages | Scroll).
+/* Night chrome: the pill segmented control (Spread | Scroll).
    A --night-2 track, the active segment lit in night ink. */
-:is(.reader-header, .mobile-reader-bar) .view-switch {
+.reader-header .view-switch {
   gap: 0;
   padding: var(--s-1);
   border-radius: var(--radius-pill);
   background: var(--night-2);
 }
-:is(.reader-header, .mobile-reader-bar) .view-switch > button {
+.reader-header .view-switch > button {
   min-width: 0;
   min-height: 32px;
   height: 32px;
@@ -500,15 +500,11 @@
   font-size: var(--t-ui);
   color: var(--night-ink-2);
 }
-:is(.reader-header, .mobile-reader-bar)
-  .view-switch
-  > button:hover:not([aria-pressed='true']) {
+.reader-header .view-switch > button:hover:not([aria-pressed='true']) {
   color: var(--night-ink);
   background: var(--night-3);
 }
-:is(.reader-header, .mobile-reader-bar)
-  .view-switch
-  > button[aria-pressed='true'] {
+.reader-header .view-switch > button[aria-pressed='true'] {
   background: var(--night-ink);
   color: var(--night);
 }
@@ -1918,7 +1914,13 @@ body:has(.archive-app[data-theme='dark'] .document-reader) {
 }
 .document-reader .page-viewport {
   display: block;
+  /* Sideways pan of a magnified page stays in here; the document only ever
+     scrolls down. Its height is its content's, so nothing scrolls vertically
+     inside it. */
+  overflow-x: auto;
+  overflow-y: hidden;
   overscroll-behavior: auto;
+  scrollbar-width: none;
 }
 .document-reader .mobile-top-bar {
   position: fixed;
@@ -1955,8 +1957,26 @@ body:has(.archive-app[data-theme='dark'] .document-reader) {
 .document-reader .mobile-controls-access:focus-visible {
   position: fixed;
 }
+/* Fixed chrome spans what is visible, not a layout viewport that a
+   magnified page has widened. */
+.document-reader :is(.mobile-top-bar, .mobile-reader-bar) {
+  left: var(--reader-viewport-left, 0px);
+  right: auto;
+  width: var(--reader-viewport-width, 100%);
+}
+.document-reader
+  :is(.reader-navigation-layer, .settings-layer, .end-of-issue-layer) {
+  left: var(--reader-viewport-left, 0px);
+  right: auto;
+  width: var(--reader-viewport-width, 100%);
+}
 .document-reader .mobile-fit-chip {
   position: fixed;
+  right: auto;
+  left: calc(
+    var(--reader-viewport-left, 0px) + var(--reader-viewport-width, 100vw) -
+      var(--s-3) - 56px
+  );
   top: calc(
     var(--reader-viewport-top, 0px) + var(--reader-viewport-height, 100dvh) -
       104px - var(--safe-bottom)

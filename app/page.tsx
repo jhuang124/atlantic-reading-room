@@ -522,15 +522,20 @@ export default function Home() {
         : 'smooth',
     });
   }, [yearInView]);
-  // Results appear under the browse bar; when a search starts with the hero
-  // still on screen, bring the bar to the top so they are in view.
+  // Results start under the browse bar. Each change to a search puts the
+  // top of the results in view, whether the hero was still on screen or the
+  // reader was deep in an earlier year.
   useEffect(() => {
     const shell = library.current,
-      bar = browseBar.current;
-    if (!searching || !shell || !bar) return;
-    const gap = bar.getBoundingClientRect().top - shell.getBoundingClientRect().top;
-    if (gap > 1) shell.scrollTo({ top: shell.scrollTop + gap });
-  }, [searching]);
+      browser = shell?.querySelector<HTMLElement>('.archive-browser');
+    if (!searching || !shell || !browser) return;
+    shell.scrollTo({
+      top:
+        browser.getBoundingClientRect().top -
+        shell.getBoundingClientRect().top +
+        shell.scrollTop,
+    });
+  }, [searching, needle]);
   const reset = () => {
     setQuery('');
     setReadableOnly(false);

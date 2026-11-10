@@ -24,8 +24,10 @@ export function pageColumns(words: Word[]): Column[] {
     const begin = i;
     while (i < 83 && counts[i] <= 2) i++;
     const middle = (begin + i - 1) / 2;
+    // A gutter is at least 2% of the page. It may be far wider: a picture or
+    // pull quote set between two columns leaves a gap of a fifth of the page.
     if (
-      i - begin <= 10 &&
+      i - begin <= 30 &&
       i - begin >= 2 &&
       body.some((w) => w.x < middle / 100 - 0.08) &&
       body.some((w) => w.x > middle / 100 + 0.08)
@@ -37,19 +39,20 @@ export function pageColumns(words: Word[]): Column[] {
     ...boundaries,
     Math.min(0.98, Math.max(...body.map((w) => w.x + w.w)) + 0.018),
   ];
-  return xs.slice(0, -1).map((x, i) => ({
-    x: Math.max(0, x - 0.008),
-    width: xs[i + 1] - x + 0.016,
-    y: Math.max(
-      0,
-      Math.min(
-        ...body
-          .filter((w) => w.x >= x - 0.01 && w.x < xs[i + 1])
-          .map((w) => w.y),
-        1,
-      ) - 0.025,
-    ),
-  }));
+  return xs.slice(0, -1).map((x, i) => {
+    const inside = body.filter((w) => w.x >= x - 0.01 && w.x < xs[i + 1]);
+    // Each column is as wide as its own words, not as the space between
+    // boundaries, so a wide gap never pads the column that borders it.
+    const left = inside.length ? Math.min(...inside.map((w) => w.x)) : x;
+    const right = inside.length
+      ? Math.max(...inside.map((w) => w.x + w.w))
+      : xs[i + 1];
+    return {
+      x: Math.max(0, left - 0.012),
+      width: Math.min(1, right + 0.012) - Math.max(0, left - 0.012),
+      y: Math.max(0, Math.min(...inside.map((w) => w.y), 1) - 0.025),
+    };
+  });
 }
 
 /** Smart zoom: the magnification that fits the prose column under a point to

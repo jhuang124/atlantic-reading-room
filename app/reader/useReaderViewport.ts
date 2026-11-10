@@ -20,6 +20,14 @@ export default function useReaderViewport(
         '--reader-viewport-top',
         `${visual.offsetTop}px`,
       );
+      // A magnified page in Scroll is wider than the screen. Browsers that
+      // widen the layout viewport to hold it would stretch fixed bars with
+      // it, so the bars follow the visible width and its horizontal offset.
+      element.style.setProperty('--reader-viewport-width', `${visual.width}px`);
+      element.style.setProperty(
+        '--reader-viewport-left',
+        `${visual.offsetLeft}px`,
+      );
     };
     update();
     visual.addEventListener('resize', update);
@@ -29,6 +37,8 @@ export default function useReaderViewport(
       visual.removeEventListener('scroll', update);
       element.style.removeProperty('--reader-viewport-height');
       element.style.removeProperty('--reader-viewport-top');
+      element.style.removeProperty('--reader-viewport-width');
+      element.style.removeProperty('--reader-viewport-left');
     };
   }, [root, enabled]);
 }

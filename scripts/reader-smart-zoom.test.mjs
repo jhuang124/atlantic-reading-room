@@ -39,3 +39,16 @@ test('pages without columns decline, and zoom never passes the cap', () => {
   const capped = columnFit(words, 0.25, 100, 2000);
   assert.equal(capped?.zoom, 4);
 });
+
+test('two columns either side of a wide gap are still two columns', () => {
+  // November 2023, physical page 93: prose left and right of a centre gap
+  // a fifth of the page wide.
+  const wide = JSON.parse(
+    gunzipSync(readFileSync('public/reader-assets/202311/index.json.gz')),
+  )[92].words;
+  const columns = pageColumns(wide);
+  assert.equal(columns.length, 2);
+  // Each column is as wide as its words, not padded out to the gap's middle.
+  for (const column of columns) assert.ok(column.width < 0.4);
+  assert.ok(columnFit(wide, 0.75, 359, 359));
+});

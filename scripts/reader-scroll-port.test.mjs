@@ -22,6 +22,8 @@ function documentFixture() {
   };
   const element = {
     ownerDocument: { defaultView: view },
+    // The element owns the horizontal pan of a magnified page.
+    scrollLeft: 68,
     getBoundingClientRect: () => ({
       left: 12 - view.scrollX,
       top: 24 - view.scrollY,
@@ -60,6 +62,11 @@ test('Story jumps and pinch correction include document origin and preserve the 
   const before = port.read();
   port.to({ left: before.left + 45, top: before.top + 90 });
   assert.equal(port.read().left, before.left + 45);
+  assert.equal(port.read().top, before.top + 90);
+  // A magnified page pans inside the element; the document never moves
+  // sideways, so the layout viewport and the fixed bars keep their width.
+  assert.equal(view.scrollX, 80);
+  port.to({ left: 0 });
   assert.equal(port.read().top, before.top + 90);
 });
 test('Desktop and Expo keep native element scrolling without changing coordinates', () => {
